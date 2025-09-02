@@ -12,12 +12,14 @@
 
         <!-- Podstawowe dane użytkownika -->
         <TextView
+            android:id="@+id/tvEntry"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:text="Podstawowe dane"
             android:textSize="18sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp" />
+            android:textStyle="bold" />
+
 
         <EditText
             android:id="@+id/etName"
@@ -27,76 +29,90 @@
             android:inputType="text"
             android:layout_marginBottom="8dp" />
 
-        <!-- Sekcja BMI -->
-        <TextView
+        <EditText
+            android:id="@+id/etSex"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Kalkulator BMI"
+            android:hint="Płeć"
+            android:inputType="none"
+            android:focusable="false"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etAge"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Wiek"
+            android:inputType="none"
+            android:focusable="false"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etWeight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Waga (kg)"
+            android:inputType="none"
+            android:focusable="false"
+            android:layout_marginBottom="8dp" />
+
+        <EditText
+            android:id="@+id/etHeight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Wzrost (cm)"
+            android:inputType="none"
+            android:focusable="false"
+            android:layout_marginBottom="8dp" />
+
+        <TextView
+            android:id="@+id/tvBMIResult"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="16dp" />
+            android:visibility="invisible"/>
 
-        <Button
-            android:id="@+id/btnShowBMI"
+        <TextView
+            android:id="@+id/tvBMRResult"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Wprowadź dane by obliczyć BMI"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="16dp"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:visibility="invisible"/>
 
-        <!-- Sekcja kalkulatora BMI - ukryta domyślnie -->
-        <LinearLayout
-            android:id="@+id/layoutBMISection"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:visibility="gone">
+<!--        <EditText-->
+<!--            android:id="@+id/etBMIResult"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:hint="Wynik BMI"-->
+<!--            android:inputType="none"-->
+<!--            android:focusable="false"-->
+<!--            android:clickable="false"-->
+<!--            android:layout_marginBottom="8dp" />-->
 
-            <EditText
-                android:id="@+id/etWeight"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Waga (kg)"
-                android:inputType="none"
-                android:focusable="false"
-                android:layout_marginBottom="8dp" />
+<!--        <TextView-->
+<!--            android:id="@+id/tvBMICategory"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text=""-->
+<!--            android:textAlignment="center"-->
+<!--            android:textSize="16sp"-->
+<!--            android:layout_marginBottom="16dp" />-->
 
-            <EditText
-                android:id="@+id/etHeight"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Wzrost (cm)"
-                android:inputType="none"
-                android:focusable="false"
-                android:layout_marginBottom="8dp" />
+<!--        <EditText-->
+<!--            android:id="@+id/etBMRResult"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:hint="Wynik BMR"-->
+<!--            android:inputType="none"-->
+<!--            android:focusable="false"-->
+<!--            android:clickable="false"-->
+<!--            android:layout_marginBottom="8dp" />-->
 
-            <Button
-                android:id="@+id/btnCalculateBMI"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Oblicz BMI"
-                android:layout_marginBottom="8dp" />
 
-            <EditText
-                android:id="@+id/etBMIResult"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Wynik BMI"
-                android:inputType="none"
-                android:focusable="false"
-                android:clickable="false"
-                android:layout_marginBottom="8dp" />
-
-            <TextView
-                android:id="@+id/tvBMICategory"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text=""
-                android:textAlignment="center"
-                android:textSize="16sp"
-                android:layout_marginBottom="16dp" />
-
-        </LinearLayout>
 
         <!-- Przycisk zapisz -->
         <Button
@@ -106,6 +122,7 @@
             android:text="Zapisz dane"
             android:layout_marginTop="32dp"
             android:layout_marginBottom="16dp" />
+
 
     </LinearLayout>
 

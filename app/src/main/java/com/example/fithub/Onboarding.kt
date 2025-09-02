@@ -2,22 +2,21 @@ package com.example.fithub
 
 import android.app.AlertDialog
 import android.os.Bundle
+import android.text.Editable
+import android.text.TextWatcher
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import com.example.fithub.data.UserData
 import com.example.fithub.logic.UserCalculator
 
 class Onboarding : AppCompatActivity() {
-    // BMI elements
-    private lateinit var layoutBMISection: LinearLayout
-    private lateinit var btnShowBMI: Button
     private lateinit var etWeight: EditText
     private lateinit var etHeight: EditText
-    private lateinit var btnCalculateBMI: Button
-    private lateinit var etBMIResult: EditText
-    private lateinit var tvBMICategory: TextView
-
-    // Other elements
+    private lateinit var etAge: EditText
+    private lateinit var etSex: EditText
+    private lateinit var tvBMIResult: TextView
+    private lateinit var tvBMRResult: TextView
     private lateinit var etName: EditText
     private lateinit var btnSave: Button
 
@@ -29,103 +28,179 @@ class Onboarding : AppCompatActivity() {
 
         initViews()
         setupClickListeners()
+        setupTextWatchers()
     }
 
     private fun initViews() {
-        // BMI views
-        layoutBMISection = findViewById(R.id.layoutBMISection)
-        btnShowBMI = findViewById(R.id.btnShowBMI)
         etWeight = findViewById(R.id.etWeight)
         etHeight = findViewById(R.id.etHeight)
-        btnCalculateBMI = findViewById(R.id.btnCalculateBMI)
-        etBMIResult = findViewById(R.id.etBMIResult)
-        tvBMICategory = findViewById(R.id.tvBMICategory)
-
-        // Other views
+        etAge = findViewById(R.id.etAge)
+        etSex = findViewById(R.id.etSex)
+        tvBMIResult = findViewById(R.id.tvBMIResult)
+        tvBMRResult = findViewById(R.id.tvBMRResult)
         etName = findViewById(R.id.etName)
         btnSave = findViewById(R.id.btnSave)
     }
 
     private fun setupClickListeners() {
-        // Show/hide BMI section
-        btnShowBMI.setOnClickListener {
-            toggleSection(layoutBMISection, btnShowBMI, "Ukryj kalkulator BMI", "Wprowadź dane by obliczyć BMI")
-        }
-
-        // Weight picker
         etWeight.setOnClickListener { showWeightPicker() }
-
-        // Height picker
         etHeight.setOnClickListener { showHeightPicker() }
+        etAge.setOnClickListener { showAgePicker() }
+        etSex.setOnClickListener { showSexPicker() }
 
-        // Calculate BMI
-        btnCalculateBMI.setOnClickListener { calculateBMI() }
-
-        // Save data - DO ROZBUDOWY
         btnSave.setOnClickListener {
-            Toast.makeText(this, "Dane zapisane!", Toast.LENGTH_SHORT).show()
-        }
-    }
-
-    private fun toggleSection(layout: LinearLayout, button: Button, hideText: String, showText: String) {
-        if (layout.visibility == View.GONE) {
-            layout.visibility = View.VISIBLE
-            button.text = hideText
-        } else {
-            layout.visibility = View.GONE
-            button.text = showText
-        }
-    }
-
-    private fun calculateBMI() {
-        val weightVal = etWeight.text.toString().toDoubleOrNull()
-        val heightVal = etHeight.text.toString().toDoubleOrNull()
-
-        if (weightVal != null && heightVal != null) {
-            val bmi = userCalculator.calculateBMI(weightVal, heightVal)
-            if (bmi != null) {
-                val roundedBMI = String.format("%.1f", bmi)
-                etBMIResult.setText(roundedBMI)
-                tvBMICategory.text = userCalculator.getBMICategory(bmi)
+            val userData = getUserData()
+            if (userData.isComplete()) {
+                saveUserData(userData)
+            } else {
+                Toast.makeText(this, "Wypełnij wszystkie pola", Toast.LENGTH_SHORT).show()
             }
-        } else {
-            Toast.makeText(this, "Wprowadź wagę i wzrost", Toast.LENGTH_SHORT).show()
         }
     }
 
+    private fun setupTextWatchers() {
+        val watcher = object : TextWatcher {
+            override fun afterTextChanged(s: Editable?) = updateCalculations()
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+        }
+
+        listOf(etWeight, etHeight, etAge, etSex).forEach {
+            it.addTextChangedListener(watcher)
+        }
+    }
+
+    private fun getUserData(): UserData {
+        return UserData(
+            name = etName.text.toString().trim(),
+            weight = etWeight.text.toString().toDoubleOrNull(),
+            height = etHeight.text.toString().toDoubleOrNull(),
+            age = etAge.text.toString().toIntOrNull(),
+            sex = etSex.text.toString()
+        )
+    }
+
+    private fun updateCalculations() {
+        val userData = getUserData()
+
+        tvBMIResult.visibility = View.INVISIBLE
+        tvBMRResult.visibility = View.INVISIBLE
+
+        if (userData.isValidForBMI()) {
+            calculateAndShowBMI(userData.weight!!, userData.height!!)
+        }
+
+        if (userData.isValidForBMR()) {
+            calculateAndShowBMR(userData.weight!!, userData.height!!, userData.age!!, userData.sex)
+        }
+    }
+
+    private fun calculateAndShowBMI(weight: Double, height: Double) {
+        val bmi = userCalculator.calculateBMI(weight, height)
+        if (bmi != null) {
+            val roundedBMI = String.format("%.1f", bmi)
+            val bmiCategory = userCalculator.getBMICategory(bmi)
+            tvBMIResult.apply {
+                visibility = View.VISIBLE
+                text = "Twoje BMI wynosi: $roundedBMI ($bmiCategory)"
+            }
+        }
+    }
+
+    private fun calculateAndShowBMR(weight: Double, height: Double, age: Int, sex: String) {
+        val bmr = userCalculator.calculateBMR(weight, height, age.toDouble(), sex)
+        if (bmr != null) {
+            val roundedBMR = String.format("%.0f", bmr)
+            tvBMRResult.apply {
+                visibility = View.VISIBLE
+                text = "Twoje dzienne zapotrzebowanie kaloryczne wynosi około: $roundedBMR kcal"
+            }
+        }
+    }
+
+    private fun saveUserData(userData: UserData) {
+        // TODO: Implementuj zapisywanie danych (SharedPreferences, Room, etc.)
+        Toast.makeText(this, "Dane zapisane: ${userData.name}", Toast.LENGTH_SHORT).show()
+    }
+
+
+
+    //Picker methods
     private fun showWeightPicker() {
-        val currentValue = etWeight.text.toString().toIntOrNull() ?: 70
-        val numberPicker = NumberPicker(this).apply {
-            minValue = 30
+        showNumberPicker(
+            title = "Wybierz wagę (kg)",
+            currentValue = etWeight.text.toString().toIntOrNull() ?: 70,
+            minValue = 30,
             maxValue = 200
-            value = currentValue.coerceIn(minValue, maxValue)
+        ) { value ->
+            etWeight.setText(value.toString())
+        }
+    }
+
+    private fun showHeightPicker() {
+        showNumberPicker(
+            title = "Wybierz wzrost (cm)",
+            currentValue = etHeight.text.toString().toIntOrNull() ?: 180,
+            minValue = 80,
+            maxValue = 250
+        ) { value ->
+            etHeight.setText(value.toString())
+        }
+    }
+
+    private fun showAgePicker() {
+        showNumberPicker(
+            title = "Wybierz wiek",
+            currentValue = etAge.text.toString().toIntOrNull() ?: 25,
+            minValue = 16,
+            maxValue = 120
+        ) { value ->
+            etAge.setText(value.toString())
+        }
+    }
+
+    private fun showSexPicker() {
+        val values = arrayOf("Male", "Female")
+        val currentValue = etSex.text.toString()
+        val currentIndex = values.indexOf(currentValue).takeIf { it >= 0 } ?: 0
+
+        val numberPicker = NumberPicker(this).apply {
+            minValue = 0
+            maxValue = values.size - 1
+            displayedValues = values
+            value = currentIndex
             wrapSelectorWheel = false
         }
 
         AlertDialog.Builder(this)
-            .setTitle("Wybierz wagę (kg)")
+            .setTitle("Wybierz płeć")
             .setView(numberPicker)
             .setPositiveButton("OK") { _, _ ->
-                etWeight.setText(numberPicker.value.toString())
+                etSex.setText(values[numberPicker.value])
             }
             .setNegativeButton("Cancel", null)
             .show()
     }
 
-    private fun showHeightPicker() {
-        val currentValue = etHeight.text.toString().toIntOrNull() ?: 180
+    private fun showNumberPicker(
+        title: String,
+        currentValue: Int,
+        minValue: Int,
+        maxValue: Int,
+        onValueSelected: (Int) -> Unit
+    ) {
         val numberPicker = NumberPicker(this).apply {
-            minValue = 80
-            maxValue = 250
+            this.minValue = minValue
+            this.maxValue = maxValue
             value = currentValue.coerceIn(minValue, maxValue)
             wrapSelectorWheel = false
         }
 
         AlertDialog.Builder(this)
-            .setTitle("Wybierz wzrost (cm)")
+            .setTitle(title)
             .setView(numberPicker)
             .setPositiveButton("OK") { _, _ ->
-                etHeight.setText(numberPicker.value.toString())
+                onValueSelected(numberPicker.value)
             }
             .setNegativeButton("Cancel", null)
             .show()
