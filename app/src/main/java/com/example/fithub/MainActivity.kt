@@ -2,13 +2,18 @@ package com.example.fithub
 
 import android.content.Intent
 import android.os.Bundle
+import android.webkit.WebView
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import android.widget.Button
 
+
 class MainActivity : AppCompatActivity() {
+
+    lateinit var webView: WebView
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
@@ -18,9 +23,19 @@ class MainActivity : AppCompatActivity() {
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
             insets
         }
-        val button = findViewById<Button>(R.id.btnNavigateBMI)
-        button.setOnClickListener {
+
+        //onboarding
+        val buttonOnboarding = findViewById<Button>(R.id.btnNavigateBMI)
+        buttonOnboarding.setOnClickListener {
             val intent = Intent(this, Onboarding::class.java)
+            startActivity(intent)
+        }
+
+        //muscle model
+        val buttonMuscle = findViewById<Button>(R.id.btnMuscle)
+        buttonMuscle.setOnClickListener {
+            val intent = Intent(this, MuscleModel::class.java)
+            intent.putExtra("url", "file:///android_asset/index/back.html")
             startActivity(intent)
         }
 
