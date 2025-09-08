@@ -1,0 +1,22 @@
+.muscle {
+  fill: transparent;
+  stroke: none;
+  cursor: pointer;
+}
+
+.muscle:hover {
+  fill: rgba(255, 255, 0, 0.3); /* podświetlenie na hover */
+}
+
+html,
+body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+}
+
+svg {
+  width: 100%;
+  height: auto;
+  display: block;
+}
