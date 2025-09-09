@@ -7,8 +7,11 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
+import com.example.fithub.data.AddUserDto
 import com.example.fithub.data.UserData
 import com.example.fithub.logic.UserCalculator
+import kotlinx.coroutines.launch
 
 class Onboarding : AppCompatActivity() {
     private lateinit var etWeight: EditText
@@ -119,8 +122,29 @@ class Onboarding : AppCompatActivity() {
     }
 
     private fun saveUserData(userData: UserData) {
-        // TODO: Implementuj zapisywanie danych (SharedPreferences, Room, etc.)
-        Toast.makeText(this, "Dane zapisane: ${userData.name}", Toast.LENGTH_SHORT).show()
+        val bmi = userCalculator.calculateBMI(userData.weight!!, userData.height!!)
+        val roundedBMI = String.format("%.1f", bmi).toDouble()
+        val bmr = userCalculator.calculateBMR(
+            userData.weight!!, userData.height!!, userData.age!!.toDouble(), userData.sex
+        )
+        val roundedBMR = String.format("%.0f", bmr).toDouble()
+        val dto = AddUserDto(
+            username = userData.name,
+            sex = userData.sex,
+            age = userData.age!!,
+            weight = userData.weight!!.toInt(),
+            height = userData.height!!.toInt(),
+            bmr = roundedBMR ?: 0.0,
+            bmi = roundedBMI ?: 0.0
+        )
+        lifecycleScope.launch {
+            try {
+                NetworkModule.api.createUser(dto)
+                Toast.makeText(this@Onboarding, "Dane zapisane", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(this@Onboarding, "Błąd: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
 

@@ -48,7 +48,7 @@ class MainActivity : AppCompatActivity() {
                 try {
                     val users = NetworkModule.api.getUsers()
                     if (users.isNotEmpty()) {
-                        val age = users[0].bmi
+                        val age = users[0].age
                         Toast.makeText(this@MainActivity, "Wiek: $age", Toast.LENGTH_LONG).show()
                     } else {
                         Toast.makeText(this@MainActivity, "Brak użytkowników", Toast.LENGTH_LONG).show()
