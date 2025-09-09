@@ -5,7 +5,9 @@ data class UserData(
     val weight: Double? = null,
     val height: Double? = null,
     val age: Int? = null,
-    val sex: String = ""
+    val sex: String = "",
+    val bmr: Double? = null,
+    val bmi: Double? = null
 ) {
     fun isValidForBMI(): Boolean = weight != null && height != null
     fun isValidForBMR(): Boolean = weight != null && height != null && age != null && sex.isNotBlank()

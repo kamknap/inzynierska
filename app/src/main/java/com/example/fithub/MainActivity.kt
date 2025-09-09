@@ -8,7 +8,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.view.ViewCompat
 import androidx.core.view.WindowInsetsCompat
 import android.widget.Button
-
+import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -37,6 +39,24 @@ class MainActivity : AppCompatActivity() {
             val intent = Intent(this, MuscleModel::class.java)
             intent.putExtra("url", "file:///android_asset/index/back.html")
             startActivity(intent)
+        }
+
+        //api
+        val btnApi = findViewById<Button>(R.id.btnApi)
+        btnApi.setOnClickListener {
+            lifecycleScope.launch {
+                try {
+                    val users = NetworkModule.api.getUsers()
+                    if (users.isNotEmpty()) {
+                        val age = users[0].bmi
+                        Toast.makeText(this@MainActivity, "Wiek: $age", Toast.LENGTH_LONG).show()
+                    } else {
+                        Toast.makeText(this@MainActivity, "Brak użytkowników", Toast.LENGTH_LONG).show()
+                    }
+                } catch (e: Exception) {
+                    Toast.makeText(this@MainActivity, "Błąd: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
         }
 
     }
