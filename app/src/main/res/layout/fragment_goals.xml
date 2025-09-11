@@ -62,57 +62,15 @@
                 android:textAlignment="viewEnd"/>
         </LinearLayout>
 
-        <!-- 2. Tryb używania aplikacji -->
-        <TextView
-            android:id="@+id/tvModeLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Tryb używania aplikacji"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
 
-        <RadioGroup
-            android:id="@+id/rgAppMode"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="16dp">
-
-            <RadioButton
-                android:id="@+id/rbCaloriesOnly"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tylko liczenie kalorii" />
-
-            <RadioButton
-                android:id="@+id/rbTrainingOnly"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tylko treningi" />
-
-            <RadioButton
-                android:id="@+id/rbBoth"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Wszystko (kalorie + treningi)" />
-        </RadioGroup>
-
-        <!-- 3. Cel szczegółowy: docelowa waga / tygodniowy cel -->
+        <!-- 2. Docelowa waga  -->
         <TextView
             android:id="@+id/tvDetailedGoalLabel"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Cel szczegółowy"
+            android:text="Waga docelowa"
             android:textStyle="bold"
             android:layout_marginBottom="8dp" />
-
-        <!-- Wybór typu celu (zmienisz hinty/visibility w kodzie) -->
-        <Spinner
-            android:id="@+id/spGoalType"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp" />
-        <!-- Przykładowe opcje w arrays.xml: ["Docelowa waga (kg)", "Zmiana tygodniowa (kg/tydz.)"] -->
 
         <!-- Pole dla docelowej wagi -->
         <EditText
@@ -123,15 +81,7 @@
             android:inputType="numberDecimal"
             android:layout_marginBottom="8dp" />
 
-        <!-- Pole dla tygodniowej zmiany wagi (pokaż/ukryj w zależności od spGoalType) -->
-        <EditText
-            android:id="@+id/etWeeklyDelta"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:hint="Zmiana tygodniowa (kg/tydz.)"
-            android:inputType="numberDecimal"
-            android:layout_marginBottom="16dp"
-            android:visibility="gone" />
+
 
         <!-- 4. Poziom aktywności fizycznej (1–5) -->
         <TextView
@@ -162,49 +112,7 @@
             <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="5" android:textAlignment="viewEnd"/>
         </LinearLayout>
 
-        <!-- 5. Preferencje: żywieniowe / treningowe -->
-        <TextView
-            android:id="@+id/tvPrefsLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Preferencje"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
 
-
-        <!-- Treningowe -->
-        <TextView
-            android:id="@+id/tvTrainingLabel"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Treningowe"
-            android:textStyle="italic"
-            android:layout_marginBottom="4dp" />
-
-        <LinearLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="16dp">
-
-            <CheckBox
-                android:id="@+id/cbStrength"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Siłowe" />
-
-            <CheckBox
-                android:id="@+id/cbCardio"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Cardio" />
-
-            <CheckBox
-                android:id="@+id/cbMixed"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Mieszane" />
-        </LinearLayout>
 
         <!-- 6. Częstotliwość treningów (dropdown) -->
         <TextView
