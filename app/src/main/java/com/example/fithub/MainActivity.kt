@@ -29,7 +29,7 @@ class MainActivity : AppCompatActivity() {
         //onboarding
         val buttonOnboarding = findViewById<Button>(R.id.btnNavigateBMI)
         buttonOnboarding.setOnClickListener {
-            val intent = Intent(this, Onboarding::class.java)
+            val intent = Intent(this, OnboardingActivity::class.java)
             startActivity(intent)
         }
 

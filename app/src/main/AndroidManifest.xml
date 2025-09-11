@@ -36,6 +36,12 @@
             android:exported="false">
         </activity>
 
+        <activity
+            android:name=".OnboardingActivity"
+            android:exported="false">
+        </activity>
+
+
 
     </application>
 

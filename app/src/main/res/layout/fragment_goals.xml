@@ -1,0 +1,265 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <!-- 0. Nagłówek -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Spersonalizuj aplikację"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp" />
+
+        <!-- 1. Cel główny (suwak 3-pozycyjny) -->
+        <TextView
+            android:id="@+id/tvGoalLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cel główny"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <!-- W UI pokażemy 3 etykiety pod suwakiem: Schudnąć | Utrzymać | Przytyć -->
+        <SeekBar
+            android:id="@+id/sbMainGoal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="2"
+            android:progress="1"
+            android:layout_marginBottom="4dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="3"
+            android:layout_marginBottom="16dp">
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Schudnąć"
+                android:textAlignment="viewStart"/>
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Utrzymać"
+                android:textAlignment="center"/>
+            <TextView
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Przytyć"
+                android:textAlignment="viewEnd"/>
+        </LinearLayout>
+
+        <!-- 2. Tryb używania aplikacji -->
+        <TextView
+            android:id="@+id/tvModeLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Tryb używania aplikacji"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <RadioGroup
+            android:id="@+id/rgAppMode"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp">
+
+            <RadioButton
+                android:id="@+id/rbCaloriesOnly"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tylko liczenie kalorii" />
+
+            <RadioButton
+                android:id="@+id/rbTrainingOnly"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Tylko treningi" />
+
+            <RadioButton
+                android:id="@+id/rbBoth"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Wszystko (kalorie + treningi)" />
+        </RadioGroup>
+
+        <!-- 3. Cel szczegółowy: docelowa waga / tygodniowy cel -->
+        <TextView
+            android:id="@+id/tvDetailedGoalLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Cel szczegółowy"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Wybór typu celu (zmienisz hinty/visibility w kodzie) -->
+        <Spinner
+            android:id="@+id/spGoalType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="8dp" />
+        <!-- Przykładowe opcje w arrays.xml: ["Docelowa waga (kg)", "Zmiana tygodniowa (kg/tydz.)"] -->
+
+        <!-- Pole dla docelowej wagi -->
+        <EditText
+            android:id="@+id/etTargetWeight"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Docelowa waga (kg)"
+            android:inputType="numberDecimal"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Pole dla tygodniowej zmiany wagi (pokaż/ukryj w zależności od spGoalType) -->
+        <EditText
+            android:id="@+id/etWeeklyDelta"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:hint="Zmiana tygodniowa (kg/tydz.)"
+            android:inputType="numberDecimal"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone" />
+
+        <!-- 4. Poziom aktywności fizycznej (1–5) -->
+        <TextView
+            android:id="@+id/tvActivityLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Poziom aktywności fizycznej"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <SeekBar
+            android:id="@+id/sbActivityLevel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:max="4"
+            android:progress="1"
+            android:layout_marginBottom="4dp" />
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:weightSum="5"
+            android:layout_marginBottom="16dp">
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="1"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="2" android:textAlignment="center"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="3" android:textAlignment="center"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="4" android:textAlignment="center"/>
+            <TextView android:layout_width="0dp" android:layout_height="wrap_content" android:layout_weight="1" android:text="5" android:textAlignment="viewEnd"/>
+        </LinearLayout>
+
+        <!-- 5. Preferencje: żywieniowe / treningowe -->
+        <TextView
+            android:id="@+id/tvPrefsLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Preferencje"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+
+        <!-- Treningowe -->
+        <TextView
+            android:id="@+id/tvTrainingLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Treningowe"
+            android:textStyle="italic"
+            android:layout_marginBottom="4dp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:layout_marginBottom="16dp">
+
+            <CheckBox
+                android:id="@+id/cbStrength"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Siłowe" />
+
+            <CheckBox
+                android:id="@+id/cbCardio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Cardio" />
+
+            <CheckBox
+                android:id="@+id/cbMixed"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Mieszane" />
+        </LinearLayout>
+
+        <!-- 6. Częstotliwość treningów (dropdown) -->
+        <TextView
+            android:id="@+id/tvFrequencyLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Częstotliwość treningów"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <Spinner
+            android:id="@+id/spTrainingFrequency"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp" />
+        <!-- np. entries: ["0 dni/tydz.", "1", ..., "7"] -->
+
+        <!-- 7. Powiadomienia -->
+        <TextView
+            android:id="@+id/tvNotificationsLabel"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Powiadomienia"
+            android:textStyle="bold"
+            android:layout_marginBottom="8dp" />
+
+        <CheckBox
+            android:id="@+id/cbNotifyMeals"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Przypomnienia o posiłkach"
+            android:layout_marginBottom="4dp" />
+
+        <CheckBox
+            android:id="@+id/cbNotifyTraining"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Przypomnienia o treningach"
+            android:layout_marginBottom="4dp" />
+
+        <CheckBox
+            android:id="@+id/cbNotifyWeighIn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Przypomnienia o ważeniu (1×/tydz.)"
+            android:layout_marginBottom="16dp" />
+
+        <!-- Przycisk zatwierdzający -->
+        <Button
+            android:id="@+id/btnConfirmGoals"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Zapisz i przejdź dalej"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="16dp" />
+
+    </LinearLayout>
+</ScrollView>

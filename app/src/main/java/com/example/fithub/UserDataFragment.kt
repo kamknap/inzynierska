@@ -141,6 +141,7 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
             try {
                 NetworkModule.api.createUser(dto)
                 Toast.makeText(requireContext(), "Dane zapisane", Toast.LENGTH_SHORT).show()
+                (requireActivity() as? OnboardingActivity)?.showGoalsFragment()
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_LONG).show()
             }
