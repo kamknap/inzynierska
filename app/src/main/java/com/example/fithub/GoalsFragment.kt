@@ -50,7 +50,6 @@ class GoalsFragment : Fragment(R.layout.fragment_goals) {
     private lateinit var cbVegetarian: CheckBox
     private lateinit var cbVegan: CheckBox
     private lateinit var cbGlutenFree: CheckBox
-    private lateinit var cbNoDietLimits: CheckBox
 
     private lateinit var cbStrength: CheckBox
     private lateinit var cbCardio: CheckBox
@@ -95,7 +94,6 @@ class GoalsFragment : Fragment(R.layout.fragment_goals) {
 
         setupSpinners()
         setupSeekBars()
-        setupDietMutualExclusion()
         setupGoalTypeVisibility()
         setupImeActions()
         setupConfirm()
@@ -143,22 +141,6 @@ class GoalsFragment : Fragment(R.layout.fragment_goals) {
         })
     }
 
-    private fun setupDietMutualExclusion() {
-        // „Brak ograniczeń” wyklucza inne; zaznaczenie któregokolwiek innego odznacza „Brak ograniczeń”
-        cbNoDietLimits.setOnCheckedChangeListener { _, isChecked ->
-            if (isChecked) {
-                cbVegetarian.isChecked = false
-                cbVegan.isChecked = false
-                cbGlutenFree.isChecked = false
-            }
-        }
-        val uncheckNoLimits: (CompoundButton, Boolean) -> Unit = { _, isChecked ->
-            if (isChecked && cbNoDietLimits.isChecked) cbNoDietLimits.isChecked = false
-        }
-        cbVegetarian.setOnCheckedChangeListener(uncheckNoLimits)
-        cbVegan.setOnCheckedChangeListener(uncheckNoLimits)
-        cbGlutenFree.setOnCheckedChangeListener(uncheckNoLimits)
-    }
 
     private fun setupGoalTypeVisibility() {
         spGoalType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
