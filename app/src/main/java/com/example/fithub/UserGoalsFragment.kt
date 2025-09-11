@@ -11,7 +11,7 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
-class GoalsFragment : Fragment(R.layout.fragment_goals) {
+class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
 
     // Views
     private lateinit var sbMainGoal: SeekBar
