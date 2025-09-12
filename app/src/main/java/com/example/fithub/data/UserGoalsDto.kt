@@ -9,7 +9,6 @@ data class UserGoalsDto(
     val plan: GoalPlan? = null,
     val status: String = "active",                // domyślnie "active"
     val startedAt: String                         // ISO-8601, np. Instant.now().toString()
-    // completedAt, notes – po stronie backendu / później
 )
 
 data class GoalPlan(

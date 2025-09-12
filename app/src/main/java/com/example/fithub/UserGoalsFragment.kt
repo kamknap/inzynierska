@@ -8,8 +8,11 @@ import android.view.View
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.example.fithub.data.UserData
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import com.example.fithub.data.AddUserDto
+import com.example.fithub.logic.UserCalculator
 
 class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
 
@@ -22,14 +25,29 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
     private lateinit var cbNotifyTraining: CheckBox
     private lateinit var cbNotifyWeighIn: CheckBox
     private lateinit var btnConfirmGoals: Button
+    private var userData: UserData? = null
+
+
 
     // Stałe mapowania
     private val mainGoalLabels = arrayOf("Schudnąć", "Utrzymać", "Przytyć")
     private val mainGoalKeys   = arrayOf("lose", "maintain", "gain") // na potrzeby DTO
 
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        initViews(view)
+
+        arguments?.let { bundle ->
+            userData = UserData(
+                name = bundle.getString("userName", ""),
+                sex = bundle.getString("userSex", ""),
+                age = bundle.getInt("userAge", 0),
+                weight = bundle.getDouble("userWeight", 0.0),
+                height = bundle.getDouble("userHeight", 0.0)
+            )
+        }
+
+            initViews(view)
         setupFrequencySpinner()
         setupClickListeners()
         setupTextWatchers()
@@ -107,19 +125,45 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
         )
     }
 
+    //zapisywanie do mongo
     private fun saveGoals(goals: GoalsData) {
-        val dto = goals.toDto()
+        val goalsDto = goals.toDto()
 
         lifecycleScope.launch {
             try {
-                // TODO: Podmień na swoją implementację zapisu:
-                // NetworkModule.api.saveGoals(dto)
-                // Tymczasowa symulacja requestu:
-                delay(300)
+                // Najpierw zapisz dane użytkownika
+                userData?.let { user ->
+                    val userCalculator = UserCalculator()
+                    val bmi = userCalculator.calculateBMI(user.weight!!, user.height!!)
+                    val roundedBMI = String.format("%.1f", bmi).toDouble()
+                    val bmr = userCalculator.calculateBMR(
+                        user.weight!!, user.height!!, user.age!!.toDouble(), user.sex
+                    )
+                    val roundedBMR = String.format("%.0f", bmr).toDouble()
 
-                Toast.makeText(requireContext(), "Ustawienia zapisane", Toast.LENGTH_SHORT).show()
-                // Zakończ onboarding lub przejdź dalej:
-                requireActivity().finish()
+                    val userDto = AddUserDto(
+                        username = user.name,
+                        sex = user.sex,
+                        age = user.age!!,
+                        weight = user.weight!!.toInt(),
+                        height = user.height!!.toInt(),
+                        bmr = roundedBMR ?: 0.0,
+                        bmi = roundedBMI ?: 0.0
+                    )
+
+                    // Zapisz użytkownika
+                    val createdUser = NetworkModule.api.createUser(userDto)
+
+                    // TODO: Teraz zapisz cele używając ID utworzonego użytkownika
+                    // NetworkModule.api.saveGoals(goalsDto, createdUser._id)
+                    // Tymczasowa symulacja:
+                    delay(300)
+
+                    Toast.makeText(requireContext(), "Dane i cele zapisane", Toast.LENGTH_SHORT).show()
+                    requireActivity().finish()
+                } ?: run {
+                    Toast.makeText(requireContext(), "Brak danych użytkownika", Toast.LENGTH_SHORT).show()
+                }
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_LONG).show()
             }

@@ -54,7 +54,7 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
         btnSave.setOnClickListener {
             val userData = getUserData()
             if (userData.isComplete()) {
-                saveUserData(userData)
+                (requireActivity() as? OnboardingActivity)?.showGoalsFragment(userData)
             } else {
                 Toast.makeText(requireContext(), "Wypełnij wszystkie pola", Toast.LENGTH_SHORT).show()
             }
@@ -121,32 +121,32 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
         }
     }
 
-    private fun saveUserData(userData: UserData) {
-        val bmi = userCalculator.calculateBMI(userData.weight!!, userData.height!!)
-        val roundedBMI = String.format("%.1f", bmi).toDouble()
-        val bmr = userCalculator.calculateBMR(
-            userData.weight!!, userData.height!!, userData.age!!.toDouble(), userData.sex
-        )
-        val roundedBMR = String.format("%.0f", bmr).toDouble()
-        val dto = AddUserDto(
-            username = userData.name,
-            sex = userData.sex,
-            age = userData.age!!,
-            weight = userData.weight!!.toInt(),
-            height = userData.height!!.toInt(),
-            bmr = roundedBMR ?: 0.0,
-            bmi = roundedBMI ?: 0.0
-        )
-        lifecycleScope.launch {
-            try {
-                NetworkModule.api.createUser(dto)
-                Toast.makeText(requireContext(), "Dane zapisane", Toast.LENGTH_SHORT).show()
-                (requireActivity() as? OnboardingActivity)?.showGoalsFragment()
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
+//    private fun saveUserData(userData: UserData) {
+//        val bmi = userCalculator.calculateBMI(userData.weight!!, userData.height!!)
+//        val roundedBMI = String.format("%.1f", bmi).toDouble()
+//        val bmr = userCalculator.calculateBMR(
+//            userData.weight!!, userData.height!!, userData.age!!.toDouble(), userData.sex
+//        )
+//        val roundedBMR = String.format("%.0f", bmr).toDouble()
+//        val dto = AddUserDto(
+//            username = userData.name,
+//            sex = userData.sex,
+//            age = userData.age!!,
+//            weight = userData.weight!!.toInt(),
+//            height = userData.height!!.toInt(),
+//            bmr = roundedBMR ?: 0.0,
+//            bmi = roundedBMI ?: 0.0
+//        )
+//        lifecycleScope.launch {
+//            try {
+//                NetworkModule.api.createUser(dto)
+//                Toast.makeText(requireContext(), "Dane zapisane", Toast.LENGTH_SHORT).show()
+//                (requireActivity() as? OnboardingActivity)?.showGoalsFragment()
+//            } catch (e: Exception) {
+//                Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_LONG).show()
+//            }
+//        }
+//    }
 
 
 

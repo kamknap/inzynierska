@@ -4,6 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.addCallback
 import androidx.fragment.app.commit
+import com.example.fithub.data.UserData
 
 class OnboardingActivity : AppCompatActivity() {
 
@@ -38,11 +39,22 @@ class OnboardingActivity : AppCompatActivity() {
     /**
      * 3) Funkcja, która podmienia zawartość kontenera na GoalsFragment
      */
-    fun showGoalsFragment() {
+    fun showGoalsFragment(userData: UserData? = null) {
         supportFragmentManager.commit {
             setReorderingAllowed(true)
-            replace(R.id.onboarding_container, GoalsFragment())
-            addToBackStack(null) // pozwala wrócić przyciskiem "wstecz" do poprzedniego fragmentu
+            val goalsFragment = GoalsFragment()
+            if (userData != null) {
+                val bundle = Bundle().apply {
+                    putString("userName", userData.name)
+                    putString("userSex", userData.sex)
+                    putInt("userAge", userData.age ?: 0)
+                    putDouble("userWeight", userData.weight ?: 0.0)
+                    putDouble("userHeight", userData.height ?: 0.0)
+                }
+                goalsFragment.arguments = bundle
+            }
+            replace(R.id.onboarding_container, goalsFragment)
+            addToBackStack(null)
         }
     }
 
