@@ -2,10 +2,8 @@ package com.example.fithub.data
 
 data class AddUserDto(
     val username: String,
-    val sex: String,
-    val age: Int,
-    val weight: Int,
-    val height: Int,
-    val bmr: Double,
-    val bmi: Double
+    val auth: AuthInfo,
+    val profile: UserProfile,
+    val computed: Computed? = null,
+    val settings: UserSettings
 )
