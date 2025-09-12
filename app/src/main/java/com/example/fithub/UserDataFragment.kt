@@ -9,8 +9,17 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.example.fithub.data.ActivityLevel
 import com.example.fithub.data.AddUserDto
+import com.example.fithub.data.AuthInfo
+import com.example.fithub.data.Computed
+import com.example.fithub.data.NotificationChannels
+import com.example.fithub.data.NotificationTypes
+import com.example.fithub.data.NotificationsSettings
+import com.example.fithub.data.Sex
 import com.example.fithub.data.UserData
+import com.example.fithub.data.UserProfile
+import com.example.fithub.data.UserSettings
 import com.example.fithub.logic.UserCalculator
 import kotlinx.coroutines.launch
 
@@ -130,12 +139,24 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
         val roundedBMR = String.format("%.0f", bmr).toDouble()
         val dto = AddUserDto(
             username = userData.name,
-            sex = userData.sex,
-            age = userData.age!!,
-            weight = userData.weight!!.toInt(),
-            height = userData.height!!.toInt(),
-            bmr = roundedBMR ?: 0.0,
-            bmi = roundedBMI ?: 0.0
+            auth = AuthInfo(email = "", password = ""),
+            profile = UserProfile(
+                sex = Sex.valueOf(userData.sex.uppercase()),
+                age = userData.age!!,
+                weight = userData.weight!!.toInt(),
+                height = userData.height!!.toInt()
+            ),
+            computed = Computed(
+                bmr = roundedBMR,
+                bmi = roundedBMI
+            ),
+            settings = UserSettings(
+                activityLevel = ActivityLevel.MODERATE,
+                notifications = NotificationsSettings(
+                    types = listOf(NotificationTypes.GENERAL),
+                    channels = listOf(NotificationChannels.APP)
+                )
+            )
         )
         lifecycleScope.launch {
             try {
