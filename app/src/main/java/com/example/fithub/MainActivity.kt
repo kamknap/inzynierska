@@ -11,6 +11,7 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
+import android.util.Log
 
 class MainActivity : AppCompatActivity() {
 
@@ -47,14 +48,27 @@ class MainActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 try {
                     val users = NetworkModule.api.getUsers()
-                    if (users.isNotEmpty()) {
-                        val age = users[0].age
-                        Toast.makeText(this@MainActivity, "Wiek: $age", Toast.LENGTH_LONG).show()
+                    val userGoals = NetworkModule.api.getUserGoals()
+
+                    if (users.isNotEmpty() && userGoals.isNotEmpty()) {
+                        val username = users[0].username
+                        val age = users[0].profile.age
+                        val calorieTarget = userGoals[0].plan.calorieTarget ?: "Brak celu"
+                        val goalOwner = userGoals[0].userId.username
+                        val message = "User: $username, Wiek: $age, Kalorie: $calorieTarget, Cel należy do: $goalOwner"
+                        Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
+                        Log.d("ApiInfo", message)
                     } else {
-                        Toast.makeText(this@MainActivity, "Brak użytkowników", Toast.LENGTH_LONG).show()
+                        val usersCount = users.size
+                        val goalsCount = userGoals.size
+                        val message = "Users: $usersCount, Goals: $goalsCount"
+                        Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
+                        Log.d("ApiInfo", message)
                     }
                 } catch (e: Exception) {
-                    Toast.makeText(this@MainActivity, "Błąd: ${e.message}", Toast.LENGTH_LONG).show()
+                    val errorMessage = "Błąd: ${e.message}"
+                    Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_LONG).show()
+                    Log.e("ApiError", errorMessage, e)
                 }
             }
         }

@@ -9,7 +9,6 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.example.fithub.data.AddUserDto
 import com.example.fithub.data.UserData
 import com.example.fithub.logic.UserCalculator
 import kotlinx.coroutines.launch

@@ -8,11 +8,11 @@ import android.view.View
 import android.widget.*
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
-import com.example.fithub.data.UserData
+import com.example.fithub.data.*
+import com.example.fithub.logic.UserCalculator
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import com.example.fithub.data.AddUserDto
-import com.example.fithub.logic.UserCalculator
+import java.time.Instant
 
 class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
 
@@ -26,13 +26,6 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
     private lateinit var cbNotifyWeighIn: CheckBox
     private lateinit var btnConfirmGoals: Button
     private var userData: UserData? = null
-
-
-
-    // Stałe mapowania
-    private val mainGoalLabels = arrayOf("Schudnąć", "Utrzymać", "Przytyć")
-    private val mainGoalKeys   = arrayOf("lose", "maintain", "gain") // na potrzeby DTO
-
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -112,11 +105,17 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
         val activityLevel = (sbActivityLevel.progress + 1).coerceIn(1, 5) // seekbar 0..4 -> 1..5
         val freq = spTrainingFrequency.selectedItemPosition.coerceIn(0, 7) // bo wstawiamy 0..7 po kolei
 
+        // Mapowanie z index na enum
+        val mainGoal = when(mainGoalIndex) {
+            0 -> MainGoal.LOSE
+            1 -> MainGoal.MAINTAIN
+            2 -> MainGoal.GAIN
+            else -> MainGoal.MAINTAIN
+        }
+
         return GoalsData(
-            mainGoalIndex = mainGoalIndex,
-            mainGoalLabel = mainGoalLabels[mainGoalIndex],
-            mainGoalKey = mainGoalKeys[mainGoalIndex],
-            targetWeight = targetWeight,
+            mainGoal = mainGoal,
+            targetWeightKg = targetWeight,
             activityLevel = activityLevel,
             trainingFrequencyPerWeek = freq,
             notifyMeals = cbNotifyMeals.isChecked,
@@ -127,11 +126,8 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
 
     //zapisywanie do mongo
     private fun saveGoals(goals: GoalsData) {
-        val goalsDto = goals.toDto()
-
         lifecycleScope.launch {
             try {
-                // Najpierw zapisz dane użytkownika
                 userData?.let { user ->
                     val userCalculator = UserCalculator()
                     val bmi = userCalculator.calculateBMI(user.weight!!, user.height!!)
@@ -141,23 +137,65 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
                     )
                     val roundedBMR = String.format("%.0f", bmr).toDouble()
 
-                    val userDto = AddUserDto(
+                    // Przygotuj dane użytkownika
+                    val createUserDto = CreateUserDto(
                         username = user.name,
-                        sex = user.sex,
-                        age = user.age!!,
-                        weight = user.weight!!.toInt(),
-                        height = user.height!!.toInt(),
-                        bmr = roundedBMR ?: 0.0,
-                        bmi = roundedBMI ?: 0.0
+                        auth = AuthData(
+                            provider = "local", // tymczasowo, póki nie ma Firebase
+                            firebaseUid = null
+                        ),
+                        profile = ProfileData(
+                            sex = user.sex,
+                            age = user.age!!,
+                            heightCm = user.height!!.toInt(),
+                            weightKg = user.weight!!.toInt()
+                        ),
+                        computed = ComputedData(
+                            bmi = roundedBMI,
+                            bmr = roundedBMR
+                        ),
+                        settings = SettingsData(
+                            activityLevel = goals.activityLevel,
+                            notifications = NotificationSettings(
+                                enabled = goals.notifyMeals || goals.notifyTraining || goals.notifyWeighIn,
+                                types = NotificationTypes(
+                                    workoutReminders = goals.notifyTraining,
+                                    mealReminders = goals.notifyMeals,
+                                    measureReminders = goals.notifyWeighIn
+                                ),
+                                channels = NotificationChannels(
+                                    push = true,
+                                    email = false
+                                )
+                            ),
+                            preferredTrainingFrequencyPerWeek = goals.trainingFrequencyPerWeek
+                        )
                     )
 
                     // Zapisz użytkownika
-                    val createdUser = NetworkModule.api.createUser(userDto)
+                    val createdUser = NetworkModule.api.createUser(createUserDto)
 
-                    // TODO: Teraz zapisz cele używając ID utworzonego użytkownika
-                    // NetworkModule.api.saveGoals(goalsDto, createdUser._id)
-                    // Tymczasowa symulacja:
-                    delay(300)
+                    // Przygotuj dane celu
+                    val createGoalDto = CreateUserGoalDto(
+                        userId = createdUser.id,
+                        type = when(goals.mainGoalKey) {
+                            "lose" -> "lose_weight"
+                            "gain" -> "gain_weight"
+                            "maintain" -> "maintain"
+                            else -> "maintain"
+                        },
+                        targetWeightKg = goals.targetWeight?.toInt() ?: 0,
+                        plan = GoalPlanData(
+                            trainingFrequencyPerWeek = goals.trainingFrequencyPerWeek,
+                            estimatedDurationWeeks = null, // można dodać logikę kalkulacji
+                            calorieTarget = null // można dodać logikę kalkulacji TDEE
+                        ),
+                        startedAt = java.time.Instant.now().toString(),
+                        notes = "Utworzono podczas onboardingu"
+                    )
+
+                    // Zapisz cel
+                    NetworkModule.api.createUserGoal(createGoalDto)
 
                     Toast.makeText(requireContext(), "Dane i cele zapisane", Toast.LENGTH_SHORT).show()
                     requireActivity().finish()
@@ -207,45 +245,3 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
             .show()
     }
 }
-
-/** Model danych ekranu celów + prosta walidacja i mapowanie do DTO */
-data class GoalsData(
-    val mainGoalIndex: Int,               // 0: Schudnąć, 1: Utrzymać, 2: Przytyć
-    val mainGoalLabel: String,            // do UI/logów
-    val mainGoalKey: String,              // do API: "lose"/"maintain"/"gain"
-    val targetWeight: Double?,            // kg
-    val activityLevel: Int,               // 1..5
-    val trainingFrequencyPerWeek: Int,    // 0..7
-    val notifyMeals: Boolean,
-    val notifyTraining: Boolean,
-    val notifyWeighIn: Boolean
-) {
-    fun isComplete(): Boolean = targetWeight != null
-    fun isValidRanges(): Boolean {
-        val wOk = (targetWeight ?: -1.0) in 30.0..300.0
-        val aOk = activityLevel in 1..5
-        val fOk = trainingFrequencyPerWeek in 0..7
-        return wOk && aOk && fOk
-    }
-
-    fun toDto(): AddGoalsDto = AddGoalsDto(
-        mainGoal = mainGoalKey,
-        targetWeight = targetWeight?.toInt() ?: 0,
-        activityLevel = activityLevel,
-        trainingFrequencyPerWeek = trainingFrequencyPerWeek,
-        notifyMeals = notifyMeals,
-        notifyTraining = notifyTraining,
-        notifyWeighIn = notifyWeighIn
-    )
-}
-
-/** Przykładowy DTO pod API — dopasuj nazwy pól do swojego backendu */
-data class AddGoalsDto(
-    val mainGoal: String,              // "lose" | "maintain" | "gain"
-    val targetWeight: Int,             // kg (int jak w UserData)
-    val activityLevel: Int,            // 1..5
-    val trainingFrequencyPerWeek: Int, // 0..7
-    val notifyMeals: Boolean,
-    val notifyTraining: Boolean,
-    val notifyWeighIn: Boolean
-)
