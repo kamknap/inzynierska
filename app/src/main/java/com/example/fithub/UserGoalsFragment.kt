@@ -175,20 +175,49 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
                     // Zapisz użytkownika
                     val createdUser = NetworkModule.api.createUser(createUserDto)
 
+                    // Oblicz szacowany czas trwania (w tygodniach)
+                    val currentWeight = user.weight!!
+                    val targetWeight = goals.targetWeight ?: currentWeight
+                    val weightDifference = kotlin.math.abs(currentWeight - targetWeight)
+                    
+                    // Bezpieczna utrata/przyrost: 0.5kg/tydzień
+                    val estimatedWeeks = if (weightDifference > 0) {
+                        (weightDifference / 0.5).toInt().coerceIn(1, 52) // minimum 1 tydzień, maksimum rok
+                    } else {
+                        12 // domyślnie 12 tygodni dla utrzymania wagi
+                    }
+
+                    // Oblicz cel kaloryczny na podstawie BMR i poziomu aktywności
+                    val activityMultiplier = when(goals.activityLevel) {
+                        1 -> 1.2   // Brak aktywności/siedzący tryb życia
+                        2 -> 1.375 // Lekka aktywność (1-3 dni/tydzień)
+                        3 -> 1.55  // Umiarkowana aktywność (3-5 dni/tydzień)
+                        4 -> 1.725 // Wysoka aktywność (6-7 dni/tydzień)
+                        5 -> 1.9   // Bardzo wysoka aktywność (2x dziennie, intensywne treningi)
+                        else -> 1.55
+                    }
+                    
+                    val tdee = (roundedBMR * activityMultiplier).toInt()
+                    val calorieTarget = when(goals.mainGoalKey) {
+                        "lose_weight" -> tdee - 400  // deficyt 400 kcal
+                        "gain_weight" -> tdee + 300  // nadwyżka 300 kcal
+                        else -> tdee                 // utrzymanie
+                    }
+
                     // Przygotuj dane celu
                     val createGoalDto = CreateUserGoalDto(
                         userId = createdUser.id,
                         type = when(goals.mainGoalKey) {
-                            "lose" -> "lose_weight"
-                            "gain" -> "gain_weight"
+                            "lose_weight" -> "lose_weight"
+                            "gain_weight" -> "gain_weight"
                             "maintain" -> "maintain"
                             else -> "maintain"
                         },
                         targetWeightKg = goals.targetWeight?.toInt() ?: 0,
                         plan = GoalPlanData(
                             trainingFrequencyPerWeek = goals.trainingFrequencyPerWeek,
-                            estimatedDurationWeeks = null, // można dodać logikę kalkulacji
-                            calorieTarget = null // można dodać logikę kalkulacji TDEE
+                            estimatedDurationWeeks = estimatedWeeks,
+                            calorieTarget = calorieTarget
                         ),
                         startedAt = java.time.Instant.now().toString(),
                         notes = "Utworzono podczas onboardingu"
