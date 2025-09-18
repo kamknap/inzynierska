@@ -9,7 +9,7 @@ object NetworkModule {
 
     val api: ApiService by lazy {
         Retrofit.Builder()
-            .baseUrl("http://10.0.2.2:4000") // EMULATOR -> Twoje API na localhost
+            .baseUrl("http://10.0.2.2:4000") // EMULATOR (API na localhost)
             .client(client)
             .addConverterFactory(GsonConverterFactory.create())
             .build()

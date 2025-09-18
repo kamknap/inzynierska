@@ -1,22 +1,23 @@
 package com.example.fithub
 
 import android.app.AlertDialog
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.*
-import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.lifecycleScope
 import com.example.fithub.data.UserData
 import com.example.fithub.logic.UserCalculator
-import kotlinx.coroutines.launch
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
 class UserDataFragment : Fragment(R.layout.fragment_user_data) {
     private lateinit var etWeight: EditText
     private lateinit var etHeight: EditText
-    private lateinit var etAge: EditText
+    private lateinit var etBirthDate: EditText
     private lateinit var etSex: EditText
     private lateinit var tvBMIResult: TextView
     private lateinit var tvBMRResult: TextView
@@ -36,7 +37,7 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
     private fun initViews(view: View) {
         etWeight = view.findViewById(R.id.etWeight)
         etHeight = view.findViewById(R.id.etHeight)
-        etAge = view.findViewById(R.id.etAge)
+        etBirthDate = view.findViewById(R.id.etAge)
         etSex = view.findViewById(R.id.etSex)
         tvBMIResult = view.findViewById(R.id.tvBMIResult)
         tvBMRResult = view.findViewById(R.id.tvBMRResult)
@@ -47,7 +48,7 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
     private fun setupClickListeners() {
         etWeight.setOnClickListener { showWeightPicker() }
         etHeight.setOnClickListener { showHeightPicker() }
-        etAge.setOnClickListener { showAgePicker() }
+        etBirthDate.setOnClickListener { showAgePicker() }
         etSex.setOnClickListener { showSexPicker() }
 
         btnSave.setOnClickListener {
@@ -67,7 +68,7 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         }
 
-        listOf(etWeight, etHeight, etAge, etSex).forEach {
+        listOf(etWeight, etHeight, etBirthDate, etSex).forEach {
             it.addTextChangedListener(watcher)
         }
     }
@@ -77,13 +78,14 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
             name = etName.text.toString().trim(),
             weight = etWeight.text.toString().toDoubleOrNull(),
             height = etHeight.text.toString().toDoubleOrNull(),
-            age = etAge.text.toString().toIntOrNull(),
+            birthDate = etBirthDate.text.toString(),
             sex = etSex.text.toString()
         )
     }
 
     private fun updateCalculations() {
         val userData = getUserData()
+        val age = userData.getAge()
 
         tvBMIResult.visibility = View.INVISIBLE
         tvBMRResult.visibility = View.INVISIBLE
@@ -93,7 +95,7 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
         }
 
         if (userData.isValidForBMR()) {
-            calculateAndShowBMR(userData.weight!!, userData.height!!, userData.age!!, userData.sex)
+            calculateAndShowBMR(userData.weight!!, userData.height!!, age!!, userData.sex)
         }
     }
 
@@ -120,35 +122,6 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
         }
     }
 
-//    private fun saveUserData(userData: UserData) {
-//        val bmi = userCalculator.calculateBMI(userData.weight!!, userData.height!!)
-//        val roundedBMI = String.format("%.1f", bmi).toDouble()
-//        val bmr = userCalculator.calculateBMR(
-//            userData.weight!!, userData.height!!, userData.age!!.toDouble(), userData.sex
-//        )
-//        val roundedBMR = String.format("%.0f", bmr).toDouble()
-//        val dto = AddUserDto(
-//            username = userData.name,
-//            sex = userData.sex,
-//            age = userData.age!!,
-//            weight = userData.weight!!.toInt(),
-//            height = userData.height!!.toInt(),
-//            bmr = roundedBMR ?: 0.0,
-//            bmi = roundedBMI ?: 0.0
-//        )
-//        lifecycleScope.launch {
-//            try {
-//                NetworkModule.api.createUser(dto)
-//                Toast.makeText(requireContext(), "Dane zapisane", Toast.LENGTH_SHORT).show()
-//                (requireActivity() as? OnboardingActivity)?.showGoalsFragment()
-//            } catch (e: Exception) {
-//                Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_LONG).show()
-//            }
-//        }
-//    }
-
-
-
     //Picker methods
     private fun showWeightPicker() {
         showNumberPicker(
@@ -173,18 +146,48 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
     }
 
     private fun showAgePicker() {
-        showNumberPicker(
-            title = "Wybierz wiek",
-            currentValue = etAge.text.toString().toIntOrNull() ?: 25,
-            minValue = 16,
-            maxValue = 120
-        ) { value ->
-            etAge.setText(value.toString())
+        val calendar = Calendar.getInstance()
+
+        // Jeśli już jest data w polu, sparsuj ją
+        val currentDateText = etBirthDate.text.toString()
+        if (currentDateText.isNotEmpty()) {
+            try {
+                val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                val date = dateFormat.parse(currentDateText)
+                if (date != null) {
+                    calendar.time = date
+                }
+            } catch (e: Exception) {
+                calendar.add(Calendar.YEAR, -25)
+            }
+        } else {
+            calendar.add(Calendar.YEAR, -25)
+        }
+
+        DatePickerDialog(
+            requireContext(),
+            { _, year, month, dayOfMonth ->
+                val selectedDate = Calendar.getInstance().apply {
+                    set(year, month, dayOfMonth)
+                }
+
+                val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                val formattedDate = dateFormat.format(selectedDate.time)
+                etBirthDate.setText(formattedDate)
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).apply {
+            datePicker.maxDate = System.currentTimeMillis()
+            datePicker.minDate = Calendar.getInstance().apply { add(Calendar.YEAR, -120) }.timeInMillis
+            setTitle("Wybierz datę urodzenia")
+            show()
         }
     }
 
     private fun showSexPicker() {
-        val values = arrayOf("Male", "Female")
+        val values = arrayOf("Male", "Female", "Other")
         val currentValue = etSex.text.toString()
         val currentIndex = values.indexOf(currentValue).takeIf { it >= 0 } ?: 0
 

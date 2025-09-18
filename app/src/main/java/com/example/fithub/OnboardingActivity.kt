@@ -10,7 +10,6 @@ class OnboardingActivity : AppCompatActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // 1) Ustawienie layoutu aktywności
         setContentView(R.layout.activity_onboarding)
 
 
@@ -47,7 +46,7 @@ class OnboardingActivity : AppCompatActivity() {
                 val bundle = Bundle().apply {
                     putString("userName", userData.name)
                     putString("userSex", userData.sex)
-                    putInt("userAge", userData.age ?: 0)
+                    putString("userBirthDate", userData.birthDate)
                     putDouble("userWeight", userData.weight ?: 0.0)
                     putDouble("userHeight", userData.height ?: 0.0)
                 }

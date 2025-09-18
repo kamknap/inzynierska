@@ -41,7 +41,7 @@
             android:id="@+id/etAge"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Wiek"
+            android:hint="Data urodzenia"
             android:inputType="none"
             android:focusable="false"
             android:layout_marginBottom="8dp" />

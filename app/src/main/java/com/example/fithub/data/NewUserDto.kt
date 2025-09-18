@@ -1,5 +1,6 @@
 package com.example.fithub.data
 import com.google.gson.annotations.SerializedName
+import java.util.Date
 
 data class NewUserDto(
     @SerializedName("_id") val id: String,
@@ -20,7 +21,7 @@ data class AuthData(
 
 data class ProfileData(
     val sex: String,
-    val age: Int,
+    val birthDate: String,
     val heightCm: Int,
     val weightKg: Int
 )

@@ -25,7 +25,7 @@ class MuscleModel : AppCompatActivity() {
             insets
         }
 
-        webView = findViewById(R.id.webView) // Znajdź WebView w nowym layoucie
+        webView = findViewById(R.id.webView)
         webView.settings.javaScriptEnabled = true
         webView.webViewClient = WebViewClient()
         webView.addJavascriptInterface(WebAppInterface(), "AndroidInterface")

@@ -45,7 +45,6 @@ data class GoalsData(
     )
 }
 
-/** DTO pod API — dostosuj do swojego backendu */
 data class AddGoalsDto(
     val mainGoal: String,              // "lose_weight" | "maintain" | "gain_weight"
     val targetWeight: Int,             // kg

@@ -1,5 +1,6 @@
 package com.example.fithub
 
+import android.annotation.SuppressLint
 import android.app.AlertDialog
 import android.os.Bundle
 import android.text.Editable
@@ -10,21 +11,21 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.fithub.data.*
 import com.example.fithub.logic.UserCalculator
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
-import java.time.Instant
 
 class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
 
     // Views
     private lateinit var sbMainGoal: SeekBar
-    private lateinit var etTargetWeight: EditText
-    private lateinit var sbActivityLevel: SeekBar
+    private lateinit var tvTargetWeight: TextView
+    private lateinit var spActivityLevel: Spinner
     private lateinit var spTrainingFrequency: Spinner
     private lateinit var cbNotifyMeals: CheckBox
     private lateinit var cbNotifyTraining: CheckBox
     private lateinit var cbNotifyWeighIn: CheckBox
     private lateinit var btnConfirmGoals: Button
+    private lateinit var tvDetailedGoalLabel: TextView
+
     private var userData: UserData? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -34,7 +35,7 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
             userData = UserData(
                 name = bundle.getString("userName", ""),
                 sex = bundle.getString("userSex", ""),
-                age = bundle.getInt("userAge", 0),
+                birthDate = bundle.getString("userBirthDate", ""),
                 weight = bundle.getDouble("userWeight", 0.0),
                 height = bundle.getDouble("userHeight", 0.0)
             )
@@ -44,17 +45,19 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
         setupFrequencySpinner()
         setupClickListeners()
         setupTextWatchers()
+        setupActivitySpinner()
     }
 
     private fun initViews(view: View) {
         sbMainGoal = view.findViewById(R.id.sbMainGoal)
-        etTargetWeight = view.findViewById(R.id.etTargetWeight)
-        sbActivityLevel = view.findViewById(R.id.sbActivityLevel)
+        tvTargetWeight = view.findViewById(R.id.tvTargetWeight)
+        spActivityLevel = view.findViewById(R.id.spActivityLevel)
         spTrainingFrequency = view.findViewById(R.id.spTrainingFrequency)
         cbNotifyMeals = view.findViewById(R.id.cbNotifyMeals)
         cbNotifyTraining = view.findViewById(R.id.cbNotifyTraining)
         cbNotifyWeighIn = view.findViewById(R.id.cbNotifyWeighIn)
         btnConfirmGoals = view.findViewById(R.id.btnConfirmGoals)
+        tvDetailedGoalLabel = view.findViewById(R.id.tvDetailedGoalLabel)
     }
 
     private fun setupFrequencySpinner() {
@@ -70,8 +73,46 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
     }
 
     private fun setupClickListeners() {
-        // opcjonalnie: picker dla docelowej wagi (integer kg)
-        etTargetWeight.setOnClickListener { showTargetWeightPicker() }
+        sbMainGoal.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
+            override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
+                if (fromUser) {
+                    when (progress) {
+                        0 -> {
+                            Toast.makeText(requireContext(), "Cel: Schudnąć", Toast.LENGTH_SHORT).show()
+                            tvDetailedGoalLabel.text = "Wybierz docelową wagę"
+                            tvTargetWeight.text = ""
+                            tvTargetWeight.hint = "Waga docelowa (kg)"
+                            tvTargetWeight.isClickable = true
+                            tvTargetWeight.isFocusable = true
+                            tvTargetWeight.setOnClickListener { showTargetWeightPicker("loose", userData?.weight) }
+                        }
+                        1 -> {
+                            Toast.makeText(requireContext(), "Cel: Utrzymać wagę", Toast.LENGTH_SHORT).show()
+                            userData?.weight?.let { currentWeight ->
+                                tvDetailedGoalLabel.text = "Waga aktualna"
+                                tvTargetWeight.text = currentWeight.toInt().toString()
+                                tvTargetWeight.hint = ""
+                                tvTargetWeight.isClickable = false
+                                tvTargetWeight.isFocusable = false
+                                tvTargetWeight.setOnClickListener(null) // Usuń listener
+                            }
+                        }
+                        2 -> {
+                            Toast.makeText(requireContext(), "Cel: Przytyć", Toast.LENGTH_SHORT).show()
+                            tvDetailedGoalLabel.text = "Wybierz docelową wagę"
+                            tvTargetWeight.text = ""
+                            tvTargetWeight.hint = "Waga docelowa (kg)"
+                            tvTargetWeight.isClickable = true
+                            tvTargetWeight.isFocusable = true
+                            tvTargetWeight.setOnClickListener { showTargetWeightPicker("gain", userData?.weight) }
+                        }
+                    }
+                }
+            }
+
+            override fun onStartTrackingTouch(seekBar: SeekBar?) {}
+            override fun onStopTrackingTouch(seekBar: SeekBar?) {}
+        })
 
         btnConfirmGoals.setOnClickListener {
             val goals = getGoalsData()
@@ -96,14 +137,34 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
         }
-        etTargetWeight.addTextChangedListener(watcher)
+        tvTargetWeight.addTextChangedListener(watcher)
     }
 
+    private fun setupActivitySpinner() {
+        val activityLevels = listOf(
+            "Brak aktywności/siedzący tryb życia",
+            "Lekka aktywność (1-3 dni/tydzień)",
+            "Umiarkowana aktywność (3-5 dni/tydzień)",
+            "Wysoka aktywność (6-7 dni/tydzień)",
+            "Bardzo wysoka aktywność (2x dziennie, intensywne treningi)"
+        )
+
+        val adapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            activityLevels
+        ).also { it.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item) }
+
+        spActivityLevel.adapter = adapter
+        spActivityLevel.setSelection(2, false)
+    }
+
+
     private fun getGoalsData(): GoalsData {
-        val mainGoalIndex = sbMainGoal.progress.coerceIn(0, 2) // 0..2
-        val targetWeight = etTargetWeight.text.toString().trim().toDoubleOrNull()
-        val activityLevel = (sbActivityLevel.progress + 1).coerceIn(1, 5) // seekbar 0..4 -> 1..5
-        val freq = spTrainingFrequency.selectedItemPosition.coerceIn(0, 7) // bo wstawiamy 0..7 po kolei
+        val mainGoalIndex = sbMainGoal.progress.coerceIn(0, 2)
+        val targetWeight = tvTargetWeight.text.toString().trim().toDoubleOrNull()
+        val activityLevel = (spActivityLevel.selectedItemPosition + 1).coerceIn(1, 5)
+        val freq = spTrainingFrequency.selectedItemPosition.coerceIn(0, 7)
 
         // Mapowanie z index na enum
         val mainGoal = when(mainGoalIndex) {
@@ -125,17 +186,24 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
     }
 
     //zapisywanie do mongo
+    @SuppressLint("DefaultLocale")
     private fun saveGoals(goals: GoalsData) {
         lifecycleScope.launch {
             try {
                 userData?.let { user ->
                     val userCalculator = UserCalculator()
+                    val age = user.getAge()
+                    if (age == null) {
+                        Toast.makeText(requireContext(), "Błąd przy obliczaniu wieku", Toast.LENGTH_SHORT).show()
+                        return@launch
+                    }
                     val bmi = userCalculator.calculateBMI(user.weight!!, user.height!!)
                     val roundedBMI = String.format("%.1f", bmi).toDouble()
                     val bmr = userCalculator.calculateBMR(
-                        user.weight!!, user.height!!, user.age!!.toDouble(), user.sex
+                        user.weight, user.height, age.toDouble(), user.sex
                     )
                     val roundedBMR = String.format("%.0f", bmr).toDouble()
+                    val birthDateIso = user.getBirthDateAsIsoString() ?: ""
 
                     // Przygotuj dane użytkownika
                     val createUserDto = CreateUserDto(
@@ -146,9 +214,9 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
                         ),
                         profile = ProfileData(
                             sex = user.sex,
-                            age = user.age!!,
-                            heightCm = user.height!!.toInt(),
-                            weightKg = user.weight!!.toInt()
+                            birthDate = birthDateIso,
+                            heightCm = user.height.toInt(),
+                            weightKg = user.weight.toInt()
                         ),
                         computed = ComputedData(
                             bmi = roundedBMI,
@@ -176,7 +244,7 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
                     val createdUser = NetworkModule.api.createUser(createUserDto)
 
                     // Oblicz szacowany czas trwania (w tygodniach)
-                    val currentWeight = user.weight!!
+                    val currentWeight = user.weight
                     val targetWeight = goals.targetWeight ?: currentWeight
                     val weightDifference = kotlin.math.abs(currentWeight - targetWeight)
                     
@@ -239,14 +307,28 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
 
     // --- Pickery ---
 
-    private fun showTargetWeightPicker() {
-        showNumberPicker(
-            title = "Wybierz docelową wagę (kg)",
-            currentValue = etTargetWeight.text.toString().toIntOrNull() ?: 70,
-            minValue = 30,
-            maxValue = 300
-        ) { value ->
-            etTargetWeight.setText(value.toString())
+    private fun showTargetWeightPicker(weightGoal: String, currentWeight: Double?) {
+        val currentWeightInt = currentWeight?.toInt() ?: 70
+
+        if (weightGoal == "loose") {
+            showNumberPicker(
+                title = "Wybierz docelową wagę (kg)",
+                currentValue = currentWeightInt,
+                minValue = 30,
+                maxValue = currentWeightInt
+            ) { value ->
+                tvTargetWeight.text = value.toString()
+            }
+        }
+        else if (weightGoal == "gain") {
+            showNumberPicker(
+                title = "Wybierz docelową wagę (kg)",
+                currentValue = tvTargetWeight.text.toString().toIntOrNull() ?: 70,
+                minValue = currentWeightInt,
+                maxValue = 200
+            ) { value ->
+                tvTargetWeight.text = value.toString()
+            }
         }
     }
 
@@ -270,7 +352,7 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
             .setPositiveButton("OK") { _, _ ->
                 onValueSelected(numberPicker.value)
             }
-            .setNegativeButton("Anuluj", null)
+            .setNegativeButton("Cancel", null)
             .show()
     }
 }

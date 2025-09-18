@@ -52,10 +52,10 @@ class MainActivity : AppCompatActivity() {
 
                     if (users.isNotEmpty() && userGoals.isNotEmpty()) {
                         val username = users[0].username
-                        val age = users[0].profile.age
+                        val birthDate = users[0].profile.birthDate.replace(Regex("T.*$"), "")
                         val calorieTarget = userGoals[0].plan.calorieTarget ?: "Brak celu"
                         val goalOwner = userGoals[0].userId.username
-                        val message = "User: $username, Wiek: $age, Kalorie: $calorieTarget, Cel należy do: $goalOwner"
+                        val message = "User: $username, Data ur: $birthDate, Kalorie: $calorieTarget, Cel należy do: $goalOwner"
                         Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
                         Log.d("ApiInfo", message)
                     } else {
