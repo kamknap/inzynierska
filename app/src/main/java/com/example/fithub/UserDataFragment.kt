@@ -23,7 +23,6 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
     private lateinit var tvBMRResult: TextView
     private lateinit var etName: EditText
     private lateinit var btnSave: Button
-
     private val userCalculator = UserCalculator()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

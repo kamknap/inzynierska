@@ -12,6 +12,7 @@ import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import android.util.Log
+import androidx.fragment.app.commit
 
 class MainActivity : AppCompatActivity() {
 
@@ -39,6 +40,12 @@ class MainActivity : AppCompatActivity() {
         buttonMuscle.setOnClickListener {
             val intent = Intent(this, MuscleModel::class.java)
             intent.putExtra("url", "file:///android_asset/index/back.html")
+            startActivity(intent)
+        }
+
+        val buttonDiary = findViewById<Button>(R.id.btnDiary)
+        buttonDiary.setOnClickListener {
+            val intent = Intent(this, UserMainActivity::class.java)
             startActivity(intent)
         }
 

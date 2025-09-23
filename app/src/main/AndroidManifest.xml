@@ -37,6 +37,10 @@
             android:exported="false">
         </activity>
 
+        <activity
+            android:name=".UserMainActivity"
+            android:exported="false">
+        </activity>
 
 
     </application>
