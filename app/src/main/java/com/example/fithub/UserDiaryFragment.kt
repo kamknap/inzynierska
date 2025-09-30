@@ -3,6 +3,7 @@ package com.example.fithub
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.HorizontalScrollView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -12,12 +13,14 @@ import java.util.*
 class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
 
     private lateinit var llDaysContainer: LinearLayout
+    private lateinit var hsvWeek: HorizontalScrollView
     private var selectedDate = Calendar.getInstance()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         llDaysContainer = view.findViewById(R.id.llDaysContainer)
+        hsvWeek = view.findViewById(R.id.hsvWeek)
 
         initDaysView()
     }
@@ -47,8 +50,8 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
             addDayView(dayCalendar, day)
         }
 
-        // Przewiń do obecnego tygodnia
-//        scrollToCurrentWeek()
+        // Automatycznie zaznacz dzisiejszy dzień i przewiń do niego
+        selectTodayAndScroll()
     }
 
     private fun addDayView(dayCalendar: Calendar, dayNumber: Int) {
@@ -64,12 +67,6 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
 
         // Ustaw numer dnia
         tvDayNumber.text = dayNumber.toString()
-
-        // Oznacz dzisiejszy dzień
-        val today = Calendar.getInstance()
-        if (isSameDay(dayCalendar, today)) {
-            dayView.isSelected = true
-        }
 
         // Obsługa kliknięcia
         dayView.setOnClickListener {
@@ -111,16 +108,48 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
         loadDataForDate(selectedDate)
     }
 
-//    private fun scrollToCurrentWeek() {
-//        // Przewiń do obecnego dnia po krótkim opóźnieniu
-//        llDaysContainer.post {
-//            val today = Calendar.getInstance().get(Calendar.DAY_OF_MONTH)
-//            val todayView = llDaysContainer.getChildAt(today - 1)
-//
-//            val scrollX = todayView.left - (llDaysContainer.width / 2) + (todayView.width / 2)
-//            findViewById<HorizontalScrollView>(R.id.hsvWeek)?.smoothScrollTo(scrollX, 0)
-//        }
-//    }
+    private fun selectTodayAndScroll() {
+        val today = Calendar.getInstance()
+
+        // Znajdź dzisiejszy dzień w kontenerze
+        for (i in 0 until llDaysContainer.childCount) {
+            val dayView = llDaysContainer.getChildAt(i)
+            val dayCalendar = Calendar.getInstance().apply {
+                set(Calendar.YEAR, today.get(Calendar.YEAR))
+                set(Calendar.MONTH, today.get(Calendar.MONTH))
+                set(Calendar.DAY_OF_MONTH, i + 1)
+            }
+
+            if (isSameDay(dayCalendar, today)) {
+                // Zaznacz dzisiejszy dzień
+                dayView.isSelected = true
+                selectedDate = dayCalendar.clone() as Calendar
+
+                // Przewiń do tego dnia po wyrenderowaniu widoku
+                dayView.post {
+                    scrollToDay(dayView)
+                }
+
+                // Załaduj dane dla dzisiaj
+                loadDataForDate(selectedDate)
+                break
+            }
+        }
+    }
+
+    private fun scrollToDay(dayView: View) {
+        // Oblicz pozycję do przewinięcia - wycentruj dzień na ekranie
+        val scrollViewWidth = hsvWeek.width
+        val dayViewLeft = dayView.left
+        val dayViewWidth = dayView.width
+
+        // Wycentruj dzień na ekranie
+        val scrollX = dayViewLeft - (scrollViewWidth / 2) + (dayViewWidth / 2)
+
+        // Przewiń płynnie do obliczonej pozycji
+        hsvWeek.smoothScrollTo(scrollX.coerceAtLeast(0), 0)
+    }
+
 
     private fun loadDataForDate(date: Calendar) {
         // TODO: Załaduj posiłki dla wybranego dnia

@@ -14,7 +14,7 @@ class UserMainActivity : AppCompatActivity() {
         if (savedInstanceState == null) {
             supportFragmentManager.commit {
                 setReorderingAllowed(true)
-                replace(R.id.main_container, UserDiaryFragment()) // ✅ POPRAWKA: używaj main_container
+                replace(R.id.main_container, UserDiaryFragment())
             }
         }
 
