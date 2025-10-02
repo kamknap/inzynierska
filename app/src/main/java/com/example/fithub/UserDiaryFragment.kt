@@ -3,9 +3,15 @@ package com.example.fithub
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.widget.Button
 import android.widget.HorizontalScrollView
+import android.widget.ImageButton
 import android.widget.LinearLayout
+import android.widget.ScrollView
 import android.widget.TextView
+import android.widget.Toast
+import androidx.annotation.ReturnThis
+import androidx.compose.ui.graphics.ImageBitmap
 import androidx.fragment.app.Fragment
 import java.text.SimpleDateFormat
 import java.util.*
@@ -15,14 +21,63 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
     private lateinit var llDaysContainer: LinearLayout
     private lateinit var hsvWeek: HorizontalScrollView
     private var selectedDate = Calendar.getInstance()
+    private lateinit var svDiary: ScrollView
+    private lateinit var btnBreakfast: ImageButton
+    private lateinit var llBreakfastMeals: LinearLayout
+
+    //TODO: pobierac dane z bazy
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         llDaysContainer = view.findViewById(R.id.llDaysContainer)
         hsvWeek = view.findViewById(R.id.hsvWeek)
+        llBreakfastMeals = view.findViewById(R.id.llBreakfastMeals)
+
 
         initDaysView()
+        llBreakfastMeals = view.findViewById<LinearLayout>(R.id.llBreakfastMeals)
+        btnBreakfast = view.findViewById(R.id.btnAddBreakfast)
+        btnBreakfast.setOnClickListener {
+            addMealToList(llBreakfastMeals, "Kurczak", 25, 10,8,300)
+        }
+    }
+
+
+    private fun initDiary() {
+        // TODO; widok dziennika kalorii
+
+    }
+
+    private fun addMealToList(container: LinearLayout, mealName: String, protein: Int = 0, fat: Int = 0, carbs: Int = 0, calories: Int = 0) {
+        val mealView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.item_meal, container, false)
+
+        val tvMealName = mealView.findViewById<TextView>(R.id.tvMealName)
+        val tvMealProtein = mealView.findViewById<TextView>(R.id.tvProtein)
+        val tvMealFat = mealView.findViewById<TextView>(R.id.tvFat)
+        val tvMealCarbs = mealView.findViewById<TextView>(R.id.tvCarbs)
+        val tvMealCalories = mealView.findViewById<TextView>(R.id.tvMealCalories)
+        val btnDeleteMeal = mealView.findViewById<ImageButton>(R.id.btnDeleteMeal)
+
+        tvMealName.text = mealName
+        tvMealProtein.text = "$protein P"
+        tvMealFat.text = "$fat F"
+        tvMealCarbs.text = "$carbs C"
+        tvMealCalories.text = "$calories Kcal"
+
+        // Usuwanie posilku
+        btnDeleteMeal.setOnClickListener {
+            container.removeView(mealView)
+        }
+
+        // Edycja posilku TODO
+        mealView.setOnClickListener {
+            Toast.makeText(requireContext(), "Edytuj: $mealName", Toast.LENGTH_SHORT).show()
+        }
+
+        container.addView(mealView)
     }
 
     private fun initDaysView() {

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="8dp"
+    android:gravity="center_vertical"
+    android:background="?attr/selectableItemBackground">
+
+    <TextView
+        android:id="@+id/tvMealName"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="Nazwa posiłku"
+        android:textSize="16sp"
+        android:textColor="@android:color/black" />
+
+    <TextView
+        android:id="@+id/tvProtein"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="25 P"
+        android:textSize="14sp"
+        android:textColor="@android:color/darker_gray"
+        android:layout_marginStart="8dp" />
+
+    <TextView
+        android:id="@+id/tvFat"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="15 F"
+        android:textSize="14sp"
+        android:textColor="@android:color/darker_gray"
+        android:layout_marginStart="8dp" />
+
+    <TextView
+        android:id="@+id/tvCarbs"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="25 C"
+        android:textSize="14sp"
+        android:textColor="@android:color/darker_gray"
+        android:layout_marginStart="8dp" />
+
+    <TextView
+        android:id="@+id/tvMealCalories"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="250 kcal"
+        android:textSize="14sp"
+        android:textColor="@android:color/darker_gray"
+        android:layout_marginStart="8dp" />
+
+    <ImageButton
+        android:id="@+id/btnDeleteMeal"
+        android:layout_width="32dp"
+        android:layout_height="32dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:src="@android:drawable/ic_menu_delete"
+        android:contentDescription="Usuń posiłek"
+        android:scaleType="centerInside"
+        android:layout_marginStart="8dp" />
+
+</LinearLayout>

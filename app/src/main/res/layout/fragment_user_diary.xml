@@ -42,12 +42,164 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="16dp"/>
 
-        <!-- 3. Dziennik kalorii-->
-        <ScrollView
-            android:id="@+id/svDiary"
+        <!-- 3. Dziennik kalorii - Sekcje posiłków -->
+
+        <!-- Śniadanie -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvBreakfast"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Nagłówek śniadania -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:id="@+id/tvBreakfast"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Śniadanie"
+                        android:textColor="#000000"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <ImageButton
+                        android:id="@+id/btnAddBreakfast"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@android:drawable/ic_input_add"
+                        android:contentDescription="Dodaj śniadanie"
+                        android:scaleType="centerInside" />
+
+                </LinearLayout>
+
+                <!-- Lista posiłków śniadaniowych -->
+                <LinearLayout
+                    android:id="@+id/llBreakfastMeals"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Obiad -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvLunch"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Nagłówek obiadu -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:id="@+id/tvLunch"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Obiad"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <ImageButton
+                        android:id="@+id/btnAddLunch"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@android:drawable/ic_input_add"
+                        android:contentDescription="Dodaj obiad"
+                        android:scaleType="centerInside" />
+
+                </LinearLayout>
+
+                <!-- Lista posiłków obiadowych -->
+                <LinearLayout
+                    android:id="@+id/llLunchMeals"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Kolacja -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvDinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <!-- Nagłówek kolacji -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="8dp">
+
+                    <TextView
+                        android:id="@+id/tvDinner"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Kolacja"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <ImageButton
+                        android:id="@+id/btnAddDinner"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:background="?attr/selectableItemBackgroundBorderless"
+                        android:src="@android:drawable/ic_input_add"
+                        android:contentDescription="Dodaj kolację"
+                        android:scaleType="centerInside" />
+
+                </LinearLayout>
+
+                <!-- Lista posiłków kolacyjnych -->
+                <LinearLayout
+                    android:id="@+id/llDinnerMeals"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
 
         <!-- 4. Przyciski funkcyjne-->
         <androidx.cardview.widget.CardView
