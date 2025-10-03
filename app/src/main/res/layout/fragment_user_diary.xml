@@ -31,7 +31,8 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:padding="8dp" />
+                android:padding="8dp"
+                />
 
         </HorizontalScrollView>
 
@@ -40,7 +41,15 @@
             android:id="@+id/cvMacros"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"/>
+            android:layout_marginBottom="16dp">
+
+            <TextView
+                android:id="@+id/tvMacros"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+            />
+        </androidx.cardview.widget.CardView>
+
 
         <!-- 3. Dziennik kalorii - Sekcje posiłków -->
 
