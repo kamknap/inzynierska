@@ -59,4 +59,12 @@ interface ApiService {
         @Path("mealIndex") mealIndex: Int
     ): DailyNutritionWithFoodsDto
 
+    @DELETE("/api/nutrition/{userId}/{date}/meal/{mealIndex}/food/{foodIndex}")
+    suspend fun deleteFoodFromMeal(
+        @Path("userId") userId: String,
+        @Path("date") date: String,
+        @Path("mealIndex") mealIndex: Int,
+        @Path("foodIndex") foodIndex: Int
+    ): DailyNutritionWithFoodsDto
+
 }
