@@ -22,6 +22,8 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
     private lateinit var hsvWeek: HorizontalScrollView
     private var selectedDate = Calendar.getInstance()
     private lateinit var btnBreakfast: ImageButton
+    private lateinit var btnLunch: ImageButton
+    private lateinit var btnDinner: ImageButton
     private lateinit var llBreakfastMeals: LinearLayout
     private lateinit var llLunchMeals: LinearLayout
     private lateinit var llDinnerMeals: LinearLayout
@@ -33,12 +35,10 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
     private var breakfastProtein = 0.0
     private var breakfastFat = 0.0
     private var breakfastCarbs = 0.0
-
     private var lunchCalories = 0.0
     private var lunchProtein = 0.0
     private var lunchFat = 0.0
     private var lunchCarbs = 0.0
-
     private var dinnerCalories = 0.0
     private var dinnerProtein = 0.0
     private var dinnerFat = 0.0
@@ -67,13 +67,33 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
         tvBreakfast = view.findViewById(R.id.tvBreakfast)
         tvLunch = view.findViewById(R.id.tvLunch)
         tvDinner = view.findViewById(R.id.tvDinner)
-
-
+        btnBreakfast = view.findViewById(R.id.btnAddBreakfast)
+        btnLunch = view.findViewById(R.id.btnAddLunch)
+        btnDinner = view.findViewById(R.id.btnAddDinner)
 
         initDaysView()
-        btnBreakfast = view.findViewById(R.id.btnAddBreakfast)
+
+        // przyciski dodawania jedzenia
         btnBreakfast.setOnClickListener {
-            addMealToList(llBreakfastMeals, "Kurczak", 25, 10,8,300)
+            addFoodToDb(
+                mealName = "Śniadanie",
+                foodId = "66feabcd1234567890abcdb2",
+                quantityGrams = 220.0
+            )
+        }
+        btnLunch.setOnClickListener {
+            addFoodToDb(
+                mealName = "Obiad",
+                foodId = "66feabcd1234567890abcdb2",
+                quantityGrams = 220.0
+            )
+        }
+        btnDinner.setOnClickListener {
+            addFoodToDb(
+                mealName = "Kolacja",
+                foodId = "66feabcd1234567890abcdb2",
+                quantityGrams = 220.0
+            )
         }
     }
 
@@ -268,6 +288,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
 
                 val food = foodItem.foodId
                 val quantity = foodItem.quantity / 100.0
+                val qtyLabel = foodItem.quantity.asGramsLabel()
 
                 val mealCalories = food.nutritionPer100g.calories * quantity
                 val mealProtein = food.nutritionPer100g.protein * quantity
@@ -276,7 +297,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
 
                 addMealToList(
                     container = container,
-                    mealName = "- ${food.name}",
+                    mealName = "- ${food.name} (${qtyLabel})",
                     protein = kotlin.math.round(mealProtein).toInt(),
                     fat = kotlin.math.round(mealFat).toInt(),
                     carbs = kotlin.math.round(mealCarbs).toInt(),
@@ -359,6 +380,44 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
         }
     }
 
+    private fun addFoodToDb(mealName: String, foodId: String, quantityGrams: Double) {
+        // 1) Sformatuj datę na "yyyy-MM-dd" (wymagane przez backend)
+        val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+        val dateStr = dateFormat.format(selectedDate.time)
 
+        // 2) Zbuduj DTO posiłku z jedną pozycją
+        val mealDto = com.example.fithub.data.MealDto(
+            name = mealName,
+            foods = listOf(
+                com.example.fithub.data.FoodItemDto(
+                    foodId = foodId,
+                    quantity = quantityGrams
+                )
+            )
+        )
+
+        val payload = com.example.fithub.data.AddMealDto(meal = mealDto)
+
+        // 3) Wyślij do API i odśwież ekran
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                NetworkModule.api.addMeal(
+                    userId = currentUserId,
+                    date = dateStr,
+                    addMealDto = payload
+                ) // zwraca aktualny dokument daily nutrition z posiłkami
+
+                // Po sukcesie odśwież dane dla wybranego dnia
+                loadDataForDate(selectedDate)
+                Toast.makeText(requireContext(), "Dodano produkt do: $mealName", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Błąd dodawania: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun Double.asGramsLabel(): String {
+        return if (this % 1.0 == 0.0) "${this.toInt()} g" else "${"%.1f".format(this)} g"
+    }
 
 }
