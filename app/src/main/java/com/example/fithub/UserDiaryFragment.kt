@@ -3,38 +3,56 @@ package com.example.fithub
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
-import android.widget.Button
 import android.widget.HorizontalScrollView
 import android.widget.ImageButton
 import android.widget.LinearLayout
-import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
-import androidx.annotation.ReturnThis
-import androidx.compose.ui.graphics.ImageBitmap
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.fithub.data.MealWithFoodsDto
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
+import kotlin.math.roundToInt
 
 class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
 
     private lateinit var llDaysContainer: LinearLayout
     private lateinit var hsvWeek: HorizontalScrollView
     private var selectedDate = Calendar.getInstance()
-    private lateinit var svDiary: ScrollView
     private lateinit var btnBreakfast: ImageButton
     private lateinit var llBreakfastMeals: LinearLayout
     private lateinit var llLunchMeals: LinearLayout
     private lateinit var llDinnerMeals: LinearLayout
-    private lateinit var tvMacros: TextView
-    private var totalMacroKcal = 0.0
+    private lateinit var tvDailyTotal: TextView
+    private lateinit var tvBreakfast: TextView
+    private lateinit var tvLunch: TextView
+    private lateinit var tvDinner: TextView
+    private var breakfastCalories = 0.0
+    private var breakfastProtein = 0.0
+    private var breakfastFat = 0.0
+    private var breakfastCarbs = 0.0
+
+    private var lunchCalories = 0.0
+    private var lunchProtein = 0.0
+    private var lunchFat = 0.0
+    private var lunchCarbs = 0.0
+
+    private var dinnerCalories = 0.0
+    private var dinnerProtein = 0.0
+    private var dinnerFat = 0.0
+    private var dinnerCarbs = 0.0
+    private var dailyTotalCalories = 0.0
+    private var dailyTotalProtein = 0.0
+    private var dailyTotalFat = 0.0
+    private var dailyTotalCarbs = 0.0
+    private var loadedBreakfast = false
+    private var loadedLunch = false
+    private var loadedDinner = false
+    private var currentLoadId = 0
 
     private val currentUserId = "68cbc06e6cdfa7faa8561f82"
-
-    //TODO: pobierac dane z bazy
 
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
@@ -45,7 +63,11 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
         llBreakfastMeals = view.findViewById(R.id.llBreakfastMeals)
         llLunchMeals = view.findViewById(R.id.llLunchMeals)
         llDinnerMeals = view.findViewById(R.id.llDinnerMeals)
-        tvMacros = view.findViewById<TextView>(R.id.tvMacros)
+        tvDailyTotal = view.findViewById<TextView>(R.id.tvDailyTotal)
+        tvBreakfast = view.findViewById(R.id.tvBreakfast)
+        tvLunch = view.findViewById(R.id.tvLunch)
+        tvDinner = view.findViewById(R.id.tvDinner)
+
 
 
         initDaysView()
@@ -83,7 +105,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
             container.removeView(mealView)
         }
 
-        // Edycja posilku TODO
+        // TODO: Edycja posilku
         mealView.setOnClickListener {
             Toast.makeText(requireContext(), "Edytuj: $mealName", Toast.LENGTH_SHORT).show()
         }
@@ -218,60 +240,61 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
 
 
     private fun loadMealsForUser(userId: String, date: String, mealType: String) {
+        val loadIdAtStart = currentLoadId  // zapamietywanie ktore ladowanie rozpoczete
+
         lifecycleScope.launch {
             try {
-                // 1. Pobierz dane z API
                 val dailyNutrition = NetworkModule.api.getDailyNutrition(userId, date)
 
-                // 2. Znajdź posiłki tego typu (np. "śniadanie")
+                // jesli w miedzyczasie kliknieto inny dzien – porzuc te dane
+                if (loadIdAtStart != currentLoadId) return@launch
+
                 val matchingMeals = dailyNutrition.meals.filter { meal ->
                     meal.name.lowercase().contains(mealType.lowercase())
                 }
 
-                // 3. Wyświetl je
                 displayMeals(matchingMeals, mealType)
 
+                // flaga dopiero po narysowaniu wszystkiego
+                when (mealType.lowercase()) {
+                    "śniadanie" -> loadedBreakfast = true
+                    "obiad"     -> loadedLunch = true
+                    "kolacja"   -> loadedDinner = true
+                }
+
+                if (loadIdAtStart == currentLoadId) maybeUpdateDailyTotals()
+
             } catch (e: Exception) {
+                if (loadIdAtStart != currentLoadId) return@launch
                 Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
     }
 
     private fun displayMeals(meals: List<MealWithFoodsDto>, mealType: String) {
-        // Znajdź odpowiedni kontener (śniadanie/obiad/kolacja)
+        // szukanie odpowiedniego kontenera
         val container = when(mealType.lowercase()) {
             "śniadanie" -> llBreakfastMeals
             "obiad" -> llLunchMeals
             "kolacja" -> llDinnerMeals
-            else -> llBreakfastMeals
+            else -> return
         }
 
-        // Wyczyść stare posiłki
+        // czyszczenie starych posilkow
         container.removeAllViews()
 
-        // zmienne do sumowania
-        var totalCalories = 0.0
-        var totalProtein = 0.0
-        var totalFat = 0.0
-        var totalCarbs = 0.0
-
-        // Dodawanie pojedynczego posilku
+        // dodawanie pojedynczego posilku
         meals.forEach { meal ->
-
             meal.foods.forEach { foodItem ->
 
-                var mealCalories = 0.0
-                var mealProtein = 0.0
-                var mealFat = 0.0
-                var mealCarbs = 0.0
 
                 val food = foodItem.foodId
                 val quantity = foodItem.quantity / 100.0
 
-                mealCalories += food.nutritionPer100g.calories * quantity
-                mealProtein += food.nutritionPer100g.protein * quantity
-                mealFat += food.nutritionPer100g.fat * quantity
-                mealCarbs += food.nutritionPer100g.carbs * quantity
+                val mealCalories = food.nutritionPer100g.calories * quantity
+                val mealProtein = food.nutritionPer100g.protein * quantity
+                val mealFat = food.nutritionPer100g.fat * quantity
+                val mealCarbs = food.nutritionPer100g.carbs * quantity
 
                 addMealToList(
                     container = container,
@@ -282,43 +305,82 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
                     calories = kotlin.math.round(mealCalories).toInt()
                 )
 
-                totalCalories += mealCalories
-                totalProtein += mealProtein
-                totalFat += mealFat
-                totalCarbs += mealCarbs
+                // sumowanie makroskladnikow
+                when (mealType.lowercase()){
+                    "śniadanie"->{
+                        breakfastCalories += mealCalories
+                        breakfastProtein += mealProtein
+                        breakfastFat += mealFat
+                        breakfastCarbs += mealCarbs
+                    }
+                    "obiad"->{
+                        lunchCalories += mealCalories
+                        lunchProtein += mealProtein
+                        lunchFat += mealFat
+                        lunchCarbs += mealCarbs
+                    }
+                    "kolacja"->{
+                        dinnerCalories += mealCalories
+                        dinnerProtein += mealProtein
+                        dinnerFat += mealFat
+                        dinnerCarbs += mealCarbs
+                    }
+                }
             }
-
-
         }
-        if (meals.isNotEmpty()) {
-            addMealToList(
-                container = container,
-                mealName = "Razem:",
-                protein = kotlin.math.round(totalProtein).toInt(),
-                fat = kotlin.math.round(totalFat).toInt(),
-                carbs = kotlin.math.round(totalCarbs).toInt(),
-                calories = kotlin.math.round(totalCalories).toInt()
-            )
-            totalMacroKcal += totalCalories
+
+        when (mealType.lowercase()) {
+            "śniadanie" -> tvBreakfast.text = "Śniadanie (${breakfastCalories.roundToInt()} kcal, ${breakfastProtein.roundToInt()} P, ${breakfastFat.roundToInt()} F, ${breakfastCarbs.roundToInt()} C)"
+            "obiad" -> tvLunch.text = "Obiad (${lunchCalories.roundToInt()} kcal, ${lunchProtein.roundToInt()} P, ${lunchFat.roundToInt()} F, ${lunchCarbs.roundToInt()} C)"
+            "kolacja" -> tvDinner.text = "Kolacja (${dinnerCalories.roundToInt()} kcal, ${dinnerProtein.roundToInt()} P, ${dinnerFat.roundToInt()} F, ${dinnerCarbs.roundToInt()} C)"
         }
+
     }
-
-    // Wywołaj funkcję np. przy zmianie daty:
     private fun loadDataForDate(date: Calendar) {
+        currentLoadId++
+
+        clearAllMacrosAndUi()
+
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val formattedDate = dateFormat.format(date.time)
 
-        // Załaduj posiłki dla każdej pory dnia
         loadMealsForUser(currentUserId, formattedDate, "śniadanie")
         loadMealsForUser(currentUserId, formattedDate, "obiad")
         loadMealsForUser(currentUserId, formattedDate, "kolacja")
-        updateMacros()
     }
 
-    private fun updateMacros() {
-        val macrosText = "Suma z całego dnia: ${kotlin.math.round(totalMacroKcal)} kcal"
-        tvMacros.text = macrosText
-        totalMacroKcal = 0.0
+    private fun clearAllMacrosAndUi() {
+        breakfastCalories = 0.0; breakfastProtein = 0.0; breakfastFat = 0.0; breakfastCarbs = 0.0
+        lunchCalories     = 0.0; lunchProtein     = 0.0; lunchFat     = 0.0; lunchCarbs     = 0.0
+        dinnerCalories    = 0.0; dinnerProtein    = 0.0; dinnerFat    = 0.0; dinnerCarbs    = 0.0
+        dailyTotalCalories = 0.0; dailyTotalProtein = 0.0; dailyTotalFat = 0.0; dailyTotalCarbs = 0.0
+
+        loadedBreakfast = false
+        loadedLunch = false
+        loadedDinner = false
+
+        llBreakfastMeals.removeAllViews()
+        llLunchMeals.removeAllViews()
+        llDinnerMeals.removeAllViews()
+
+        tvBreakfast.text = "Śniadanie"
+        tvLunch.text = "Obiad"
+        tvDinner.text = "Kolacja"
+        tvDailyTotal.text = ""
     }
+
+    private fun maybeUpdateDailyTotals() {
+        if (loadedBreakfast && loadedLunch && loadedDinner) {
+            dailyTotalCalories = breakfastCalories + lunchCalories + dinnerCalories
+            dailyTotalProtein  = breakfastProtein  + lunchProtein  + dinnerProtein
+            dailyTotalFat      = breakfastFat      + lunchFat      + dinnerFat
+            dailyTotalCarbs    = breakfastCarbs    + lunchCarbs    + dinnerCarbs
+
+            tvDailyTotal.text = "Dzisiaj: ${dailyTotalCalories.roundToInt()} kcal, " +
+                    "${dailyTotalProtein.roundToInt()} P, ${dailyTotalFat.roundToInt()} F, ${dailyTotalCarbs.roundToInt()} C"
+        }
+    }
+
+
 
 }
