@@ -78,11 +78,6 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
     }
 
 
-    private fun initDiary() {
-        // TODO; widok dziennika kalorii
-
-    }
-
     private fun addMealToList(container: LinearLayout, mealName: String, protein: Int = 0, fat: Int = 0, carbs: Int = 0, calories: Int = 0) {
         val mealView = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_meal, container, false)
@@ -117,17 +112,14 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
         val currentMonth = selectedDate.get(Calendar.MONTH)
         val currentYear = selectedDate.get(Calendar.YEAR)
 
-        // Pobierz pierwszy dzień miesiąca
         val firstDayOfMonth = Calendar.getInstance().apply {
             set(Calendar.YEAR, currentYear)
             set(Calendar.MONTH, currentMonth)
             set(Calendar.DAY_OF_MONTH, 1)
         }
 
-        // Pobierz ostatni dzień miesiąca
         val lastDayOfMonth = firstDayOfMonth.getActualMaximum(Calendar.DAY_OF_MONTH)
 
-        // Wygeneruj wszystkie dni miesiąca
         for (day in 1..lastDayOfMonth) {
             val dayCalendar = Calendar.getInstance().apply {
                 set(Calendar.YEAR, currentYear)
@@ -138,7 +130,6 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
             addDayView(dayCalendar, day)
         }
 
-        // Automatycznie zaznacz dzisiejszy dzień i przewiń do niego
         selectTodayAndScroll()
     }
 
@@ -149,14 +140,11 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
         val tvDayLetter = dayView.findViewById<TextView>(R.id.tvDayLetter)
         val tvDayNumber = dayView.findViewById<TextView>(R.id.tvDayNumber)
 
-        // Ustaw literę dnia tygodnia
         val dayOfWeek = dayCalendar.get(Calendar.DAY_OF_WEEK)
         tvDayLetter.text = getDayLetter(dayOfWeek)
 
-        // Ustaw numer dnia
         tvDayNumber.text = dayNumber.toString()
 
-        // Obsługa kliknięcia
         dayView.setOnClickListener {
             selectDay(dayView, dayCalendar)
         }
@@ -183,23 +171,19 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
     }
 
     private fun selectDay(dayView: View, dayCalendar: Calendar) {
-        // Usuń selekcję z poprzedniego dnia
         for (i in 0 until llDaysContainer.childCount) {
             llDaysContainer.getChildAt(i).isSelected = false
         }
 
-        // Zaznacz nowy dzień
         dayView.isSelected = true
         selectedDate = dayCalendar.clone() as Calendar
 
-        // Tutaj możesz załadować dane dla wybranego dnia
         loadDataForDate(selectedDate)
     }
 
     private fun selectTodayAndScroll() {
         val today = Calendar.getInstance()
 
-        // Znajdź dzisiejszy dzień w kontenerze
         for (i in 0 until llDaysContainer.childCount) {
             val dayView = llDaysContainer.getChildAt(i)
             val dayCalendar = Calendar.getInstance().apply {
@@ -209,16 +193,13 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
             }
 
             if (isSameDay(dayCalendar, today)) {
-                // Zaznacz dzisiejszy dzień
                 dayView.isSelected = true
                 selectedDate = dayCalendar.clone() as Calendar
 
-                // Przewiń do tego dnia po wyrenderowaniu widoku
                 dayView.post {
                     scrollToDay(dayView)
                 }
 
-                // Załaduj dane dla dzisiaj
                 loadDataForDate(selectedDate)
                 break
             }
@@ -226,21 +207,18 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
     }
 
     private fun scrollToDay(dayView: View) {
-        // Oblicz pozycję do przewinięcia - wycentruj dzień na ekranie
         val scrollViewWidth = hsvWeek.width
         val dayViewLeft = dayView.left
         val dayViewWidth = dayView.width
 
-        // Wycentruj dzień na ekranie
         val scrollX = dayViewLeft - (scrollViewWidth / 2) + (dayViewWidth / 2)
 
-        // Przewiń płynnie do obliczonej pozycji
         hsvWeek.smoothScrollTo(scrollX.coerceAtLeast(0), 0)
     }
 
 
     private fun loadMealsForUser(userId: String, date: String, mealType: String) {
-        val loadIdAtStart = currentLoadId  // zapamietywanie ktore ladowanie rozpoczete
+        val loadIdAtStart = currentLoadId
 
         lifecycleScope.launch {
             try {
