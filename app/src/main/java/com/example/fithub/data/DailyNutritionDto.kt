@@ -22,8 +22,8 @@ data class MealDto(
 
 // DTO dla pozycji żywności w posiłku
 data class FoodItemDto(
-    val foodId: String, // ID produktu
-    val quantity: Double // ilość w gramach
+    val foodId: String,
+    val quantity: Double 
 )
 
 // DTO dla dziennych sum
@@ -52,6 +52,7 @@ data class MealWithFoodsDto(
 
 // FoodItem z pełnymi danymi o produkcie
 data class FoodItemWithDetailsDto(
+    val itemId: String,
     val foodId: FoodDto, // Pełny obiekt produktu
     val quantity: Double
 )

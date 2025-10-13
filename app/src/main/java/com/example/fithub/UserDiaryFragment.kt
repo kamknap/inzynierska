@@ -98,7 +98,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
     }
 
 
-    private fun addMealToList(container: LinearLayout, mealName: String, protein: Int = 0, fat: Int = 0, carbs: Int = 0, calories: Int = 0) {
+    private fun addMealToList(container: LinearLayout, mealName: String, itemId: String, protein: Int = 0, fat: Int = 0, carbs: Int = 0, calories: Int = 0) {
         val mealView = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_meal, container, false)
 
@@ -117,7 +117,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
 
         // Usuwanie posilku
         btnDeleteMeal.setOnClickListener {
-            container.removeView(mealView)
+            deleteFoodByItemId(itemId)
         }
 
         // TODO: Edycja posilku
@@ -298,6 +298,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
                 addMealToList(
                     container = container,
                     mealName = "- ${food.name} (${qtyLabel})",
+                    itemId = foodItem.itemId,
                     protein = kotlin.math.round(mealProtein).toInt(),
                     fat = kotlin.math.round(mealFat).toInt(),
                     carbs = kotlin.math.round(mealCarbs).toInt(),
@@ -333,8 +334,9 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
             "obiad" -> tvLunch.text = "Obiad (${lunchCalories.roundToInt()} kcal, ${lunchProtein.roundToInt()} P, ${lunchFat.roundToInt()} F, ${lunchCarbs.roundToInt()} C)"
             "kolacja" -> tvDinner.text = "Kolacja (${dinnerCalories.roundToInt()} kcal, ${dinnerProtein.roundToInt()} P, ${dinnerFat.roundToInt()} F, ${dinnerCarbs.roundToInt()} C)"
         }
-
     }
+
+
     private fun loadDataForDate(date: Calendar) {
         currentLoadId++
 
@@ -380,12 +382,31 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
         }
     }
 
+    private fun deleteFoodByItemId(itemId: String) {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val dateStr = dateFormat.format(selectedDate.time)
+
+        lifecycleScope.launch {
+            try {
+                NetworkModule.api.deleteFoodByItemId(
+                    userId = currentUserId,
+                    date = dateStr,
+                    itemId = itemId
+                )
+
+                // Przeładuj dane po usunięciu
+                loadDataForDate(selectedDate)
+                Toast.makeText(requireContext(), "Usunięto produkt", Toast.LENGTH_SHORT).show()
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Błąd usuwania: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
     private fun addFoodToDb(mealName: String, foodId: String, quantityGrams: Double) {
-        // 1) Sformatuj datę na "yyyy-MM-dd" (wymagane przez backend)
         val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
         val dateStr = dateFormat.format(selectedDate.time)
 
-        // 2) Zbuduj DTO posiłku z jedną pozycją
         val mealDto = com.example.fithub.data.MealDto(
             name = mealName,
             foods = listOf(
@@ -398,16 +419,14 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
 
         val payload = com.example.fithub.data.AddMealDto(meal = mealDto)
 
-        // 3) Wyślij do API i odśwież ekran
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 NetworkModule.api.addMeal(
                     userId = currentUserId,
                     date = dateStr,
                     addMealDto = payload
-                ) // zwraca aktualny dokument daily nutrition z posiłkami
+                )
 
-                // Po sukcesie odśwież dane dla wybranego dnia
                 loadDataForDate(selectedDate)
                 Toast.makeText(requireContext(), "Dodano produkt do: $mealName", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {

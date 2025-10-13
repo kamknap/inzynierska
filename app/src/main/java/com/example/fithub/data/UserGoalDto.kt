@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class UserGoalDto(
     @SerializedName("_id") val id: String,
-    val userId: UserIdData, // Zmienione z String na obiekt
+    val userId: UserIdData,
     val type: String,
     val targetWeightKg: Int,
     val plan: GoalPlanData,
@@ -16,7 +16,6 @@ data class UserGoalDto(
     val updatedAt: String
 )
 
-// Nowy DTO dla zagnieżdżonego userId
 data class UserIdData(
     @SerializedName("_id") val id: String,
     val username: String,
@@ -30,7 +29,7 @@ data class GoalPlanData(
 )
 
 data class CreateUserGoalDto(
-    val userId: String, // Pozostaje jako String bo to do wysyłania
+    val userId: String,
     val type: String,
     val targetWeightKg: Int,
     val plan: GoalPlanData,
