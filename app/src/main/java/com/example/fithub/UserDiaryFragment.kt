@@ -16,7 +16,7 @@ import java.text.SimpleDateFormat
 import java.util.*
 import kotlin.math.roundToInt
 
-class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
+class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogFragment.OnMealAddedListener {
 
     private lateinit var llDaysContainer: LinearLayout
     private lateinit var hsvWeek: HorizontalScrollView
@@ -75,11 +75,12 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
 
         // przyciski dodawania jedzenia
         btnBreakfast.setOnClickListener {
-            addFoodToDb(
-                mealName = "Śniadanie",
-                foodId = "66feabcd1234567890abcdb2",
-                quantityGrams = 220.0
-            )
+            openMealDialog("Śniadanie")
+//            addFoodToDb(
+//                mealName = "Śniadanie",
+//                foodId = "66feabcd1234567890abcdb5",
+//                quantityGrams = 220.0
+//            )
         }
         btnLunch.setOnClickListener {
             addFoodToDb(
@@ -97,6 +98,24 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
         }
     }
 
+    private fun openMealDialog(mealType: String){
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val formattedDate = dateFormat.format(selectedDate.time)
+
+        val dialog = AddMealDialogFragment().apply{
+            arguments = Bundle().apply {
+                putString("mealType", mealType)
+                putString("userId", currentUserId)
+                putString("date", formattedDate)
+            }
+        }
+        dialog.show(parentFragmentManager, "AddMealDialog")
+    }
+
+    override fun onMealAdded() {
+        loadDataForDate(selectedDate)
+        Toast.makeText(requireContext(), "Odświeżono", Toast.LENGTH_SHORT).show()
+    }
 
     private fun addMealToList(container: LinearLayout, mealName: String, itemId: String, protein: Int = 0, fat: Int = 0, carbs: Int = 0, calories: Int = 0) {
         val mealView = LayoutInflater.from(requireContext())
@@ -237,30 +256,42 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
     }
 
 
-    private fun loadMealsForUser(userId: String, date: String, mealType: String) {
+    private fun loadAllMealsForUser(userId: String, date: String) {
         val loadIdAtStart = currentLoadId
 
         lifecycleScope.launch {
             try {
+                // Jeden GET request
                 val dailyNutrition = NetworkModule.api.getDailyNutrition(userId, date)
 
-                // jesli w miedzyczasie kliknieto inny dzien – porzuc te dane
+                // Sprawdź czy nie zmieniono daty w międzyczasie
                 if (loadIdAtStart != currentLoadId) return@launch
 
-                val matchingMeals = dailyNutrition.meals.filter { meal ->
-                    meal.name.lowercase().contains(mealType.lowercase())
+                // Podziel posiłki na typy i wyświetl
+                val breakfastMeals = dailyNutrition.meals.filter { meal ->
+                    meal.name.lowercase().contains("śniadanie")
+                }
+                val lunchMeals = dailyNutrition.meals.filter { meal ->
+                    meal.name.lowercase().contains("obiad")
+                }
+                val dinnerMeals = dailyNutrition.meals.filter { meal ->
+                    meal.name.lowercase().contains("kolacja")
                 }
 
-                displayMeals(matchingMeals, mealType)
+                // Wyświetl wszystkie typy posiłków
+                displayMeals(breakfastMeals, "śniadanie")
+                displayMeals(lunchMeals, "obiad")
+                displayMeals(dinnerMeals, "kolacja")
 
-                // flaga dopiero po narysowaniu wszystkiego
-                when (mealType.lowercase()) {
-                    "śniadanie" -> loadedBreakfast = true
-                    "obiad"     -> loadedLunch = true
-                    "kolacja"   -> loadedDinner = true
+                // Ustaw wszystkie flagi na raz
+                loadedBreakfast = true
+                loadedLunch = true
+                loadedDinner = true
+
+                // Zaktualizuj totale
+                if (loadIdAtStart == currentLoadId) {
+                    updateDailyTotals()
                 }
-
-                if (loadIdAtStart == currentLoadId) maybeUpdateDailyTotals()
 
             } catch (e: Exception) {
                 if (loadIdAtStart != currentLoadId) return@launch
@@ -280,6 +311,18 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
 
         // czyszczenie starych posilkow
         container.removeAllViews()
+
+        when (mealType.lowercase()) {
+            "śniadanie" -> {
+                breakfastCalories = 0.0; breakfastProtein = 0.0; breakfastFat = 0.0; breakfastCarbs = 0.0
+            }
+            "obiad" -> {
+                lunchCalories = 0.0; lunchProtein = 0.0; lunchFat = 0.0; lunchCarbs = 0.0
+            }
+            "kolacja" -> {
+                dinnerCalories = 0.0; dinnerProtein = 0.0; dinnerFat = 0.0; dinnerCarbs = 0.0
+            }
+        }
 
         // dodawanie pojedynczego posilku
         meals.forEach { meal ->
@@ -339,15 +382,12 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
 
     private fun loadDataForDate(date: Calendar) {
         currentLoadId++
-
         clearAllMacrosAndUi()
 
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val formattedDate = dateFormat.format(date.time)
 
-        loadMealsForUser(currentUserId, formattedDate, "śniadanie")
-        loadMealsForUser(currentUserId, formattedDate, "obiad")
-        loadMealsForUser(currentUserId, formattedDate, "kolacja")
+        loadAllMealsForUser(currentUserId, formattedDate)
     }
 
     private fun clearAllMacrosAndUi() {
@@ -370,7 +410,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary) {
         tvDailyTotal.text = ""
     }
 
-    private fun maybeUpdateDailyTotals() {
+    private fun updateDailyTotals() {
         if (loadedBreakfast && loadedLunch && loadedDinner) {
             dailyTotalCalories = breakfastCalories + lunchCalories + dinnerCalories
             dailyTotalProtein  = breakfastProtein  + lunchProtein  + dinnerProtein
