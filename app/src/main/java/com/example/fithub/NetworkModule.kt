@@ -15,4 +15,22 @@ object NetworkModule {
             .build()
             .create(ApiService::class.java)
     }
+
+    val offApi: OpenFoodFactsService by lazy {
+        val offClient = OkHttpClient.Builder()
+            .addInterceptor { chain ->
+                val request = chain.request().newBuilder()
+                    .header("User-Agent", "MyFitHub/1.0 (kamil.knapik@outlook.com)")
+                    .build()
+                chain.proceed(request)
+            }
+            .build()
+
+        Retrofit.Builder()
+            .baseUrl("https://world.openfoodfacts.org/api/v2/")
+            .client(offClient)
+            .addConverterFactory(GsonConverterFactory.create())
+            .build()
+            .create(OpenFoodFactsService::class.java)
+    }
 }
