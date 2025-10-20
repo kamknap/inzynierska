@@ -25,6 +25,8 @@ class AddMealDialogFragment : DialogFragment() {
         fun onMealAdded()
     }
 
+    var onMealAddedListener: OnMealAddedListener? = null
+
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val mealType = arguments?.getString("mealType") ?: "Posiłek"
 
@@ -73,7 +75,6 @@ class AddMealDialogFragment : DialogFragment() {
             .setTitle("Dodaj $mealType")
             .setView(mainLayout)
             .setNegativeButton("Gotowe") { _, _ ->
-                (parentFragment as? OnMealAddedListener)?.onMealAdded()
             }
             .create()
     }
@@ -182,7 +183,7 @@ class AddMealDialogFragment : DialogFragment() {
                     addMealDto = addMealData
                 )
                 Toast.makeText(requireContext(), "Dodano $quantity g produktu", Toast.LENGTH_SHORT).show()
-                (parentFragment as? OnMealAddedListener)?.onMealAdded()
+                onMealAddedListener?.onMealAdded()
                 dismiss()
             }
             catch (e: Exception){

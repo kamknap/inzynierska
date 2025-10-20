@@ -76,25 +76,13 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         // przyciski dodawania jedzenia
         btnBreakfast.setOnClickListener {
             openMealDialog("Śniadanie")
-//            addFoodToDb(
-//                mealName = "Śniadanie",
-//                foodId = "66feabcd1234567890abcdb5",
-//                quantityGrams = 220.0
-//            )
+
         }
         btnLunch.setOnClickListener {
-            addFoodToDb(
-                mealName = "Obiad",
-                foodId = "66feabcd1234567890abcdb2",
-                quantityGrams = 220.0
-            )
+            openMealDialog("Obiad")
         }
         btnDinner.setOnClickListener {
-            addFoodToDb(
-                mealName = "Kolacja",
-                foodId = "66feabcd1234567890abcdb2",
-                quantityGrams = 220.0
-            )
+            openMealDialog("Kolacja")
         }
     }
 
@@ -109,12 +97,12 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                 putString("date", formattedDate)
             }
         }
+        dialog.onMealAddedListener = this
         dialog.show(parentFragmentManager, "AddMealDialog")
     }
 
     override fun onMealAdded() {
         loadDataForDate(selectedDate)
-        Toast.makeText(requireContext(), "Odświeżono", Toast.LENGTH_SHORT).show()
     }
 
     private fun addMealToList(container: LinearLayout, mealName: String, itemId: String, protein: Int = 0, fat: Int = 0, carbs: Int = 0, calories: Int = 0) {
@@ -264,10 +252,9 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                 // Jeden GET request
                 val dailyNutrition = NetworkModule.api.getDailyNutrition(userId, date)
 
-                // Sprawdź czy nie zmieniono daty w międzyczasie
+                // czy nie zmieniono okna w miedzyczasie
                 if (loadIdAtStart != currentLoadId) return@launch
 
-                // Podziel posiłki na typy i wyświetl
                 val breakfastMeals = dailyNutrition.meals.filter { meal ->
                     meal.name.lowercase().contains("śniadanie")
                 }
@@ -278,19 +265,19 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                     meal.name.lowercase().contains("kolacja")
                 }
 
-                // Wyświetl wszystkie typy posiłków
+                // wyswietlanie posilkow
                 displayMeals(breakfastMeals, "śniadanie")
                 displayMeals(lunchMeals, "obiad")
                 displayMeals(dinnerMeals, "kolacja")
 
-                // Ustaw wszystkie flagi na raz
+                // flagi
                 loadedBreakfast = true
                 loadedLunch = true
                 loadedDinner = true
 
-                // Zaktualizuj totale
+                // aktualizacja totals
                 if (loadIdAtStart == currentLoadId) {
-                    updateDailyTotals()
+                    updateDailyTotals(dailyNutrition.dailyTotals.calorieGoal)
                 }
 
             } catch (e: Exception) {
@@ -410,14 +397,14 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         tvDailyTotal.text = ""
     }
 
-    private fun updateDailyTotals() {
+    private fun updateDailyTotals(calorieGoal: Double) {
         if (loadedBreakfast && loadedLunch && loadedDinner) {
             dailyTotalCalories = breakfastCalories + lunchCalories + dinnerCalories
             dailyTotalProtein  = breakfastProtein  + lunchProtein  + dinnerProtein
             dailyTotalFat      = breakfastFat      + lunchFat      + dinnerFat
             dailyTotalCarbs    = breakfastCarbs    + lunchCarbs    + dinnerCarbs
 
-            tvDailyTotal.text = "Dzisiaj: ${dailyTotalCalories.roundToInt()} kcal, " +
+            tvDailyTotal.text = "${dailyTotalCalories.roundToInt()} / ${calorieGoal.roundToInt()} kcal, " +
                     "${dailyTotalProtein.roundToInt()} P, ${dailyTotalFat.roundToInt()} F, ${dailyTotalCarbs.roundToInt()} C"
         }
     }
