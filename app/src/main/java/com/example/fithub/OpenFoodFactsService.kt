@@ -13,7 +13,7 @@ interface OpenFoodFactsService {
     @GET("search")
     suspend fun searchProducts(
         @Query("search_terms") query: String,
-        @Query("fields") fields: String = "product_name,brands,nutriments,code,image_url",
+        @Query("fields") fields: String = "product_name,brands,nutriments,code",
         @Query("page_size") limit: Int = 10,
         @Query("json") json: Int = 1
     ): OpenFoodFactsSearchResponse

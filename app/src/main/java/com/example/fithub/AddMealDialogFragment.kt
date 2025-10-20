@@ -16,6 +16,9 @@ import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.example.fithub.NetworkModule
+import com.example.fithub.data.FoodDto
+import com.example.fithub.data.NutritionData
+import com.example.fithub.data.OpenFoodFactsProduct
 import kotlinx.coroutines.launch
 
 
@@ -132,6 +135,31 @@ class AddMealDialogFragment : DialogFragment() {
                 Toast.makeText(requireContext(), "Błąd wyszukiwania: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
+    }
+
+    private fun mapOpenFoodFactsToFood(offProduct: OpenFoodFactsProduct): FoodDto {
+        val nutrition = offProduct.nutriments
+
+        return FoodDto(
+            id = offProduct.code ?: "",
+            name = offProduct.product_name ?: "Nieznany produkt",
+            brand = offProduct.brands,
+            barcode = offProduct.code,
+            nutritionPer100g = NutritionData(
+                calories = nutrition?.energy_kcal_100g ?: 0.0,
+                protein = nutrition?.proteins_100g ?: 0.0,
+                fat = nutrition?.fat_100g ?: 0.0,
+                carbs = nutrition?.carbohydrates_100g ?: 0.0,
+                fiber = nutrition?.fiber_100g ?: 0.0,
+                sugar = nutrition?.sugars_100g ?: 0.0,
+                sodium = nutrition?.sodium_100g ?: 0.0
+            ),
+            category = "OpenFoodFacts",
+            verified = false,
+            addedBy = "OpenFoodFacts",
+            createdAt = "",
+            updatedAt = ""
+        )
     }
 
     private fun showQuantityDialog(foodName: String, foodId: String) {

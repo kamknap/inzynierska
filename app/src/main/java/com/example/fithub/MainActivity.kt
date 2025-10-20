@@ -80,37 +80,37 @@ class MainActivity : AppCompatActivity() {
 //                }
 //            }
 
-//            lifecycleScope.launch {
-//                try {
-//                    // Test OpenFoodFacts API
-//                    val searchResult = NetworkModule.offApi.searchProducts(
-//                        query = "Chleb",
-//                        limit = 200
-//                    )
-//
-//                    if (searchResult.products?.isNotEmpty() == true) {
-//                        val products = searchResult.products.take(3)
-//                        val productInfo = products.mapIndexed { index, product ->
-//                            val name = product.product_name ?: "Nieznany"
-//                            val calories = product.nutriments?.energy_kcal_100g ?: 0.0
-//                            "${index + 1}. $name (${calories.toInt()} kcal/100g)"
-//                        }.joinToString("\n")
-//
-//                        val message = "Znaleziono ${searchResult.products.size} produktów:\n\n$productInfo"
-//
-//                        Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
-//                        Log.d("OpenFoodFacts", message)
-//                    } else {
-//                        Toast.makeText(this@MainActivity, "Brak wyników", Toast.LENGTH_SHORT).show()
-//                        Log.d("OpenFoodFacts", "Empty response: $searchResult")
-//                    }
-//
-//                } catch (e: Exception) {
-//                    val errorMessage = "Błąd OpenFoodFacts: ${e.message}"
-//                    Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_LONG).show()
-//                    Log.e("OpenFoodFactsError", errorMessage, e)
-//                }
-//            }
+            lifecycleScope.launch {
+                try {
+                    // Test OpenFoodFacts API
+                    val searchResult = NetworkModule.offApi.searchProducts(
+                        query = "chleb",
+                        limit = 10
+                    )
+
+                    if (searchResult.products?.isNotEmpty() == true) {
+                        val products = searchResult.products.take(3)
+                        val productInfo = products.mapIndexed { index, product ->
+                            val name = product.product_name ?: "Nieznany"
+                            val calories = product.nutriments?.energy_kcal_100g ?: 0.0
+                            "${index + 1}. $name (${calories.toInt()} kcal/100g)"
+                        }.joinToString("\n")
+
+                        val message = "Znaleziono ${searchResult.products.size} produktów:\n\n$productInfo"
+
+                        Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
+                        Log.d("OpenFoodFacts", message)
+                    } else {
+                        Toast.makeText(this@MainActivity, "Brak wyników", Toast.LENGTH_SHORT).show()
+                        Log.d("OpenFoodFacts", "Empty response: $searchResult")
+                    }
+
+                } catch (e: Exception) {
+                    val errorMessage = "Błąd OpenFoodFacts: ${e.message}"
+                    Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_LONG).show()
+                    Log.e("OpenFoodFactsError", errorMessage, e)
+                }
+            }
         }
 
     }
