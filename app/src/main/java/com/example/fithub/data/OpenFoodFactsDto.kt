@@ -1,5 +1,7 @@
 package com.example.fithub.data
 
+import com.google.gson.annotations.SerializedName
+
 data class OpenFoodFactsProductResponse(
     val product: OpenFoodFactsProduct?
 )
@@ -18,6 +20,9 @@ data class OpenFoodFactsProduct(
 
 data class Nutriments(
     val energy_kcal_100g: Double?,
+    @SerializedName("energy-kcal_100g") val energyKcal100g: Double?,
+    val energy_100g: Double?,
+    val energy_kj_100g: Double?,
     val proteins_100g: Double?,
     val carbohydrates_100g: Double?,
     val fat_100g: Double?,

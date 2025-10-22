@@ -4,6 +4,8 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
 import android.text.TextWatcher
+import android.util.Log
+import android.view.View
 import android.widget.Button
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -24,11 +26,15 @@ import kotlinx.coroutines.launch
 
 class AddMealDialogFragment : DialogFragment() {
 
+    // TODO DODAC DODAWANIE PRODUKTU Z OFF DO BAZY JESLI UZYTKOWNIK KLIKNIE PLUSIK, JESLI NIE MA TAKIEGO TO TWORZYC I NIECH SIE ZAPISUJE 
+
     interface OnMealAddedListener {
         fun onMealAdded()
     }
 
     var onMealAddedListener: OnMealAddedListener? = null
+    private var searchJob: kotlinx.coroutines.Job? = null
+
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val mealType = arguments?.getString("mealType") ?: "Posiłek"
@@ -52,7 +58,7 @@ class AddMealDialogFragment : DialogFragment() {
         val scrollView = ScrollView(requireContext()).apply {
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                400 // maksymalna wysokość w px
+                400
             )
         }
 
@@ -68,8 +74,14 @@ class AddMealDialogFragment : DialogFragment() {
 
         etSearch.doAfterTextChanged { text ->
             val query = text.toString().trim()
+            //anulowanie poprzedniego wyszukiwania
+            searchJob?.cancel()
             if (query.length >= 2) {
-                searchFoods(query, llSearchResults)
+//                opoznienie 500ms przed wyszukiwaniem
+                searchJob = lifecycleScope.launch {
+                    kotlinx.coroutines.delay(500)
+                    searchFoods(query, llSearchResults)
+                }
             } else {
                 llSearchResults.removeAllViews()    }
         }
@@ -83,12 +95,32 @@ class AddMealDialogFragment : DialogFragment() {
     }
 
     private fun searchFoods(query: String, container: LinearLayout) {
+        Log.d("AddMealDialog", "Wyszukiwanie: $query")
         lifecycleScope.launch {
             try {
-                val foods = NetworkModule.api.getFoods(search = query)
+                val localFoods = NetworkModule.api.getFoods(search = query)
+                val offFoods = NetworkModule.offApi.searchProducts(query = query, limit = 10)
+                var foodDtoList = listOf<FoodDto>()
+
+                if(offFoods.products?.isNotEmpty() == true){
+                    foodDtoList = offFoods.products.map { product ->
+                        // DODAJ LOGI DO DEBUGOWANIA
+                        Log.d("OpenFoodFacts", "===== Produkt =====")
+                        Log.d("OpenFoodFacts", "Nazwa: ${product.product_name}")
+                        Log.d("OpenFoodFacts", "Nutriments: ${product.nutriments}")
+                        Log.d("OpenFoodFacts", "Kalorie: ${product.nutriments?.energy_kcal_100g}")
+                        Log.d("OpenFoodFacts", "Białko: ${product.nutriments?.proteins_100g}")
+
+                        val mapped = mapOpenFoodFactsToFood(product)
+                        mapped
+                    }
+                }
+
+                val foodList = localFoods.foods + foodDtoList
+
                 container.removeAllViews()
 
-                foods.foods.forEach { food ->
+                foodList.forEach { food ->
                     val foodView = LinearLayout(requireContext()).apply {
                         orientation = LinearLayout.HORIZONTAL
                         setPadding(16, 16, 16, 16)
@@ -108,9 +140,17 @@ class AddMealDialogFragment : DialogFragment() {
                     }
 
                     val tvNutrition = TextView(requireContext()).apply {
-                        text = "${food.nutritionPer100g.calories} kcal/100g"
+                        val caloriesText = if (food.nutritionPer100g.calories == 0.0) {
+                            "Brak danych"
+                        } else {
+                            "${food.nutritionPer100g.calories} kcal/100g"
+                        }
+                        text = caloriesText
                         textSize = 12f
                         setTextColor(resources.getColor(android.R.color.darker_gray, null))
+
+                        // WYMUSZENIE WIDOCZNOŚCI
+                        visibility = View.VISIBLE
                     }
 
                     val btnAdd = Button(requireContext()).apply {
@@ -121,8 +161,6 @@ class AddMealDialogFragment : DialogFragment() {
                         }
                     }
 
-
-
                     foodInfo.addView(tvName)
                     foodInfo.addView(tvNutrition)
                     foodView.addView(foodInfo)
@@ -132,6 +170,7 @@ class AddMealDialogFragment : DialogFragment() {
                 }
             }
             catch(e: Exception) {
+                Log.e("AddMealDialog", "Błąd wyszukiwania", e)
                 Toast.makeText(requireContext(), "Błąd wyszukiwania: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
@@ -140,13 +179,26 @@ class AddMealDialogFragment : DialogFragment() {
     private fun mapOpenFoodFactsToFood(offProduct: OpenFoodFactsProduct): FoodDto {
         val nutrition = offProduct.nutriments
 
+        val calories = nutrition?.energyKcal100g
+            ?: nutrition?.energy_kcal_100g
+            ?: nutrition?.energy_100g
+            ?: nutrition?.energy_kj_100g?.div(4.184)
+            ?: run {
+                val protein = nutrition?.proteins_100g ?: 0.0
+                val carbs = nutrition?.carbohydrates_100g ?: 0.0
+                val fat = nutrition?.fat_100g ?: 0.0
+                (protein * 4) + (carbs * 4) + (fat * 9)
+            }
+
+        Log.d("OpenFoodFacts", "Obliczone kalorie: $calories")
+
         return FoodDto(
             id = offProduct.code ?: "",
             name = offProduct.product_name ?: "Nieznany produkt",
             brand = offProduct.brands,
             barcode = offProduct.code,
             nutritionPer100g = NutritionData(
-                calories = nutrition?.energy_kcal_100g ?: 0.0,
+                calories = calories,
                 protein = nutrition?.proteins_100g ?: 0.0,
                 fat = nutrition?.fat_100g ?: 0.0,
                 carbs = nutrition?.carbohydrates_100g ?: 0.0,

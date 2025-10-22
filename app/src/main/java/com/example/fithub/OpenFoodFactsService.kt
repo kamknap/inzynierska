@@ -10,11 +10,12 @@ interface OpenFoodFactsService {
         @Path("barcode") barcode: String
     ): OpenFoodFactsProductResponse
 
-    @GET("search")
+    @GET("cgi/search.pl") // Zmieniona ścieżka na tę ze starego API
     suspend fun searchProducts(
-        @Query("search_terms") query: String,
-        @Query("fields") fields: String = "product_name,brands,nutriments,code",
-        @Query("page_size") limit: Int = 10,
-        @Query("json") json: Int = 1
+        @Query("search_terms") query: String, // Prawidłowy parametr dla tej wersji API
+        @Query("search_simple") simple: Int = 1,
+        @Query("action") action: String = "process",
+        @Query("json") json: Int = 1,
+        @Query("page_size") limit: Int
     ): OpenFoodFactsSearchResponse
 }

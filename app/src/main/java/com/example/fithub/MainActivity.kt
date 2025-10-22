@@ -13,7 +13,10 @@ import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import android.util.Log
 import androidx.fragment.app.commit
+import com.example.fithub.data.FoodDto
 import com.example.fithub.data.NewUserDto
+import com.example.fithub.data.NutritionData
+import com.example.fithub.data.OpenFoodFactsProduct
 
 class MainActivity : AppCompatActivity() {
 
@@ -82,24 +85,29 @@ class MainActivity : AppCompatActivity() {
 
             lifecycleScope.launch {
                 try {
-                    // Test OpenFoodFacts API
                     val searchResult = NetworkModule.offApi.searchProducts(
-                        query = "chleb",
+                        query = "pierogi z serem",
                         limit = 10
                     )
 
                     if (searchResult.products?.isNotEmpty() == true) {
-                        val products = searchResult.products.take(3)
-                        val productInfo = products.mapIndexed { index, product ->
-                            val name = product.product_name ?: "Nieznany"
-                            val calories = product.nutriments?.energy_kcal_100g ?: 0.0
-                            "${index + 1}. $name (${calories.toInt()} kcal/100g)"
-                        }.joinToString("\n")
 
-                        val message = "Znaleziono ${searchResult.products.size} produktów:\n\n$productInfo"
+                        Log.d("OpenFoodFacts", "--- Nazwy przed mapowaniem ---")
+                        searchResult.products.forEach { product ->
+                            Log.d("OpenFoodFacts", "Oryginalny produkt: ${product.product_name ?: "Brak nazwy"}")
+                        }
 
-                        Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
-                        Log.d("OpenFoodFacts", message)
+                        val foodDtoList = searchResult.products.map { product ->
+                            mapOpenFoodFactsToFood(product)
+                        }
+
+                        Log.d("OpenFoodFacts", "--- Nazwy PO mapowaniu ---")
+                        foodDtoList.forEach { food ->
+                            Log.d("OpenFoodFacts", "Zmapowany produkt: ${food.name}")
+                        }
+
+                        Toast.makeText(this@MainActivity, "Zmapowano ${foodDtoList.size} produktów. Sprawdź Logcat.", Toast.LENGTH_LONG).show()
+
                     } else {
                         Toast.makeText(this@MainActivity, "Brak wyników", Toast.LENGTH_SHORT).show()
                         Log.d("OpenFoodFacts", "Empty response: $searchResult")
@@ -113,5 +121,29 @@ class MainActivity : AppCompatActivity() {
             }
         }
 
+    }
+    private fun mapOpenFoodFactsToFood(offProduct: OpenFoodFactsProduct): FoodDto {
+        val nutrition = offProduct.nutriments
+
+        return FoodDto(
+            id = offProduct.code ?: "",
+            name = offProduct.product_name ?: "Nieznany produkt",
+            brand = offProduct.brands,
+            barcode = offProduct.code,
+            nutritionPer100g = NutritionData(
+                calories = nutrition?.energy_kcal_100g ?: 0.0,
+                protein = nutrition?.proteins_100g ?: 0.0,
+                fat = nutrition?.fat_100g ?: 0.0,
+                carbs = nutrition?.carbohydrates_100g ?: 0.0,
+                fiber = nutrition?.fiber_100g ?: 0.0,
+                sugar = nutrition?.sugars_100g ?: 0.0,
+                sodium = nutrition?.sodium_100g ?: 0.0
+            ),
+            category = "OpenFoodFacts",
+            verified = false,
+            addedBy = "OpenFoodFacts",
+            createdAt = "",
+            updatedAt = ""
+        )
     }
 }

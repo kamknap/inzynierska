@@ -24,13 +24,13 @@ object NetworkModule {
                     .build()
                 chain.proceed(request)
             }
-            .connectTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
-            .readTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
-            .writeTimeout(60, java.util.concurrent.TimeUnit.SECONDS)
+            .connectTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
+            .readTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
+            .writeTimeout(120, java.util.concurrent.TimeUnit.SECONDS)
             .build()
 
         Retrofit.Builder()
-            .baseUrl("https://world.openfoodfacts.org/api/v2/")
+            .baseUrl("https://pl.openfoodfacts.org")
             .client(offClient)
             .addConverterFactory(GsonConverterFactory.create())
             .build()
