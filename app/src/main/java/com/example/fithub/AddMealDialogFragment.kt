@@ -18,6 +18,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
 import com.example.fithub.NetworkModule
+import com.example.fithub.data.CreateFoodDto
 import com.example.fithub.data.FoodDto
 import com.example.fithub.data.NutritionData
 import com.example.fithub.data.OpenFoodFactsProduct
@@ -26,7 +27,6 @@ import kotlinx.coroutines.launch
 
 class AddMealDialogFragment : DialogFragment() {
 
-    // TODO DODAC DODAWANIE PRODUKTU Z OFF DO BAZY JESLI UZYTKOWNIK KLIKNIE PLUSIK, JESLI NIE MA TAKIEGO TO TWORZYC I NIECH SIE ZAPISUJE 
 
     interface OnMealAddedListener {
         fun onMealAdded()
@@ -149,7 +149,7 @@ class AddMealDialogFragment : DialogFragment() {
                         textSize = 12f
                         setTextColor(resources.getColor(android.R.color.darker_gray, null))
 
-                        // WYMUSZENIE WIDOCZNOŚCI
+                        //wymuszenie widocznosci
                         visibility = View.VISIBLE
                     }
 
@@ -157,7 +157,7 @@ class AddMealDialogFragment : DialogFragment() {
                         text = "+"
                         layoutParams = LinearLayout.LayoutParams(100, LinearLayout.LayoutParams.WRAP_CONTENT)
                         setOnClickListener {
-                            showQuantityDialog(food.name, food.id)
+                            showQuantityDialog(food.name, food.id, food)
                         }
                     }
 
@@ -214,7 +214,7 @@ class AddMealDialogFragment : DialogFragment() {
         )
     }
 
-    private fun showQuantityDialog(foodName: String, foodId: String) {
+    private fun showQuantityDialog(foodName: String, foodId: String, food: FoodDto) {
         val etQuantity = EditText(requireContext()).apply {
             hint = "Ilość w gramach"
             inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
@@ -227,13 +227,13 @@ class AddMealDialogFragment : DialogFragment() {
             .setView(etQuantity)
             .setPositiveButton("Dodaj") { _, _ ->
                 val quantity = etQuantity.text.toString().toDoubleOrNull() ?: 100.0
-                addFoodToMeal(foodId, quantity)
+                addFoodToMeal(foodId, quantity, food)
             }
             .setNegativeButton("Anuluj", null)
             .show()
     }
 
-    private fun addFoodToMeal(foodId: String, quantity: Double) {
+    private fun addFoodToMeal(foodId: String, quantity: Double, food: FoodDto) {
         val userId = arguments?.getString("userId")
         val date = arguments?.getString("date")
         val mealType = arguments?.getString("mealType")
@@ -243,29 +243,61 @@ class AddMealDialogFragment : DialogFragment() {
             return
         }
 
+
+
         lifecycleScope.launch {
-            try{
-                val foodItem = com.example.fithub.data.FoodItemDto(
-                    foodId = foodId,
-                    quantity = quantity
-                )
+            try {
+                // sprawdzanie czy produkt istnieje w lokalnej bazie
+                var actualFoodId = foodId
+                val existingProduct = try{
+                    NetworkModule.api.getFoodById(actualFoodId)
+                } catch (e: Exception){
+                    null
+                }
+                // jesli produktu nie ma w bazie to dodaje go
+                if(existingProduct == null || existingProduct.id.isNullOrEmpty()){
+                    val createFoodDto = CreateFoodDto(
+                        name = food.name,
+                        brand = food.brand,
+                        barcode = food.barcode,
+                        nutritionPer100g = food.nutritionPer100g,
+                        category = food.category,
+                        addedBy = userId
+                    )
+                    val createdFood = NetworkModule.api.createFood(createFoodDto)
+                    actualFoodId = createdFood.id
+                    Log.d("AddMealDialog", "Produkt dodany z ID: $actualFoodId")
+                } else {
+                    Log.d("AddMealDialog", "Produkt już istnieje z ID: ${existingProduct.id}")
+                    actualFoodId = existingProduct.id
+        }
 
-                val meal = com.example.fithub.data.MealDto(
-                    name = mealType,
-                    foods = listOf(foodItem)
-                )
+                // jesli produkt w lokalnej bazie to dodaje go do posiłku
+                    val foodItem = com.example.fithub.data.FoodItemDto(
+                        foodId = actualFoodId,
+                        quantity = quantity
+                    )
 
-                val addMealData = com.example.fithub.data.AddMealDto(meal = meal)
+                    val meal = com.example.fithub.data.MealDto(
+                        name = mealType,
+                        foods = listOf(foodItem)
+                    )
 
-                NetworkModule.api.addMeal(
-                    userId = userId,
-                    date = date,
-                    addMealDto = addMealData
-                )
-                Toast.makeText(requireContext(), "Dodano $quantity g produktu", Toast.LENGTH_SHORT).show()
-                onMealAddedListener?.onMealAdded()
-                dismiss()
-            }
+                    val addMealData = com.example.fithub.data.AddMealDto(meal = meal)
+
+                    NetworkModule.api.addMeal(
+                        userId = userId,
+                        date = date,
+                        addMealDto = addMealData
+                    )
+                    Toast.makeText(
+                        requireContext(),
+                        "Dodano $quantity g produktu",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    onMealAddedListener?.onMealAdded()
+                    dismiss()
+                }
             catch (e: Exception){
                 android.util.Log.e("AddMealDialog", "Błąd dodawania posiłku", e)
                 Toast.makeText(requireContext(), "Błąd dodawania posiłku: ${e.message}", Toast.LENGTH_LONG).show()
