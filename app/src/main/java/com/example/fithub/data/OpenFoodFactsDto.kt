@@ -3,6 +3,7 @@ package com.example.fithub.data
 import com.google.gson.annotations.SerializedName
 
 data class OpenFoodFactsProductResponse(
+    val status: Int?,
     val product: OpenFoodFactsProduct?
 )
 

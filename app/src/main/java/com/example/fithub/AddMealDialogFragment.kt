@@ -23,6 +23,8 @@ import com.example.fithub.data.FoodDto
 import com.example.fithub.data.NutritionData
 import com.example.fithub.data.OpenFoodFactsProduct
 import kotlinx.coroutines.launch
+import com.journeyapps.barcodescanner.ScanContract
+import com.journeyapps.barcodescanner.ScanOptions
 
 
 class AddMealDialogFragment : DialogFragment() {
@@ -34,6 +36,16 @@ class AddMealDialogFragment : DialogFragment() {
 
     var onMealAddedListener: OnMealAddedListener? = null
     private var searchJob: kotlinx.coroutines.Job? = null
+
+    private val barcodeLauncher = registerForActivityResult(ScanContract()){ result ->
+        if(result.contents != null){
+            searchByBarcode(result.contents)
+        }
+        else{
+            Toast.makeText(requireContext(), "Nie znaleziono kodu kreskowego", Toast.LENGTH_SHORT).show()
+        }
+
+    }
 
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
@@ -52,6 +64,13 @@ class AddMealDialogFragment : DialogFragment() {
             text = "Zeskanuj kod kreskowy"
             setOnClickListener{
                 Toast.makeText(requireContext(), "Uruchamiam skaner..", Toast.LENGTH_SHORT).show()
+                val options = ScanOptions().apply {
+                    setDesiredBarcodeFormats(ScanOptions.PRODUCT_CODE_TYPES)
+                    setPrompt("Zeskanuj kod kreskowy")
+                    setBeepEnabled(false)
+                    setOrientationLocked(true)
+                }
+                barcodeLauncher.launch(options)
             }
         }
 
@@ -304,6 +323,45 @@ class AddMealDialogFragment : DialogFragment() {
             }
         }
     }
+
+    // TODO DODAC WALIDACJE DO SKANERA
+    private fun searchByBarcode(barcode: String) {
+        lifecycleScope.launch {
+            try {
+                Toast.makeText(requireContext(), "Szukam produktu: $barcode", Toast.LENGTH_SHORT).show()
+
+                try {
+                    val localProduct = NetworkModule.api.getFoodByBarcode(barcode)
+                    showQuantityDialog(localProduct.name, localProduct.id, localProduct)
+                    return@launch
+                } catch (e: Exception) {
+                    Log.d("BarcodeScanner", "Produkt nie znaleziony lokalnie, sprawdzam OFF")
+                }
+
+                val offProduct = NetworkModule.offBarcodeApi.getProductByBarcode(barcode)
+
+                if (offProduct.status == 1 && offProduct.product != null) {
+                    val mappedFood = mapOpenFoodFactsToFood(offProduct.product)
+                    showQuantityDialog(mappedFood.name, mappedFood.id, mappedFood)
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        "Nie znaleziono produktu o kodzie: $barcode",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+
+            } catch (e: Exception) {
+                Log.e("BarcodeScanner", "Błąd skanowania", e)
+                Toast.makeText(
+                    requireContext(),
+                    "Błąd: ${e.message}",
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+        }
+    }
+
 }
 
 
