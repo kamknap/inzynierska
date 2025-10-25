@@ -61,3 +61,7 @@ data class FoodItemWithDetailsDto(
 data class AddMealDto(
     val meal: MealDto
 )
+
+data class UpdateFoodQuantityDto(
+    val quantity: Double
+)

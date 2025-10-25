@@ -382,7 +382,6 @@ class AddMealDialogFragment : DialogFragment() {
         }
     }
 
-    // TODO DODAC WALIDACJE DO SKANERA ORAZ NAPRAWIC MODEL 3D W INKSCAPE
     private fun searchByBarcode(barcode: String) {
         lifecycleScope.launch {
             try {

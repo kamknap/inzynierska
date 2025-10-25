@@ -74,4 +74,12 @@ interface ApiService {
         @Path("itemId") itemId: String
     ): DailyNutritionWithFoodsDto
 
+    @PUT("/api/nutrition/{userId}/{date}/food/{itemId}")
+    suspend fun updateFoodQuantity(
+        @Path("userId") userId: String,
+        @Path("date") date: String,
+        @Path("itemId") itemId: String,
+        @Body request: UpdateFoodQuantityDto
+    ): DailyNutritionWithFoodsDto
+
 }

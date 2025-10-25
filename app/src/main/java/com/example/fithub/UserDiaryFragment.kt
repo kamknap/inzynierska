@@ -105,7 +105,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         loadDataForDate(selectedDate)
     }
 
-    private fun addMealToList(container: LinearLayout, mealName: String, itemId: String, protein: Int = 0, fat: Int = 0, carbs: Int = 0, calories: Int = 0) {
+    private fun addMealToList(container: LinearLayout, mealName: String, itemId: String, protein: Int = 0, fat: Int = 0, carbs: Int = 0, calories: Int = 0, currentQuantity: Double) {
         val mealView = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_meal, container, false)
 
@@ -127,12 +127,83 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
             deleteFoodByItemId(itemId)
         }
 
-        // TODO: Edycja posilku
+        // Edycja posilku
         mealView.setOnClickListener {
-            Toast.makeText(requireContext(), "Edytuj: $mealName", Toast.LENGTH_SHORT).show()
+            showEditQuantityDialog(mealName, itemId, currentQuantity)
         }
 
         container.addView(mealView)
+    }
+
+    private fun showEditQuantityDialog(foodName: String, itemId: String, currentQuantity: Double) {
+        val dialogLayout = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(48, 24, 48, 24)
+        }
+
+        val inputLayout = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER_VERTICAL
+        }
+
+        val etQuantity = android.widget.EditText(requireContext()).apply {
+            hint = "Ilość"
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+            setText(String.format("%.0f", currentQuantity))
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+
+        val unitTextView = TextView(requireContext()).apply {
+            text = "g"
+            textSize = 18F
+        }
+
+        inputLayout.addView(etQuantity)
+        inputLayout.addView(unitTextView)
+        dialogLayout.addView(inputLayout)
+
+        val dialog = android.app.AlertDialog.Builder(requireContext())
+            .setTitle("Edytuj $foodName")
+            .setView(dialogLayout)
+            .setPositiveButton("Zapisz") { _, _ ->
+                val newQuantity = etQuantity.text.toString().toDoubleOrNull() ?: currentQuantity
+                updateFoodQuantity(itemId, newQuantity)
+            }
+            .setNegativeButton("Anuluj", null)
+            .create()
+
+        dialog.setOnShowListener {
+            etQuantity.requestFocus()
+            etQuantity.selectAll()
+
+            etQuantity.postDelayed({
+                val imm = requireContext().getSystemService(android.content.Context.INPUT_METHOD_SERVICE) as android.view.inputmethod.InputMethodManager
+                imm.showSoftInput(etQuantity, android.view.inputmethod.InputMethodManager.SHOW_IMPLICIT)
+            }, 100)
+        }
+
+        dialog.show()
+    }
+
+    private fun updateFoodQuantity(itemId: String, newQuantity: Double) {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val dateStr = dateFormat.format(selectedDate.time)
+
+        lifecycleScope.launch {
+            try {
+                val updateDto = com.example.fithub.data.UpdateFoodQuantityDto(quantity = newQuantity)
+                NetworkModule.api.updateFoodQuantity(
+                    userId = currentUserId,
+                    date = dateStr,
+                    itemId = itemId,
+                    request = updateDto
+                )
+                Toast.makeText(requireContext(), "Zaktualizowano ilość", Toast.LENGTH_SHORT).show()
+                loadDataForDate(selectedDate)
+            } catch (e: Exception) {
+                Toast.makeText(requireContext(), "Błąd aktualizacji: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
     }
 
     private fun initDaysView() {
@@ -249,10 +320,8 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
 
         lifecycleScope.launch {
             try {
-                // Jeden GET request
                 val dailyNutrition = NetworkModule.api.getDailyNutrition(userId, date)
 
-                // czy nie zmieniono okna w miedzyczasie
                 if (loadIdAtStart != currentLoadId) return@launch
 
                 val breakfastMeals = dailyNutrition.meals.filter { meal ->
@@ -288,7 +357,6 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
     }
 
     private fun displayMeals(meals: List<MealWithFoodsDto>, mealType: String) {
-        // szukanie odpowiedniego kontenera
         val container = when(mealType.lowercase()) {
             "śniadanie" -> llBreakfastMeals
             "obiad" -> llLunchMeals
@@ -296,7 +364,6 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
             else -> return
         }
 
-        // czyszczenie starych posilkow
         container.removeAllViews()
 
         when (mealType.lowercase()) {
@@ -311,51 +378,47 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
             }
         }
 
-        // dodawanie pojedynczego posilku
         meals.forEach { meal ->
             meal.foods.forEach { foodItem ->
-
-
                 val food = foodItem.foodId
                 val quantity = foodItem.quantity / 100.0
-                val qtyLabel = foodItem.quantity.asGramsLabel()
 
-                val mealCalories = food.nutritionPer100g.calories * quantity
-                val mealProtein = food.nutritionPer100g.protein * quantity
-                val mealFat = food.nutritionPer100g.fat * quantity
-                val mealCarbs = food.nutritionPer100g.carbs * quantity
+                val protein = (food.nutritionPer100g.protein * quantity).roundToInt()
+                val fat = (food.nutritionPer100g.fat * quantity).roundToInt()
+                val carbs = (food.nutritionPer100g.carbs * quantity).roundToInt()
+                val calories = (food.nutritionPer100g.calories * quantity).roundToInt()
+
+                when (mealType.lowercase()) {
+                    "śniadanie" -> {
+                        breakfastCalories += calories
+                        breakfastProtein += protein
+                        breakfastFat += fat
+                        breakfastCarbs += carbs
+                    }
+                    "obiad" -> {
+                        lunchCalories += calories
+                        lunchProtein += protein
+                        lunchFat += fat
+                        lunchCarbs += carbs
+                    }
+                    "kolacja" -> {
+                        dinnerCalories += calories
+                        dinnerProtein += protein
+                        dinnerFat += fat
+                        dinnerCarbs += carbs
+                    }
+                }
 
                 addMealToList(
                     container = container,
-                    mealName = "- ${food.name} (${qtyLabel})",
+                    mealName = food.name,
                     itemId = foodItem.itemId,
-                    protein = kotlin.math.round(mealProtein).toInt(),
-                    fat = kotlin.math.round(mealFat).toInt(),
-                    carbs = kotlin.math.round(mealCarbs).toInt(),
-                    calories = kotlin.math.round(mealCalories).toInt()
+                    protein = protein,
+                    fat = fat,
+                    carbs = carbs,
+                    calories = calories,
+                    currentQuantity = foodItem.quantity
                 )
-
-                // sumowanie makroskladnikow
-                when (mealType.lowercase()){
-                    "śniadanie"->{
-                        breakfastCalories += mealCalories
-                        breakfastProtein += mealProtein
-                        breakfastFat += mealFat
-                        breakfastCarbs += mealCarbs
-                    }
-                    "obiad"->{
-                        lunchCalories += mealCalories
-                        lunchProtein += mealProtein
-                        lunchFat += mealFat
-                        lunchCarbs += mealCarbs
-                    }
-                    "kolacja"->{
-                        dinnerCalories += mealCalories
-                        dinnerProtein += mealProtein
-                        dinnerFat += mealFat
-                        dinnerCarbs += mealCarbs
-                    }
-                }
             }
         }
 
@@ -421,7 +484,6 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                     itemId = itemId
                 )
 
-                // Przeładuj dane po usunięciu
                 loadDataForDate(selectedDate)
                 Toast.makeText(requireContext(), "Usunięto produkt", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
