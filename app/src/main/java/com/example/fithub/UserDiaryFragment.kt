@@ -411,7 +411,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
 
                 addMealToList(
                     container = container,
-                    mealName = food.name,
+                    mealName = "${food.name} (${foodItem.quantity.toInt()}g)",
                     itemId = foodItem.itemId,
                     protein = protein,
                     fat = fat,
