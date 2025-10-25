@@ -8,8 +8,10 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
+import com.example.fithub.data.FoodDto
 import com.example.fithub.data.MealWithFoodsDto
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
@@ -105,7 +107,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         loadDataForDate(selectedDate)
     }
 
-    private fun addMealToList(container: LinearLayout, mealName: String, itemId: String, protein: Int = 0, fat: Int = 0, carbs: Int = 0, calories: Int = 0, currentQuantity: Double) {
+    private fun addMealToList(container: LinearLayout, mealName: String, itemId: String, protein: Int = 0, fat: Int = 0, carbs: Int = 0, calories: Int = 0, currentQuantity: Double, foodDto: FoodDto) {
         val mealView = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_meal, container, false)
 
@@ -122,20 +124,18 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         tvMealCarbs.text = "$carbs C"
         tvMealCalories.text = "$calories Kcal"
 
-        // Usuwanie posilku
         btnDeleteMeal.setOnClickListener {
             deleteFoodByItemId(itemId)
         }
 
-        // Edycja posilku
         mealView.setOnClickListener {
-            showEditQuantityDialog(mealName, itemId, currentQuantity)
+            showEditQuantityDialog(mealName, itemId, currentQuantity, foodDto)
         }
 
         container.addView(mealView)
     }
 
-    private fun showEditQuantityDialog(foodName: String, itemId: String, currentQuantity: Double) {
+    private fun showEditQuantityDialog(foodName: String, itemId: String, currentQuantity: Double, food: FoodDto) {
         val dialogLayout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(48, 24, 48, 24)
@@ -160,7 +160,36 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
 
         inputLayout.addView(etQuantity)
         inputLayout.addView(unitTextView)
+
+        val tvNutritionInfo = TextView(requireContext()).apply {
+            textSize = 14f
+            setPadding(0, 24, 0, 0)
+            setTextColor(resources.getColor(android.R.color.darker_gray, null))
+        }
+
+        val updateNutritionInfo = {
+            val quantity = etQuantity.text.toString().toDoubleOrNull() ?: 0.0
+            val factor = quantity / 100.0
+
+            val calories = food.nutritionPer100g.calories * factor
+            val protein = food.nutritionPer100g.protein * factor
+            val carbs = food.nutritionPer100g.carbs * factor
+            val fat = food.nutritionPer100g.fat * factor
+
+            tvNutritionInfo.text = String.format(
+                "Kalorie: %.1f kcal\nBiałko: %.1f g\nWęglowodany: %.1f g\nTłuszcze: %.1f g",
+                calories, protein, carbs, fat
+            )
+        }
+
+        etQuantity.doAfterTextChanged {
+            updateNutritionInfo()
+        }
+
+        updateNutritionInfo()
+
         dialogLayout.addView(inputLayout)
+        dialogLayout.addView(tvNutritionInfo)
 
         val dialog = android.app.AlertDialog.Builder(requireContext())
             .setTitle("Edytuj $foodName")
@@ -417,7 +446,8 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                     fat = fat,
                     carbs = carbs,
                     calories = calories,
-                    currentQuantity = foodItem.quantity
+                    currentQuantity = foodItem.quantity,
+                    foodDto = food
                 )
             }
         }
