@@ -148,6 +148,9 @@ class AddMealDialogFragment : DialogFragment() {
                         setPadding(16, 16, 16, 16)
                         setBackgroundResource(android.R.drawable.list_selector_background)
                         isClickable = true
+                        setOnClickListener {
+                            showQuantityDialog(food.name, food.id, food)
+                        }
                     }
 
                     val foodInfo = LinearLayout(requireContext()).apply {
@@ -175,18 +178,11 @@ class AddMealDialogFragment : DialogFragment() {
                         visibility = View.VISIBLE
                     }
 
-                    val btnAdd = Button(requireContext()).apply {
-                        text = "+"
-                        layoutParams = LinearLayout.LayoutParams(100, LinearLayout.LayoutParams.WRAP_CONTENT)
-                        setOnClickListener {
-                            showQuantityDialog(food.name, food.id, food)
-                        }
-                    }
+
 
                     foodInfo.addView(tvName)
                     foodInfo.addView(tvNutrition)
                     foodView.addView(foodInfo)
-                    foodView.addView(btnAdd)
 
                     container.addView(foodView)
                 }
@@ -373,7 +369,7 @@ class AddMealDialogFragment : DialogFragment() {
                     )
                     Toast.makeText(
                         requireContext(),
-                        "Dodano $quantity g produktu",
+                        "Dodano ${food.name} do $mealType",
                         Toast.LENGTH_SHORT
                     ).show()
                     onMealAddedListener?.onMealAdded()
