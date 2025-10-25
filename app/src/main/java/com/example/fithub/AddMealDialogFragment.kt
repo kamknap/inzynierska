@@ -2,6 +2,7 @@ package com.example.fithub
 
 import android.app.AlertDialog
 import android.app.Dialog
+import android.content.Context
 import android.os.Bundle
 import android.text.TextWatcher
 import android.util.Log
@@ -13,6 +14,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import android.widget.Toast
+import androidx.compose.material3.Text
 import androidx.compose.ui.semantics.text
 import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doAfterTextChanged
@@ -25,6 +27,7 @@ import com.example.fithub.data.OpenFoodFactsProduct
 import kotlinx.coroutines.launch
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
+import android.view.inputmethod.InputMethodManager
 
 
 class AddMealDialogFragment : DialogFragment() {
@@ -234,22 +237,83 @@ class AddMealDialogFragment : DialogFragment() {
     }
 
     private fun showQuantityDialog(foodName: String, foodId: String, food: FoodDto) {
-        val etQuantity = EditText(requireContext()).apply {
-            hint = "Ilość w gramach"
-            inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
-            setText("100")
+
+        val dialogLayout = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(48,24,48,24)
         }
 
-        AlertDialog.Builder(requireContext())
+        val inputLayout = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            gravity = android.view.Gravity.CENTER_VERTICAL
+        }
+
+        val etQuantity = EditText(requireContext()).apply {
+            hint = "Ilość"
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+            setText("100")
+            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        }
+
+        val unitTextView = TextView(requireContext()).apply {
+            text = "g"
+            textSize = 18F
+        }
+
+        inputLayout.addView(etQuantity)
+        inputLayout.addView(unitTextView)
+
+        val tvNutritionInfo = TextView(requireContext()).apply {
+            textSize = 14f
+            setPadding(0, 24, 0, 0) // Odstęp od góry
+            setTextColor(resources.getColor(android.R.color.darker_gray, null))
+        }
+
+        val updateNutritionInfo = {
+            val quantity = etQuantity.text.toString().toDoubleOrNull() ?: 0.0
+            val factor = quantity / 100.0
+
+            val calories = food.nutritionPer100g.calories * factor
+            val protein = food.nutritionPer100g.protein * factor
+            val carbs = food.nutritionPer100g.carbs * factor
+            val fat = food.nutritionPer100g.fat * factor
+
+            tvNutritionInfo.text = String.format(
+                "Kalorie: %.1f kcal\nBiałko: %.1f g\nWęglowodany: %.1f g\nTłuszcze: %.1f g",
+                calories, protein, carbs, fat
+            )
+        }
+
+        etQuantity.doAfterTextChanged {
+            updateNutritionInfo()
+        }
+
+        updateNutritionInfo()
+
+        dialogLayout.addView(inputLayout)
+        dialogLayout.addView(tvNutritionInfo)
+
+        val dialog = AlertDialog.Builder(requireContext())
             .setTitle("Dodaj $foodName")
-            .setMessage("Podaj ilość:")
-            .setView(etQuantity)
+            .setView(dialogLayout)
             .setPositiveButton("Dodaj") { _, _ ->
                 val quantity = etQuantity.text.toString().toDoubleOrNull() ?: 100.0
                 addFoodToMeal(foodId, quantity, food)
             }
             .setNegativeButton("Anuluj", null)
-            .show()
+            .create()
+
+        dialog.setOnShowListener {
+            etQuantity.requestFocus()
+            etQuantity.selectAll()
+
+            etQuantity.postDelayed({
+                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(etQuantity, InputMethodManager.SHOW_IMPLICIT)
+            }, 100)
+        }
+
+        dialog.show()
     }
 
     private fun addFoodToMeal(foodId: String, quantity: Double, food: FoodDto) {
@@ -262,8 +326,6 @@ class AddMealDialogFragment : DialogFragment() {
             return
         }
 
-
-
         lifecycleScope.launch {
             try {
                 // sprawdzanie czy produkt istnieje w lokalnej bazie
@@ -274,24 +336,24 @@ class AddMealDialogFragment : DialogFragment() {
                     null
                 }
                 // jesli produktu nie ma w bazie to dodaje go
-                if(existingProduct == null || existingProduct.id.isNullOrEmpty()){
-                    val createFoodDto = CreateFoodDto(
-                        name = food.name,
-                        brand = food.brand,
-                        barcode = food.barcode,
-                        nutritionPer100g = food.nutritionPer100g,
-                        category = food.category,
-                        addedBy = userId
-                    )
-                    val createdFood = NetworkModule.api.createFood(createFoodDto)
-                    actualFoodId = createdFood.id
-                    Log.d("AddMealDialog", "Produkt dodany z ID: $actualFoodId")
-                } else {
-                    Log.d("AddMealDialog", "Produkt już istnieje z ID: ${existingProduct.id}")
-                    actualFoodId = existingProduct.id
+                    if(existingProduct == null || existingProduct.id.isNullOrEmpty()){
+                        val createFoodDto = CreateFoodDto(
+                            name = food.name,
+                            brand = food.brand,
+                            barcode = food.barcode,
+                            nutritionPer100g = food.nutritionPer100g,
+                            category = food.category,
+                            addedBy = userId
+                        )
+                        val createdFood = NetworkModule.api.createFood(createFoodDto)
+                        actualFoodId = createdFood.id
+                        Log.d("AddMealDialog", "Produkt dodany z ID: $actualFoodId")
+                    } else {
+                        Log.d("AddMealDialog", "Produkt już istnieje z ID: ${existingProduct.id}")
+                        actualFoodId = existingProduct.id
         }
 
-                // jesli produkt w lokalnej bazie to dodaje go do posiłku
+                // jesli produkt znajduje sie w lokalnej bazie to dodaje go do posiłku
                     val foodItem = com.example.fithub.data.FoodItemDto(
                         foodId = actualFoodId,
                         quantity = quantity
@@ -324,7 +386,7 @@ class AddMealDialogFragment : DialogFragment() {
         }
     }
 
-    // TODO DODAC WALIDACJE DO SKANERA
+    // TODO DODAC WALIDACJE DO SKANERA ORAZ NAPRAWIC MODEL 3D W INKSCAPE
     private fun searchByBarcode(barcode: String) {
         lifecycleScope.launch {
             try {
@@ -342,13 +404,26 @@ class AddMealDialogFragment : DialogFragment() {
 
                 if (offProduct.status == 1 && offProduct.product != null) {
                     val mappedFood = mapOpenFoodFactsToFood(offProduct.product)
-                    showQuantityDialog(mappedFood.name, mappedFood.id, mappedFood)
+                    if (mappedFood.name == "Nieznany produkt"){
+                        AlertDialog.Builder(requireContext())
+                            .setTitle("Błąd")
+                            .setMessage("Nie znaleziono produktu dla kodu kreskowego: $barcode. Spróbuj ponownie lub dodaj produkt przy pomocy ręcznego dodawania")
+                            .setPositiveButton("OK") { dialog, _ ->
+                                dialog.dismiss()
+                            }
+                            .show()
+                    }
+                    else{
+                        showQuantityDialog(mappedFood.name, mappedFood.id, mappedFood)
+                    }
                 } else {
-                    Toast.makeText(
-                        requireContext(),
-                        "Nie znaleziono produktu o kodzie: $barcode",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                    AlertDialog.Builder(requireContext())
+                        .setTitle("Błąd")
+                        .setMessage("Nie znaleziono produktu dla kodu kreskowego: $barcode")
+                        .setPositiveButton("OK") { dialog, _ ->
+                            dialog.dismiss()
+                        }
+                        .show()
                 }
 
             } catch (e: Exception) {
