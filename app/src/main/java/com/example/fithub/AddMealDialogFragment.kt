@@ -77,6 +77,13 @@ class AddMealDialogFragment : DialogFragment() {
             }
         }
 
+        val btnAddOwnProduct = Button(requireContext()).apply {
+            text = "Dodaj produkt ręcznie"
+            setOnClickListener {
+                showAddOwnProductDialog()
+            }
+        }
+
         val scrollView = ScrollView(requireContext()).apply {
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -91,6 +98,7 @@ class AddMealDialogFragment : DialogFragment() {
         scrollView.addView(llSearchResults)
 
         mainLayout.addView(btnScanner)
+        mainLayout.addView(btnAddOwnProduct)
         mainLayout.addView(etSearch)
         mainLayout.addView(scrollView)
 
@@ -430,6 +438,96 @@ class AddMealDialogFragment : DialogFragment() {
                 ).show()
             }
         }
+    }
+
+    private fun showAddOwnProductDialog() {
+        val dialogView = ScrollView(requireContext())
+        val layout = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(48, 24,48, 24)
+        }
+        dialogView.addView(layout)
+
+        val etName = EditText(requireContext()).apply { hint = "Nazwa produktu" }
+        val etBrand = EditText(requireContext()).apply { hint = "Marka (opcjonalnie)" }
+        val etBarcode = EditText(requireContext()).apply { hint = "Kod kreskowy (opcjonalnie)" }
+        val etCalories = EditText(requireContext()).apply {
+            hint = "Kalorie (kcal/100g)"
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+        }
+        val etProtein = EditText(requireContext()).apply {
+            hint = "Białko (g/100g)"
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+        }
+        val etCarbs = EditText(requireContext()).apply {
+            hint = "Węglowodany (g/100g)"
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+        }
+        val etFat = EditText(requireContext()).apply {
+            hint = "Tłuszcze (g/100g)"
+            inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+        }
+
+        layout.addView(etName)
+        layout.addView(etBrand)
+        layout.addView(etBarcode)
+        layout.addView(etCalories)
+        layout.addView(etProtein)
+        layout.addView(etCarbs)
+        layout.addView(etFat)
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle("Dodaj własny produkt")
+            .setView(dialogView)
+            .setPositiveButton("Dodaj") { _, _ ->
+
+                val name = etName.text.toString()
+                val calories = etCalories.text.toString().toDoubleOrNull()
+
+                if (name.isBlank() || calories == null) {
+                    Toast.makeText(requireContext(), "Nazwa i kalorie są wymagane", Toast.LENGTH_SHORT).show()
+                } else {
+                    val userId = arguments?.getString("userId")
+                    if(userId.isNullOrEmpty()){
+                        Toast.makeText(requireContext(), "Błąd: Brak ID użytkownika", Toast.LENGTH_SHORT).show()
+                        return@setPositiveButton
+                    }
+
+                    val newFood = CreateFoodDto(
+                        name = name,
+                        brand = etBrand.text.toString().ifEmpty { null },
+                        barcode = etBarcode.text.toString().ifEmpty { null },
+                        nutritionPer100g = NutritionData(
+                            calories = calories,
+                            protein = etProtein.text.toString().toDoubleOrNull() ?: 0.0,
+                            carbs = etCarbs.text.toString().toDoubleOrNull() ?: 0.0,
+                            fat = etFat.text.toString().toDoubleOrNull() ?: 0.0,
+                            fiber = 0.0,
+                            sugar = 0.0,
+                            sodium = 0.0
+                        ),
+                        category = "User",
+                        addedBy = userId
+                    )
+
+                    lifecycleScope.launch {
+                        try {
+                            val createdFood = NetworkModule.api.createFood(newFood)
+                            Log.d("AddOwnProduct", "Dodano nowy produkt: ${createdFood.name}")
+                            Toast.makeText(requireContext(), "Dodano produkt: ${createdFood.name}", Toast.LENGTH_SHORT).show()
+                            showQuantityDialog(createdFood.name, createdFood.id, createdFood)
+
+                        } catch (e: Exception) {
+                            Log.e("AddOwnProduct", "Błąd dodawania produktu", e)
+                            Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_LONG).show()
+                        }
+                    }
+                }
+            }
+            .setNegativeButton("Anuluj", null)
+            .create()
+
+        dialog.show()
     }
 
 }
