@@ -444,7 +444,7 @@ class AddMealDialogFragment : DialogFragment() {
         val dialogView = ScrollView(requireContext())
         val layout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(48, 24,48, 24)
+            setPadding(48, 24, 48, 24)
         }
         dialogView.addView(layout)
 
@@ -479,53 +479,74 @@ class AddMealDialogFragment : DialogFragment() {
         val dialog = AlertDialog.Builder(requireContext())
             .setTitle("Dodaj własny produkt")
             .setView(dialogView)
-            .setPositiveButton("Dodaj") { _, _ ->
+            .setPositiveButton("Dodaj", null)
+            .setNegativeButton("Anuluj", null)
+            .create()
 
-                val name = etName.text.toString()
-                val calories = etCalories.text.toString().toDoubleOrNull()
+        dialog.setOnShowListener {
+            val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            positiveButton.setOnClickListener {
+                val name = etName.text.toString().trim()
+                val caloriesText = etCalories.text.toString()
 
-                if (name.isBlank() || calories == null) {
-                    Toast.makeText(requireContext(), "Nazwa i kalorie są wymagane", Toast.LENGTH_SHORT).show()
-                } else {
-                    val userId = arguments?.getString("userId")
-                    if(userId.isNullOrEmpty()){
-                        Toast.makeText(requireContext(), "Błąd: Brak ID użytkownika", Toast.LENGTH_SHORT).show()
-                        return@setPositiveButton
-                    }
+                if (name.isBlank()) {
+                    etName.error = "Nazwa jest wymagana"
+                    return@setOnClickListener
+                }
+                if (caloriesText.isBlank()) {
+                    etCalories.error = "Kalorie są wymagane"
+                    return@setOnClickListener
+                }
 
-                    val newFood = CreateFoodDto(
-                        name = name,
-                        brand = etBrand.text.toString().ifEmpty { null },
-                        barcode = etBarcode.text.toString().ifEmpty { null },
-                        nutritionPer100g = NutritionData(
-                            calories = calories,
-                            protein = etProtein.text.toString().toDoubleOrNull() ?: 0.0,
-                            carbs = etCarbs.text.toString().toDoubleOrNull() ?: 0.0,
-                            fat = etFat.text.toString().toDoubleOrNull() ?: 0.0,
-                            fiber = 0.0,
-                            sugar = 0.0,
-                            sodium = 0.0
-                        ),
-                        category = "User",
-                        addedBy = userId
-                    )
+                val calories = caloriesText.toDoubleOrNull()
+                if (calories == null) {
+                    etCalories.error = "Nieprawidłowa wartość kalorii"
+                    return@setOnClickListener
+                }
 
-                    lifecycleScope.launch {
-                        try {
+                val userId = arguments?.getString("userId")
+                if (userId.isNullOrEmpty()) {
+                    Toast.makeText(requireContext(), "Błąd: Brak ID użytkownika", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val newFood = CreateFoodDto(
+                    name = name,
+                    brand = etBrand.text.toString().ifEmpty { null },
+                    barcode = etBarcode.text.toString().ifEmpty { null },
+                    nutritionPer100g = NutritionData(
+                        calories = calories,
+                        protein = etProtein.text.toString().toDoubleOrNull() ?: 0.0,
+                        carbs = etCarbs.text.toString().toDoubleOrNull() ?: 0.0,
+                        fat = etFat.text.toString().toDoubleOrNull() ?: 0.0,
+                        fiber = 0.0,
+                        sugar = 0.0,
+                        sodium = 0.0
+                    ),
+                    category = "User",
+                    addedBy = userId
+                )
+
+                lifecycleScope.launch {
+                    try {
+                        val checkFoodExist = NetworkModule.api.getFoods(name)
+                        if (checkFoodExist.foods.isNotEmpty()) {
+                            etName.error = "Produkt o tej nazwie już istnieje"
+                        } else {
                             val createdFood = NetworkModule.api.createFood(newFood)
                             Log.d("AddOwnProduct", "Dodano nowy produkt: ${createdFood.name}")
                             Toast.makeText(requireContext(), "Dodano produkt: ${createdFood.name}", Toast.LENGTH_SHORT).show()
-                            showQuantityDialog(createdFood.name, createdFood.id, createdFood)
 
-                        } catch (e: Exception) {
-                            Log.e("AddOwnProduct", "Błąd dodawania produktu", e)
-                            Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_LONG).show()
+                            dialog.dismiss()
+                            showQuantityDialog(createdFood.name, createdFood.id, createdFood)
                         }
+                    } catch (e: Exception) {
+                        Log.e("AddOwnProduct", "Błąd dodawania produktu", e)
+                        Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_LONG).show()
                     }
                 }
             }
-            .setNegativeButton("Anuluj", null)
-            .create()
+        }
 
         dialog.show()
     }
