@@ -43,7 +43,7 @@ class MainActivity : AppCompatActivity() {
         val buttonMuscle = findViewById<Button>(R.id.btnMuscle)
         buttonMuscle.setOnClickListener {
             val intent = Intent(this, MuscleModel::class.java)
-            intent.putExtra("url", "file:///android_asset/index/back.html")
+            intent.putExtra("url", "file:///android_asset/index/front.html")
             startActivity(intent)
         }
 
