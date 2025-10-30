@@ -15,7 +15,6 @@ class OnboardingActivity : AppCompatActivity() {
 
 
 
-    // 2) Jeśli pierwszy raz tworzymy aktywność, wstaw UserDataFragment do kontenera
         if (savedInstanceState == null) {
             supportFragmentManager.commit {
                 setReorderingAllowed(true)
@@ -29,15 +28,12 @@ class OnboardingActivity : AppCompatActivity() {
             if (fm.backStackEntryCount > 0) {
                 fm.popBackStack()
             } else {
-                // Brak fragmentów do cofnięcia – zamknij aktywność
                 finish()
             }
         }
     }
 
-    /**
-     * 3) Funkcja, która podmienia zawartość kontenera na GoalsFragment
-     */
+
     fun showGoalsFragment(userData: UserData? = null) {
         supportFragmentManager.commit {
             setReorderingAllowed(true)

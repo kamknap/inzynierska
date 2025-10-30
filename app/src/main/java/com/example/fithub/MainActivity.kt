@@ -12,11 +12,13 @@ import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import kotlinx.coroutines.launch
 import android.util.Log
+import androidx.activity.addCallback
 import androidx.fragment.app.commit
 import com.example.fithub.data.FoodDto
 import com.example.fithub.data.NewUserDto
 import com.example.fithub.data.NutritionData
 import com.example.fithub.data.OpenFoodFactsProduct
+import com.google.android.material.bottomnavigation.BottomNavigationView
 
 class MainActivity : AppCompatActivity() {
 
@@ -43,7 +45,6 @@ class MainActivity : AppCompatActivity() {
         val buttonMuscle = findViewById<Button>(R.id.btnMuscle)
         buttonMuscle.setOnClickListener {
             val intent = Intent(this, MuscleModel::class.java)
-//            intent.putExtra("url", "file:///android_asset/index/front.html")
             startActivity(intent)
         }
 
@@ -56,32 +57,6 @@ class MainActivity : AppCompatActivity() {
         //api
         val btnApi = findViewById<Button>(R.id.btnApi)
         btnApi.setOnClickListener {
-//            lifecycleScope.launch {
-//                try {
-//                    val users = NetworkModule.api.getUsers()
-//                    val userGoals = NetworkModule.api.getUserGoals()
-//
-//                    if (users.isNotEmpty() && userGoals.isNotEmpty()) {
-//                        val username = users[0].username
-//                        val birthDate = users[0].profile.birthDate.replace(Regex("T.*$"), "")
-//                        val calorieTarget = userGoals[0].plan.calorieTarget ?: "Brak celu"
-//                        val goalOwner = userGoals[0].userId.username
-//                        val message = "User: $username, Data ur: $birthDate, Kalorie: $calorieTarget, Cel należy do: $goalOwner"
-//                        Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
-//                        Log.d("ApiInfo", message)
-//                    } else {
-//                        val usersCount = users.size
-//                        val goalsCount = userGoals.size
-//                        val message = "Users: $usersCount, Goals: $goalsCount"
-//                        Toast.makeText(this@MainActivity, message, Toast.LENGTH_LONG).show()
-//                        Log.d("ApiInfo", message)
-//                    }
-//                } catch (e: Exception) {
-//                    val errorMessage = "Błąd: ${e.message}"
-//                    Toast.makeText(this@MainActivity, errorMessage, Toast.LENGTH_LONG).show()
-//                    Log.e("ApiError", errorMessage, e)
-//                }
-//            }
 
             lifecycleScope.launch {
                 try {

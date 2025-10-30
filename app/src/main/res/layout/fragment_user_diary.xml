@@ -212,11 +212,11 @@
         </androidx.cardview.widget.CardView>
 
         <!-- 4. Przyciski funkcyjne-->
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cvButtons"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp"/>
+<!--        <androidx.cardview.widget.CardView-->
+<!--            android:id="@+id/cvButtons"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_marginBottom="16dp"/>-->
 
     </LinearLayout>
 </ScrollView>

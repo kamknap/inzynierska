@@ -75,7 +75,6 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
 
         initDaysView()
 
-        // przyciski dodawania jedzenia
         btnBreakfast.setOnClickListener {
             openMealDialog("Śniadanie")
 
