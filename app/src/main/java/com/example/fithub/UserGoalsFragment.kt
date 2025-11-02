@@ -281,6 +281,7 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
                             "maintain" -> "maintain"
                             else -> "maintain"
                         },
+                        firstWeightKg = goals.firstWeight?.toInt() ?: 0,
                         targetWeightKg = goals.targetWeight?.toInt() ?: 0,
                         plan = GoalPlanData(
                             trainingFrequencyPerWeek = goals.trainingFrequencyPerWeek,

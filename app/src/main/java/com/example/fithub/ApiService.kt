@@ -8,14 +8,17 @@ interface ApiService {
     @GET("/api/users")
     suspend fun getUsers(): List<NewUserDto>
 
+    @GET("/api/users/{id}")
+    suspend fun getUserById(@Path("id") id: String): NewUserDto
+
     @POST("/api/users")
     suspend fun createUser(@Body user: CreateUserDto): NewUserDto
 
     @POST("/api/user-goals")
     suspend fun createUserGoal(@Body userGoal: CreateUserGoalDto): UserGoalDto
 
-    @GET("/api/user-goals")
-    suspend fun getUserGoals(): List<UserGoalDto>
+    @GET("/api/user-goals/user/{userId}")
+    suspend fun getUserGoalsByUserId(@Path("userId") userId: String): List<UserGoalDto>
 
     // Foods endpoints
     @GET("/api/foods")

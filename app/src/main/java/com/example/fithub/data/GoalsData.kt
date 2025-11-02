@@ -3,6 +3,7 @@ import androidx.annotation.IntRange
 
 data class GoalsData(
     val mainGoal: MainGoal = MainGoal.MAINTAIN,
+    val firstWeightKg: Double? = null,
     val targetWeightKg: Double? = null,
     @IntRange(from = 1, to = 5)
     val activityLevel: Int = 1,
@@ -24,6 +25,7 @@ data class GoalsData(
         MainGoal.GAIN -> "Przytyć"
     }
     val targetWeight: Double? get() = targetWeightKg
+    val firstWeight: Double? get() = firstWeightKg
     
     fun isComplete(): Boolean = targetWeightKg != null
 
@@ -36,6 +38,7 @@ data class GoalsData(
 
     fun toDto(): AddGoalsDto = AddGoalsDto(
         mainGoal = mainGoalKey,
+        firstWeight = firstWeightKg?.toInt() ?:0,
         targetWeight = targetWeightKg?.toInt() ?: 0,
         activityLevel = activityLevel,
         trainingFrequencyPerWeek = trainingFrequencyPerWeek,
@@ -46,7 +49,8 @@ data class GoalsData(
 }
 
 data class AddGoalsDto(
-    val mainGoal: String,              // "lose_weight" | "maintain" | "gain_weight"
+    val mainGoal: String, // "lose_weight" | "maintain" | "gain_weight"
+    val firstWeight: Int,
     val targetWeight: Int,             // kg
     val activityLevel: Int,            // 1..5
     val trainingFrequencyPerWeek: Int, // 0..7
