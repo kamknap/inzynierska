@@ -85,4 +85,17 @@ interface ApiService {
         @Body request: UpdateFoodQuantityDto
     ): DailyNutritionWithFoodsDto
 
+    // Weight History endpoints
+    @GET("/api/weight-history/{userId}")
+    suspend fun getUserWeightHistory(@Path("userId") userId: String): List<UserWeightHistoryDto>
+
+    @POST("/api/weight-history")
+    suspend fun createWeightMeasurement(@Body measurement: CreateWeightMeasurementDto): UserWeightHistoryDto
+
+    @PUT("/api/users/{id}")
+    suspend fun updateUser(
+        @Path("id") id: String,
+        @Body updateData: UpdateUserDto
+    ): NewUserDto
+
 }
