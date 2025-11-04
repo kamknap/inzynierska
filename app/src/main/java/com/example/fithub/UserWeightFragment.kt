@@ -1,6 +1,7 @@
 package com.example.fithub
 
 import android.app.AlertDialog
+import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -19,13 +20,19 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
-// TODO - historia pomiarow i wykres zsynchronizowany z przyciskami
+// TODO - ustandaryzować jednostkę wagi INT albo DOUBLE i wszedzie zmienić, wykres zsynchronizowany z przyciskami
 class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
 
     private lateinit var userWeight: TextView
     private lateinit var userProgress: TextView
     private lateinit var btnAddWeight: ImageButton
+    private lateinit var weightHistoryAdapter: WeightHistoryAdapter
+    private lateinit var rvWeightHistory : RecyclerView
+    private var currentUserWeight: Double? = null
+    private var currentGoalType: String? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -33,10 +40,12 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
         userWeight = view.findViewById(R.id.tvCurrentWeight)
         userProgress = view.findViewById(R.id.tvProgress)
         btnAddWeight = view.findViewById(R.id.btnAddWeight)
+        rvWeightHistory = view.findViewById(R.id.rvWeightHistory)
 
         val userId = "68cbc06e6cdfa7faa8561f82"
         getCurrentWeight(userId)
         updateProgressStats(userId)
+        fillHistory(userId)
 
         btnAddWeight.setOnClickListener {
             showAddWeightDialog(userId)
@@ -53,11 +62,15 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
                     return@launch
                 }
 
+                currentUserWeight = user.profile.weightKg.toDouble()
 
                 val activeGoal = userGoals.firstOrNull { it.status == "active" }
                     ?: userGoals.first()
 
+                currentGoalType = activeGoal.type
+
                 userWeight.text = "Obecna waga: ${user.profile.weightKg}kg, cel: ${activeGoal.targetWeightKg}kg"
+                updateAdapter()
             }
             catch (e: Exception){
                 Toast.makeText(
@@ -88,6 +101,8 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
                 val startWeight = activeGoal.firstWeightKg
                 val targetWeight = activeGoal.targetWeightKg
                 val goalType = activeGoal.type
+
+                currentGoalType = goalType
 
                 when (goalType){
                     "lose_weight" -> {
@@ -144,7 +159,6 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
         inputLayout.addView(etWeight)
         inputLayout.addView(unitTextView)
 
-        // Pole do wyboru daty
         val dateLayout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.HORIZONTAL
             gravity = android.view.Gravity.CENTER_VERTICAL
@@ -221,6 +235,7 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
 
                 getCurrentWeight(userId)
                 updateProgressStats(userId)
+                fillHistory(userId)
             }
             catch (e: Exception){
                 Log.e("UserWeightFragment", "Błąd dodawania pomiaru", e)
@@ -230,6 +245,36 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
                     Toast.LENGTH_LONG
                 ).show()
             }
+        }
+    }
+
+    private fun fillHistory(userId: String){
+        viewLifecycleOwner.lifecycleScope.launch {
+            try {
+                val userHistoryList = NetworkModule.api.getUserWeightHistory(userId)
+
+                val sortedList = userHistoryList.sortedByDescending { it.measuredAt }
+
+                weightHistoryAdapter = WeightHistoryAdapter(currentUserWeight, currentGoalType)
+                rvWeightHistory.apply {
+                    layoutManager = LinearLayoutManager(requireContext())
+                    adapter = weightHistoryAdapter
+                }
+                weightHistoryAdapter.submitList(sortedList)
+
+                Log.d("WeightHistory", "Załadowano ${sortedList.size} pomiarów")
+            }
+            catch(e: Exception){
+                Log.e("UserWeightFragment", "Bład", e)
+            }
+        }
+    }
+
+    private fun updateAdapter() {
+        if (::weightHistoryAdapter.isInitialized) {
+            weightHistoryAdapter = WeightHistoryAdapter(currentUserWeight, currentGoalType)
+            rvWeightHistory.adapter = weightHistoryAdapter
+            fillHistory("68cbc06e6cdfa7faa8561f82")
         }
     }
 }
