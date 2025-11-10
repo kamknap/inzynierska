@@ -18,6 +18,16 @@
         android:textColor="@android:color/black" />
 
     <TextView
+        android:id="@+id/tvHistoryWeightChange"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:text="0.0"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@android:color/black" />
+
+    <TextView
         android:id="@+id/tvHistoryDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
