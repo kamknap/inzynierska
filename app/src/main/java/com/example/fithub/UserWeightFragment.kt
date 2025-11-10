@@ -23,7 +23,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.fithub.data.UserWeightHistoryDto
 import java.util.Calendar
 
-// TODO - ustandaryzować jednostkę wagi INT albo DOUBLE i wszedzie zmienić, wykres zsynchronizowany z przyciskami
 class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
 
     private lateinit var userWeight: TextView

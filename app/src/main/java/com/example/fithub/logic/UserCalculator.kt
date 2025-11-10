@@ -24,4 +24,9 @@ class UserCalculator {
             else -> null
         }
     }
+
+    fun calculateEnergyExpenditure(weight: Double, mets: Double, minutes: Double): Double? {
+        if (weight <= 0 || mets <= 0 || minutes <= 0) return null
+        return ((mets * 3.5 * weight) / 200) * minutes
+    }
 }

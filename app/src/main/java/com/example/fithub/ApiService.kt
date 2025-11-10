@@ -98,4 +98,7 @@ interface ApiService {
         @Body updateData: UpdateUserDto
     ): NewUserDto
 
+    //Exercises endpoints
+    @GET("/api/exercises?name={name}")
+    suspend fun getExercisesByName(@Query("name") name: String): List<ExerciseDto>
 }
