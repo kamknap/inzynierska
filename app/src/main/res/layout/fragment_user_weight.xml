@@ -119,8 +119,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Od początku"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
+                        android:textSize="13sp"
+                        android:padding="8dp"
                         />
 
                     <Button
@@ -129,9 +129,9 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Ostatni rok"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
+                        android:text="Os. rok"
+                        android:textSize="13sp"
+                        android:padding="8dp"
                         />
 
                     <Button
@@ -140,13 +140,13 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="6 miesięcy"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
+                        android:text="6 mies."
+                        android:textSize="13sp"
+                        android:padding="8dp"
                         />
                 </LinearLayout>
 
-                <!-- Drugi rząd przycisków -->
+<!--                 Drugi rząd przycisków -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -158,21 +158,19 @@
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="3 miesiące"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        />
+                        android:text="3 mies."
+                        android:textSize="13sp"
+                        android:padding="8dp" />
 
                     <Button
-                        android:id="@+id/btnRangeOneMonth"
+                        android:id="@+id/btnRangeMonth"
                         style="?android:attr/buttonBarButtonStyle"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="1 miesiąc"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        />
+                        android:text="Miesiąc"
+                        android:textSize="13sp"
+                        android:padding="8dp" />
 
                     <Button
                         android:id="@+id/btnRangeWeek"
@@ -181,9 +179,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Tydzień"
-                        android:textSize="14sp"
-                        android:textStyle="bold"
-                        />
+                        android:textSize="13sp"
+                        android:padding="8dp" />
                 </LinearLayout>
 
             </LinearLayout>
@@ -198,20 +195,23 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
+                android:orientation="vertical"
+                android:padding="16dp">
 
                 <TextView
                     android:id="@+id/tvGraph"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:textSize="18sp"
                     android:textStyle="bold"
-                    android:text="Wykres zmian wagi w czasie"/>
+                    android:text="Wykres zmian wagi w czasie"
+                    android:layout_marginBottom="8dp"/>
 
-
+                <com.example.fithub.WeightChartView
+                    android:id="@+id/weightChartView"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    android:background="#FFFFFF"/>
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>

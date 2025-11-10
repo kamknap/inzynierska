@@ -1,7 +1,6 @@
 package com.example.fithub
 
 import android.app.AlertDialog
-import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -15,13 +14,14 @@ import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.example.fithub.data.UpdateProfileData
 import com.example.fithub.data.UpdateUserDto
-import com.example.fithub.data.UserGoalDto
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.fithub.data.UserWeightHistoryDto
+import java.util.Calendar
 
 // TODO - ustandaryzować jednostkę wagi INT albo DOUBLE i wszedzie zmienić, wykres zsynchronizowany z przyciskami
 class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
@@ -31,8 +31,22 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
     private lateinit var btnAddWeight: ImageButton
     private lateinit var weightHistoryAdapter: WeightHistoryAdapter
     private lateinit var rvWeightHistory : RecyclerView
+    private lateinit var weightChartView: WeightChartView
     private var currentUserWeight: Double? = null
     private var currentGoalType: String? = null
+    private var referenceWeight: Double? = null
+    private lateinit var btnRangeAll: Button
+    private lateinit var btnRangeYear: Button
+    private lateinit var btnRangeSixMonths: Button
+    private lateinit var btnRangeThreeMonths: Button
+    private lateinit var btnRangeMonth: Button
+    private lateinit var btnRangeWeek: Button
+    private var fullHistoryList: List<UserWeightHistoryDto> = emptyList()
+    private var currentRange: DateRange = DateRange.THREE_MONTHS
+    enum class DateRange {
+        ALL, YEAR, SIX_MONTHS, THREE_MONTHS, MONTH, WEEK
+    }
+
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -41,6 +55,14 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
         userProgress = view.findViewById(R.id.tvProgress)
         btnAddWeight = view.findViewById(R.id.btnAddWeight)
         rvWeightHistory = view.findViewById(R.id.rvWeightHistory)
+        weightChartView = view.findViewById(R.id.weightChartView)
+        btnRangeAll = view.findViewById(R.id.btnRangeAll)
+        btnRangeYear = view.findViewById(R.id.btnRangeYear)
+        btnRangeSixMonths = view.findViewById(R.id.btnRangeSixMonths)
+        btnRangeThreeMonths = view.findViewById(R.id.btnRangeThreeMonths)
+        btnRangeMonth = view.findViewById(R.id.btnRangeMonth)
+        btnRangeWeek = view.findViewById(R.id.btnRangeWeek)
+
 
         val userId = "68cbc06e6cdfa7faa8561f82"
         getCurrentWeight(userId)
@@ -50,6 +72,44 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
         btnAddWeight.setOnClickListener {
             showAddWeightDialog(userId)
         }
+
+        btnRangeAll.setOnClickListener {
+            currentRange = DateRange.ALL
+            updateChartRange()
+            highlightSelectedButton(btnRangeAll)
+        }
+
+        btnRangeYear.setOnClickListener {
+            currentRange = DateRange.YEAR
+            updateChartRange()
+            highlightSelectedButton(btnRangeYear)
+        }
+
+        btnRangeSixMonths.setOnClickListener {
+            currentRange = DateRange.SIX_MONTHS
+            updateChartRange()
+            highlightSelectedButton(btnRangeSixMonths)
+        }
+
+        btnRangeThreeMonths.setOnClickListener {
+            currentRange = DateRange.THREE_MONTHS
+            updateChartRange()
+            highlightSelectedButton(btnRangeThreeMonths)
+        }
+
+        btnRangeMonth.setOnClickListener {
+            currentRange = DateRange.MONTH
+            updateChartRange()
+            highlightSelectedButton(btnRangeMonth)
+        }
+
+        btnRangeWeek.setOnClickListener {
+            currentRange = DateRange.WEEK
+            updateChartRange()
+            highlightSelectedButton(btnRangeWeek)
+        }
+
+        highlightSelectedButton(btnRangeThreeMonths)
     }
 
     private fun getCurrentWeight(userId: String){
@@ -68,6 +128,9 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
                     ?: userGoals.first()
 
                 currentGoalType = activeGoal.type
+                referenceWeight = activeGoal.firstWeightKg.toDouble()
+                Log.d("UserWeightFragment", "firstMeasured: $referenceWeight")
+
 
                 userWeight.text = "Obecna waga: ${user.profile.weightKg}kg, cel: ${activeGoal.targetWeightKg}kg"
                 updateAdapter()
@@ -222,7 +285,7 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
                         sex = currentUser.profile.sex,
                         birthDate = currentUser.profile.birthDate,
                         heightCm = currentUser.profile.heightCm,
-                        weightKg = weight.toInt()
+                        weightKg = weight
                     )
                 )
                 NetworkModule.api.updateUser(userId, updateUserDto)
@@ -253,28 +316,92 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
             try {
                 val userHistoryList = NetworkModule.api.getUserWeightHistory(userId)
 
+                fullHistoryList = userHistoryList
+
                 val sortedList = userHistoryList.sortedByDescending { it.measuredAt }
 
-                weightHistoryAdapter = WeightHistoryAdapter(currentUserWeight, currentGoalType)
+                weightHistoryAdapter = WeightHistoryAdapter(referenceWeight, currentGoalType)
                 rvWeightHistory.apply {
                     layoutManager = LinearLayoutManager(requireContext())
                     adapter = weightHistoryAdapter
                 }
                 weightHistoryAdapter.submitList(sortedList)
 
+                updateChartRange()
                 Log.d("WeightHistory", "Załadowano ${sortedList.size} pomiarów")
             }
             catch(e: Exception){
-                Log.e("UserWeightFragment", "Bład", e)
+                Log.e("UserWeightFragment", "Błąd", e)
             }
         }
     }
 
     private fun updateAdapter() {
         if (::weightHistoryAdapter.isInitialized) {
-            weightHistoryAdapter = WeightHistoryAdapter(currentUserWeight, currentGoalType)
+            weightHistoryAdapter = WeightHistoryAdapter(referenceWeight, currentGoalType)
             rvWeightHistory.adapter = weightHistoryAdapter
             fillHistory("68cbc06e6cdfa7faa8561f82")
+        }
+    }
+
+    private fun highlightSelectedButton(selectedButton: Button) {
+        listOf(
+            btnRangeAll,
+            btnRangeYear,
+            btnRangeSixMonths,
+            btnRangeThreeMonths,
+            btnRangeMonth,
+            btnRangeWeek
+        ).forEach { button ->
+            button.setBackgroundColor(resources.getColor(android.R.color.transparent, null))
+            button.setTextColor(resources.getColor(android.R.color.black, null))
+        }
+
+        selectedButton.setBackgroundColor(resources.getColor(android.R.color.holo_blue_light, null))
+        selectedButton.setTextColor(resources.getColor(android.R.color.white, null))
+    }
+    private fun updateChartRange() {
+        val filteredData = filterDataByRange(fullHistoryList, currentRange)
+
+        if (filteredData.isEmpty()) {
+            Log.d("WeightChart", "Brak danych dla zakresu $currentRange")
+            weightChartView.setData(emptyList())
+        } else {
+            weightChartView.setData(filteredData)
+            Log.d("WeightChart", "Pokazuję ${filteredData.size} pomiarów dla zakresu $currentRange")
+        }
+    }
+
+    private fun filterDataByRange(data: List<UserWeightHistoryDto>, range: DateRange): List<UserWeightHistoryDto> {
+        if (range == DateRange.ALL) {
+            return data
+        }
+
+        val calendar = Calendar.getInstance()
+        val now = calendar.time
+
+        calendar.time = now
+        when (range) {
+            DateRange.YEAR -> calendar.add(Calendar.YEAR, -1)
+            DateRange.SIX_MONTHS -> calendar.add(Calendar.MONTH, -6)
+            DateRange.THREE_MONTHS -> calendar.add(Calendar.MONTH, -3)
+            DateRange.MONTH -> calendar.add(Calendar.MONTH, -1)
+            DateRange.WEEK -> calendar.add(Calendar.DAY_OF_YEAR, -7)
+            else -> return data
+        }
+
+        val cutoffDate = calendar.time
+        val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
+            timeZone = java.util.TimeZone.getTimeZone("UTC")
+        }
+
+        return data.filter { history ->
+            try {
+                val measureDate = isoFormat.parse(history.measuredAt)
+                measureDate != null && measureDate.after(cutoffDate)
+            } catch (e: Exception) {
+                false
+            }
         }
     }
 }

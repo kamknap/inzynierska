@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.compose.ui.graphics.Path
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -13,7 +12,7 @@ import com.example.fithub.data.UserWeightHistoryDto
 import java.text.SimpleDateFormat
 import java.util.*
 
-class WeightHistoryAdapter(private val currentWeight: Double? = null, private val goalType: String? = null) : ListAdapter<UserWeightHistoryDto, WeightHistoryAdapter.WeightHistoryViewHolder>(WeightHistoryDiffCallback()) {
+class WeightHistoryAdapter(private val referenceWeight: Double? = null, private val goalType: String? = null) : ListAdapter<UserWeightHistoryDto, WeightHistoryAdapter.WeightHistoryViewHolder>(WeightHistoryDiffCallback()) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): WeightHistoryViewHolder {
         val view = LayoutInflater.from(parent.context)
@@ -23,7 +22,7 @@ class WeightHistoryAdapter(private val currentWeight: Double? = null, private va
 
     override fun onBindViewHolder(holder: WeightHistoryViewHolder, position: Int) {
         val item = getItem(position)
-        holder.bind(item, currentWeight, goalType)
+        holder.bind(item, referenceWeight, goalType)
     }
 
     class WeightHistoryViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {

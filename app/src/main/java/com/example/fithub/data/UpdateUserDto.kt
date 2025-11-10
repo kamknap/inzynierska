@@ -7,7 +7,7 @@ data class UpdateUserDto(
 )
 
 data class UpdateProfileData(
-    val weightKg: Int? = null,
+    val weightKg: Double? = null,
     val heightCm: Int? = null,
     val sex: String? = null,
     val birthDate: String? = null
