@@ -99,6 +99,6 @@ interface ApiService {
     ): NewUserDto
 
     //Exercises endpoints
-    @GET("/api/exercises?name={name}")
+    @GET("/api/exercises")
     suspend fun getExercisesByName(@Query("name") name: String): List<ExerciseDto>
 }

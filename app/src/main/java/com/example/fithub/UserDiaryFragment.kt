@@ -33,6 +33,9 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
     private lateinit var tvBreakfast: TextView
     private lateinit var tvLunch: TextView
     private lateinit var tvDinner: TextView
+    private lateinit var tvTraining: TextView
+    private lateinit var llTraining: LinearLayout
+    private lateinit var btnTraining: ImageButton
     private var breakfastCalories = 0.0
     private var breakfastProtein = 0.0
     private var breakfastFat = 0.0
@@ -53,9 +56,11 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
     private var loadedLunch = false
     private var loadedDinner = false
     private var currentLoadId = 0
+    private var trainingCalories = 0.0
 
     private val currentUserId = "68cbc06e6cdfa7faa8561f82"
 
+    //TODO albo usunac mozliwosc edycji treningu albo dodac mozliwosc edycji minut
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -65,13 +70,17 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         llBreakfastMeals = view.findViewById(R.id.llBreakfastMeals)
         llLunchMeals = view.findViewById(R.id.llLunchMeals)
         llDinnerMeals = view.findViewById(R.id.llDinnerMeals)
+        llTraining = view.findViewById(R.id.llTraining)
         tvDailyTotal = view.findViewById<TextView>(R.id.tvDailyTotal)
         tvBreakfast = view.findViewById(R.id.tvBreakfast)
         tvLunch = view.findViewById(R.id.tvLunch)
         tvDinner = view.findViewById(R.id.tvDinner)
+        tvTraining = view.findViewById(R.id.tvTraining)
         btnBreakfast = view.findViewById(R.id.btnAddBreakfast)
         btnLunch = view.findViewById(R.id.btnAddLunch)
         btnDinner = view.findViewById(R.id.btnAddDinner)
+        btnTraining = view.findViewById(R.id.btnTraining)
+
 
         initDaysView()
 
@@ -84,6 +93,9 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         }
         btnDinner.setOnClickListener {
             openMealDialog("Kolacja")
+        }
+        btnTraining.setOnClickListener {
+            openExerciseDialog()
         }
     }
 
@@ -361,11 +373,15 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                 val dinnerMeals = dailyNutrition.meals.filter { meal ->
                     meal.name.lowercase().contains("kolacja")
                 }
+                val trainingMeals = dailyNutrition.meals.filter { meal ->
+                    meal.name.lowercase().contains("trening")
+                }
 
                 // wyswietlanie posilkow
                 displayMeals(breakfastMeals, "śniadanie")
                 displayMeals(lunchMeals, "obiad")
                 displayMeals(dinnerMeals, "kolacja")
+                displayMeals(trainingMeals, "trening")
 
                 // flagi
                 loadedBreakfast = true
@@ -389,6 +405,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
             "śniadanie" -> llBreakfastMeals
             "obiad" -> llLunchMeals
             "kolacja" -> llDinnerMeals
+            "trening" -> llTraining
             else -> return
         }
 
@@ -403,6 +420,9 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
             }
             "kolacja" -> {
                 dinnerCalories = 0.0; dinnerProtein = 0.0; dinnerFat = 0.0; dinnerCarbs = 0.0
+            }
+            "trening" -> {
+                trainingCalories = 0.0
             }
         }
 
@@ -423,31 +443,48 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                         breakfastFat += fat
                         breakfastCarbs += carbs
                     }
+
                     "obiad" -> {
                         lunchCalories += calories
                         lunchProtein += protein
                         lunchFat += fat
                         lunchCarbs += carbs
                     }
+
                     "kolacja" -> {
                         dinnerCalories += calories
                         dinnerProtein += protein
                         dinnerFat += fat
                         dinnerCarbs += carbs
                     }
+
+                    "trening" -> {
+                        trainingCalories += calories
+                    }
                 }
 
-                addMealToList(
-                    container = container,
-                    mealName = "${food.name} (${foodItem.quantity.toInt()}g)",
-                    itemId = foodItem.itemId,
-                    protein = protein,
-                    fat = fat,
-                    carbs = carbs,
-                    calories = calories,
-                    currentQuantity = foodItem.quantity,
-                    foodDto = food
-                )
+                if (mealType.lowercase() == "trening") {
+                    addMealToList(
+                        container = container,
+                        mealName = food.name,
+                        itemId = foodItem.itemId,
+                        calories = calories.toInt(),
+                        currentQuantity = foodItem.quantity,
+                        foodDto = food
+                    )
+                } else {
+                    addMealToList(
+                        container = container,
+                        mealName = "${food.name} (${foodItem.quantity.toInt()}g)",
+                        itemId = foodItem.itemId,
+                        protein = protein,
+                        fat = fat,
+                        carbs = carbs,
+                        calories = calories,
+                        currentQuantity = foodItem.quantity,
+                        foodDto = food
+                    )
+                }
             }
         }
 
@@ -455,6 +492,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
             "śniadanie" -> tvBreakfast.text = "Śniadanie (${breakfastCalories.roundToInt()} kcal, ${breakfastProtein.roundToInt()} P, ${breakfastFat.roundToInt()} F, ${breakfastCarbs.roundToInt()} C)"
             "obiad" -> tvLunch.text = "Obiad (${lunchCalories.roundToInt()} kcal, ${lunchProtein.roundToInt()} P, ${lunchFat.roundToInt()} F, ${lunchCarbs.roundToInt()} C)"
             "kolacja" -> tvDinner.text = "Kolacja (${dinnerCalories.roundToInt()} kcal, ${dinnerProtein.roundToInt()} P, ${dinnerFat.roundToInt()} F, ${dinnerCarbs.roundToInt()} C)"
+            "trening" -> tvTraining.text = "Trening (${kotlin.math.abs(trainingCalories).roundToInt()} kcal spalono)"
         }
     }
 
@@ -474,6 +512,8 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         lunchCalories     = 0.0; lunchProtein     = 0.0; lunchFat     = 0.0; lunchCarbs     = 0.0
         dinnerCalories    = 0.0; dinnerProtein    = 0.0; dinnerFat    = 0.0; dinnerCarbs    = 0.0
         dailyTotalCalories = 0.0; dailyTotalProtein = 0.0; dailyTotalFat = 0.0; dailyTotalCarbs = 0.0
+        trainingCalories = 0.0
+
 
         loadedBreakfast = false
         loadedLunch = false
@@ -482,16 +522,18 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         llBreakfastMeals.removeAllViews()
         llLunchMeals.removeAllViews()
         llDinnerMeals.removeAllViews()
+        llTraining.removeAllViews()
 
         tvBreakfast.text = "Śniadanie"
         tvLunch.text = "Obiad"
         tvDinner.text = "Kolacja"
         tvDailyTotal.text = ""
+        tvTraining.text = "Trening"
     }
 
     private fun updateDailyTotals(calorieGoal: Double) {
         if (loadedBreakfast && loadedLunch && loadedDinner) {
-            dailyTotalCalories = breakfastCalories + lunchCalories + dinnerCalories
+            dailyTotalCalories = breakfastCalories + lunchCalories + dinnerCalories + trainingCalories
             dailyTotalProtein  = breakfastProtein  + lunchProtein  + dinnerProtein
             dailyTotalFat      = breakfastFat      + lunchFat      + dinnerFat
             dailyTotalCarbs    = breakfastCarbs    + lunchCarbs    + dinnerCarbs
@@ -555,6 +597,24 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
 
     private fun Double.asGramsLabel(): String {
         return if (this % 1.0 == 0.0) "${this.toInt()} g" else "${"%.1f".format(this)} g"
+    }
+
+    private fun openExerciseDialog() {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val formattedDate = dateFormat.format(selectedDate.time)
+
+        val dialog = AddExerciseDialogFragment().apply {
+            arguments = Bundle().apply {
+                putString("userId", currentUserId)
+                putString("date", formattedDate)
+            }
+        }
+        dialog.onExerciseAddedListener = object : AddExerciseDialogFragment.OnExerciseAddedListener {
+            override fun onExerciseAdded() {
+                loadDataForDate(selectedDate)
+            }
+        }
+        dialog.show(parentFragmentManager, "AddExerciseDialog")
     }
 
 }
