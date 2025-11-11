@@ -1,6 +1,7 @@
 package com.example.fithub
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.widget.HorizontalScrollView
@@ -118,7 +119,17 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         loadDataForDate(selectedDate)
     }
 
-    private fun addMealToList(container: LinearLayout, mealName: String, itemId: String, protein: Int = 0, fat: Int = 0, carbs: Int = 0, calories: Int = 0, currentQuantity: Double, foodDto: FoodDto) {
+    private fun addMealToList
+                (container: LinearLayout,
+                 mealName: String,
+                 itemId: String,
+                 protein: Int = 0,
+                 fat: Int = 0,
+                 carbs: Int = 0,
+                 calories: Int = 0,
+                 currentQuantity: Double,
+                 foodDto: FoodDto,
+                 isTraining: Boolean = false) {
         val mealView = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_meal, container, false)
 
@@ -139,8 +150,14 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
             deleteFoodByItemId(itemId)
         }
 
+
         mealView.setOnClickListener {
-            showEditQuantityDialog(mealName, itemId, currentQuantity, foodDto)
+            when(isTraining){
+                true ->
+                    Toast.makeText(requireContext(), "Nie mozna edytować", Toast.LENGTH_SHORT).show()
+                false ->
+                    showEditQuantityDialog(mealName, itemId, currentQuantity, foodDto)
+            }
         }
 
         container.addView(mealView)
@@ -470,7 +487,8 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                         itemId = foodItem.itemId,
                         calories = calories.toInt(),
                         currentQuantity = foodItem.quantity,
-                        foodDto = food
+                        foodDto = food,
+                        isTraining = true
                     )
                 } else {
                     addMealToList(
@@ -482,7 +500,8 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                         carbs = carbs,
                         calories = calories,
                         currentQuantity = foodItem.quantity,
-                        foodDto = food
+                        foodDto = food,
+                        isTraining = false
                     )
                 }
             }
