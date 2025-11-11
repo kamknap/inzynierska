@@ -41,7 +41,7 @@ class UserMainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_training -> {
-                    // TODO: TrainingFragment
+                    loadFragment(UserTrainingFragment())
                     true
                 }
                 R.id.nav_weight -> {
