@@ -1,0 +1,108 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:background="?attr/selectableItemBackground">
+
+    <!-- Główna linia z nazwą i przyciskami -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <TextView
+            android:id="@+id/tvExerciseName"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Nazwa ćwiczenia"
+            android:textSize="16sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black" />
+
+        <ImageButton
+            android:id="@+id/btnExpandExercise"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/arrow_down_float"
+            android:contentDescription="Rozwiń szczegóły"
+            android:scaleType="centerInside"
+            android:layout_marginStart="8dp" />
+
+        <ImageButton
+            android:id="@+id/btnDeleteExercise"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@android:drawable/ic_menu_delete"
+            android:contentDescription="Usuń ćwiczenie"
+            android:scaleType="centerInside"
+            android:layout_marginStart="8dp" />
+
+    </LinearLayout>
+
+    <!-- Rozszerzalna sekcja ze szczegółami -->
+    <LinearLayout
+        android:id="@+id/llExpandedDetails"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:visibility="gone"
+        android:layout_marginTop="8dp"
+        android:padding="8dp"
+        android:background="#F5F5F5">
+
+        <!-- Opis ćwiczenia -->
+        <TextView
+            android:id="@+id/tvExerciseDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Opis ćwiczenia..."
+            android:textSize="14sp"
+            android:textColor="@android:color/black"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Instrukcje -->
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Instrukcja:"
+            android:textStyle="bold"
+            android:textSize="14sp"
+            android:layout_marginBottom="4dp" />
+
+        <TextView
+            android:id="@+id/tvExerciseInstructions"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="1. Krok pierwszy\n2. Krok drugi..."
+            android:textSize="13sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginBottom="8dp" />
+
+        <!-- Placeholder dla YouTube Video -->
+        <FrameLayout
+            android:id="@+id/flYoutubeContainer"
+            android:layout_width="match_parent"
+            android:layout_height="200dp"
+            android:background="#E0E0E0">
+
+            <TextView
+                android:id="@+id/tvVideoPlaceholder"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center"
+                android:text="📹 Video instruktażowe\n(kliknij aby obejrzeć)"
+                android:textAlignment="center"
+                android:textSize="14sp"
+                android:textColor="@android:color/darker_gray" />
+
+        </FrameLayout>
+
+    </LinearLayout>
+
+</LinearLayout>

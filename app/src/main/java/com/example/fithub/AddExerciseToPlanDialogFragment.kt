@@ -1,0 +1,167 @@
+package com.example.fithub
+
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.TextView
+import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
+import com.example.fithub.data.AddExerciseToPlanDto
+import com.example.fithub.data.ExerciseDto
+import kotlinx.coroutines.launch
+import kotlin.time.Duration
+
+class AddExerciseToPlanDialogFragment : SearchDialogFragment<ExerciseDto>() {
+
+    interface OnExerciseAddedToPlanListener {
+        fun onExerciseAddedToPlan()
+    }
+
+    var onExerciseAddedToPlanListener: OnExerciseAddedToPlanListener? = null
+
+    override fun getTitle(): String {
+        val muscleId = arguments?.getString("muscleId")
+        return if (muscleId != null) {
+            "Ćwiczenia dla: $muscleId"
+        } else {
+            "Dodaj ćwiczenie"
+        }
+    }
+
+    override fun getSearchHint(): String = "Wyszukaj ćwiczenie.."
+
+    override fun onDialogCreated() {
+        val muscleId = arguments?.getString("muscleId")
+        if (muscleId != null) {
+            lifecycleScope.launch {
+                try {
+                    val results = performSearch("")
+                    displayResults(results)
+                } catch (e: Exception) {
+                    Log.e("AddExerciseToPlan", "Błąd ładowania ćwiczeń", e)
+                    Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
+    }
+
+    override fun shouldShowSearchField(): Boolean {
+        return arguments?.getString("muscleId") == null
+    }
+    override suspend fun performSearch(query: String): List<ExerciseDto> {
+        val muscleId = arguments?.getString("muscleId")
+        return if (muscleId != null){
+            NetworkModule.api.getExercisesByMuscleId(muscleId)
+        } else{
+            NetworkModule.api.getExercisesByName(query)
+        }
+    }
+
+    override fun createResultView(item: ExerciseDto): View {
+        val view = LayoutInflater.from(requireContext())
+            .inflate(android.R.layout.simple_list_item_2, llSearchResults, false)
+
+        view.findViewById<TextView>(android.R.id.text1).text = item.name ?: "Bez nazwy"
+
+        val muscleInfo = item.muscleIds?.joinToString(", ") ?: "Brak danych"
+        val metsInfo = item.mets?.let { "METS: $it" } ?: ""
+        view.findViewById<TextView>(android.R.id.text2).text =
+            "$muscleInfo${if (metsInfo.isNotEmpty()) " • $metsInfo" else ""}"
+
+        return view
+    }
+
+    override fun onItemSelected(item: ExerciseDto) {
+        showExerciseDetailsDialog(item)
+    }
+
+    private fun showExerciseDetailsDialog(exercise: ExerciseDto) {
+        val dialogLayout = android.widget.LinearLayout(requireContext()).apply {
+            orientation = android.widget.LinearLayout.VERTICAL
+            setPadding(48, 24, 48, 24)
+        }
+
+        android.app.AlertDialog.Builder(requireContext())
+            .setTitle("Szczegóły: ${exercise.name ?: "Ćwiczenie"}")
+            .setView(dialogLayout)
+            .setPositiveButton("Dodaj") { _, _ ->
+                addExerciseToPlan(exercise)
+            }
+            .setNegativeButton("Anuluj", null)
+            .show()
+    }
+
+    private fun addExerciseToPlan(exercise: ExerciseDto) {
+        val userId = arguments?.getString("userId") ?: return
+        val planName = arguments?.getString("planName") ?: "Plan Treningowy 1"
+
+        lifecycleScope.launch {
+            try {
+                val userExercisePlans = NetworkModule.api.getUserExercisePlans(userId)
+
+                Log.d("AddExerciseToPlan", "Pobrano ${userExercisePlans.size} planów")
+
+                val existingPlan = userExercisePlans.find { it.planName == planName }
+
+                if (existingPlan != null) {
+                    Log.d("AddExerciseToPlan", "Znaleziono plan: ${existingPlan.planName}, ID: ${existingPlan.id}")
+                    Log.d("AddExerciseToPlan", "Dodawanie ćwiczenia: ${exercise.id}")
+
+                    val exerciseIdDto = AddExerciseToPlanDto(exerciseId = exercise.id)
+
+                    NetworkModule.api.addExerciseToPlan(
+                        existingPlan.id,
+                        exerciseIdDto
+                    )
+
+                    Toast.makeText(
+                        requireContext(),
+                        "Dodano: ${exercise.name}",
+                        Toast.LENGTH_LONG
+                    ).show()
+                } else {
+                    Toast.makeText(
+                        requireContext(),
+                        "Nie znaleziono planu: $planName",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+
+                onExerciseAddedToPlanListener?.onExerciseAddedToPlan()
+                dismiss()
+
+            } catch (e: retrofit2.HttpException) {
+                val errorBody = e.response()?.errorBody()?.string()
+                Log.e("AddExerciseToPlan", "HTTP Error ${e.code()}: $errorBody", e)
+
+                val errorMessage = when (e.code()) {
+                    400 -> errorBody?.let {
+                        try {
+                            // Jeśli backend zwraca JSON z message
+                            org.json.JSONObject(it).getString("message")
+                        } catch (_: Exception) {
+                            "To ćwiczenie zostało już dodane do planu"
+                        }
+                    } ?: "Błąd: nieprawidłowe dane"
+
+                    404 -> "Plan treningowy nie został znaleziony"
+                    else -> "Błąd serwera: ${e.code()}"
+                }
+
+                Toast.makeText(
+                    requireContext(),
+                    errorMessage,
+                    Toast.LENGTH_LONG
+                ).show()
+            }
+            catch (e: Exception) {
+                Log.e("AddExerciseToPlan", "Error", e)
+                Toast.makeText(
+                    requireContext(),
+                    "Błąd: ${e.message}",
+                    Toast.LENGTH_SHORT
+                ).show()
+            }
+        }
+    }
+}

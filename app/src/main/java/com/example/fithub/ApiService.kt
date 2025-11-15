@@ -101,4 +101,38 @@ interface ApiService {
     //Exercises endpoints
     @GET("/api/exercises")
     suspend fun getExercisesByName(@Query("name") name: String): List<ExerciseDto>
+
+    @GET("/api/exercises")
+    suspend fun getExercisesByMuscleId(@Query("muscleId") name: String): List<ExerciseDto>
+
+    // User Exercise Plans endpoints
+    @GET("/api/user-exercise-plans")
+    suspend fun getUserExercisePlans(@Query("user_id") userId: String): List<UserExercisePlanDto>
+
+    @GET("/api/user-exercise-plans/{id}")
+    suspend fun getUserExercisePlanById(@Path("id") id: String): UserExercisePlanDto
+
+    @POST("/api/user-exercise-plans")
+    suspend fun createUserExercisePlan(@Body plan: CreateUserExercisePlanDto): UserExercisePlanDto
+
+    @PUT("/api/user-exercise-plans/{id}")
+    suspend fun updateUserExercisePlan(
+        @Path("id") id: String,
+        @Body updateData: UpdateUserExercisePlanDto
+    ): UserExercisePlanDto
+
+    @DELETE("/api/user-exercise-plans/{id}")
+    suspend fun deleteUserExercisePlan(@Path("id") id: String): DeletePlanResponseDto
+
+    @POST("/api/user-exercise-plans/{id}/exercises")
+    suspend fun addExerciseToPlan(
+        @Path("id") planId: String,
+        @Body exercise: AddExerciseToPlanDto
+    ): UserExercisePlanDto
+
+    @DELETE("/api/user-exercise-plans/{id}/exercises/{exercise_id}")
+    suspend fun removeExerciseFromPlan(
+        @Path("id") planId: String,
+        @Path("exercise_id") exerciseId: String
+    ): UserExercisePlanDto
 }

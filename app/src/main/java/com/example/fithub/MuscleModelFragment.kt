@@ -18,16 +18,19 @@ class MuscleModelFragment : Fragment() {
     private lateinit var webView: WebView
     private lateinit var gestureDetector: GestureDetector
     private var isFrontView = true
-
     companion object {
         private const val SWIPE_THRESHOLD = 100
         private const val SWIPE_VELOCITY_THRESHOLD = 100
         private const val URL = "file:///android_asset/index/"
         private const val ARG_URL = "url"
+        private const val ARG_USER_ID = "currentUserId"
+        private const val ARG_PLAN_NAME = "currentPlanName"
 
-        fun newInstance(url: String? = null): MuscleModelFragment {
+        fun newInstance(currentUserId: String? = null, currentPlanName: String? = null, url: String? = null): MuscleModelFragment {
             return MuscleModelFragment().apply {
                 arguments = Bundle().apply {
+                    putString(ARG_USER_ID, currentUserId)
+                    putString(ARG_PLAN_NAME, currentPlanName)
                     putString(ARG_URL, url)
                 }
             }
@@ -103,9 +106,29 @@ class MuscleModelFragment : Fragment() {
         fun onPathClicked(id: String) {
             activity?.runOnUiThread {
                 Toast.makeText(requireContext(), "Kliknięto w: $id", Toast.LENGTH_SHORT).show()
-                // Możesz tutaj dodać callback do UserTrainingFragment
                 (parentFragment as? UserTrainingFragment)?.onMuscleClicked(id)
+                openAddExerciseToPlanDialog(id)
             }
         }
+    }
+
+    private fun openAddExerciseToPlanDialog(muscleId: String){
+        val currentUserId = arguments?.getString(ARG_USER_ID)
+        val currentPlanName = arguments?.getString(ARG_PLAN_NAME)
+        val dialog = AddExerciseToPlanDialogFragment().apply {
+            arguments = Bundle().apply {
+                putString("userId", currentUserId)
+                putString("planName", currentPlanName)
+                putString("muscleId", muscleId)
+            }
+        }
+
+        dialog.onExerciseAddedToPlanListener = object: AddExerciseToPlanDialogFragment.OnExerciseAddedToPlanListener{
+            override fun onExerciseAddedToPlan() {
+
+            }
+        }
+
+        dialog.show(parentFragmentManager, "AddExerciseToPlanDialog")
     }
 }

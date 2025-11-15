@@ -69,14 +69,14 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
             .setTitle("Szczegóły: ${exercise.name ?: "Ćwiczenie"}")
             .setView(dialogLayout)
             .setPositiveButton("Dodaj") { _, _ ->
-                val duration = etDuration.text.toString().toIntOrNull()
+                val duration = etDuration.text.toString().toDouble()
 
-                if (duration == null || duration <= 0) {
+                if (duration <= 0) {
                     Toast.makeText(requireContext(), "Podaj czas trwania", Toast.LENGTH_SHORT).show()
                     return@setPositiveButton
                 }
 
-                saveExercise(exercise, duration.toDouble())
+                saveExercise(exercise, duration)
             }
             .setNegativeButton("Anuluj", null)
             .show()

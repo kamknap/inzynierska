@@ -8,7 +8,7 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Trening"
+        android:text="Plan Treningowy 1"
         android:textSize="24sp"
         android:textStyle="bold"
         android:layout_marginBottom="16dp" />
@@ -17,13 +17,19 @@
         android:id="@+id/btnShowMuscleModel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Wybierz partię mięśniową" />
+        android:text="Wybierz na podstawie modelu" />
+    <Button
+        android:id="@+id/btnSearchExercise"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Wyszukaj ćwiczenie" />
 
-    <FrameLayout
-        android:id="@+id/muscle_model_container"
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvUserExercises"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
         android:layout_marginTop="16dp" />
+
 
 </LinearLayout>

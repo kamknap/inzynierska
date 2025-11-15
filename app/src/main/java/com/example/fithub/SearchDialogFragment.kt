@@ -23,6 +23,8 @@ abstract class SearchDialogFragment<T> : DialogFragment() {
     abstract suspend fun performSearch(query: String): List<T>
     abstract fun createResultView(item: T): android.view.View
     abstract fun onItemSelected(item: T)
+    open fun onDialogCreated() {}
+    open fun shouldShowSearchField(): Boolean = true
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val mainLayout = LinearLayout(requireContext()).apply {
@@ -47,7 +49,9 @@ abstract class SearchDialogFragment<T> : DialogFragment() {
         }
 
         scrollView.addView(llSearchResults)
-        mainLayout.addView(etSearch)
+        if (shouldShowSearchField()) {
+            mainLayout.addView(etSearch)
+        }
         mainLayout.addView(scrollView)
 
         etSearch.doAfterTextChanged { text ->
@@ -69,6 +73,8 @@ abstract class SearchDialogFragment<T> : DialogFragment() {
             }
         }
 
+        onDialogCreated()
+
         return AlertDialog.Builder(requireContext())
             .setTitle(getTitle())
             .setView(mainLayout)
@@ -76,7 +82,7 @@ abstract class SearchDialogFragment<T> : DialogFragment() {
             .create()
     }
 
-    private fun displayResults(results: List<T>) {
+    protected fun displayResults(results: List<T>) {
         llSearchResults.removeAllViews()
 
         results.forEach { item ->
