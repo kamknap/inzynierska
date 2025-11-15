@@ -13,11 +13,16 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fithub.data.ExerciseDto
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.YouTubePlayer
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.listeners.AbstractYouTubePlayerListener
+import com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
 
 class ExerciseListAdapter(
     private val onExerciseClick: (ExerciseDto) -> Unit = {},
     private val onDeleteClick: ((ExerciseDto) -> Unit)? = null,
-    private val showDeleteButton: Boolean = true
+    private val showDeleteButton: Boolean = true,
+    private val lifecycle: androidx.lifecycle.Lifecycle
+
 ) : ListAdapter<ExerciseListAdapter.ExerciseItem, ExerciseListAdapter.ExerciseViewHolder>(ExerciseDiffCallback()) {
 
     data class ExerciseItem(
@@ -38,11 +43,10 @@ class ExerciseListAdapter(
         private val tvExerciseName: TextView = itemView.findViewById(R.id.tvExerciseName)
         private val tvExerciseDescription: TextView = itemView.findViewById(R.id.tvExerciseDescription)
         private val tvExerciseInstructions: TextView = itemView.findViewById(R.id.tvExerciseInstructions)
-        private val tvVideoPlaceholder: TextView = itemView.findViewById(R.id.tvVideoPlaceholder)
-        private val flYoutubeContainer: View = itemView.findViewById(R.id.flYoutubeContainer)
         private val llExpandedDetails: LinearLayout = itemView.findViewById(R.id.llExpandedDetails)
         private val btnExpandExercise: ImageButton = itemView.findViewById(R.id.btnExpandExercise)
         private val btnDeleteExercise: ImageButton = itemView.findViewById(R.id.btnDeleteExercise)
+        private val youtubePlayerView: YouTubePlayerView = itemView.findViewById(R.id.youtubePlayerView)
 
         fun bind(item: ExerciseItem) {
             val exercise = item.exercise
@@ -56,20 +60,29 @@ class ExerciseListAdapter(
                 "${index + 1}. $instruction"
             }?.joinToString("\n") ?: "Brak instrukcji"
 
+            var isExpanded = false
+
             // Video YouTube
             if (exercise.videoUrl != null) {
-                tvVideoPlaceholder.text = "Kliknij aby obejrzeć instrukcję"
-                flYoutubeContainer.setOnClickListener {
-                    val intent = Intent(Intent.ACTION_VIEW, Uri.parse(exercise.videoUrl))
-                    itemView.context.startActivity(intent)
+                // Wyciągnij ID video z URL (np. "https://youtube.com/watch?v=VIDEO_ID")
+                val videoId = extractYouTubeVideoId(exercise.videoUrl)
+
+                if (videoId != null) {
+                    youtubePlayerView.visibility = View.VISIBLE
+
+                    if (isExpanded) {
+                        youtubePlayerView.addYouTubePlayerListener(object : AbstractYouTubePlayerListener() {
+                            override fun onReady(youTubePlayer: YouTubePlayer) {
+                                youTubePlayer.cueVideo(videoId, 0f)
+                            }
+                        })
+                    }
                 }
             } else {
-                tvVideoPlaceholder.text = "Brak video"
-                flYoutubeContainer.isClickable = false
+                youtubePlayerView.visibility = View.GONE
             }
 
             // Kliknięcie w całe ćwiczenie
-            var isExpanded = false
             itemView.setOnClickListener {
                 isExpanded = !isExpanded
                 llExpandedDetails.visibility = if (isExpanded) View.VISIBLE else View.GONE
@@ -85,6 +98,11 @@ class ExerciseListAdapter(
                 btnDeleteExercise.visibility = View.GONE
             }
         }
+        private fun extractYouTubeVideoId(url: String): String? {
+            val pattern = "(?<=watch\\?v=|/videos/|embed\\/|youtu.be\\/|\\/v\\/|\\/e\\/|watch\\?v%3D|watch\\?feature=player_embedded&v=|%2Fvideos%2F|embed%\u200C\u200B2F|youtu.be%2F|%2Fv%2F)[^#\\&\\?\\n]*"
+            val compiledPattern = Regex(pattern)
+            return compiledPattern.find(url)?.value
+        }
     }
 
     class ExerciseDiffCallback : DiffUtil.ItemCallback<ExerciseItem>() {
@@ -96,4 +114,5 @@ class ExerciseListAdapter(
             return oldItem == newItem
         }
     }
+
 }

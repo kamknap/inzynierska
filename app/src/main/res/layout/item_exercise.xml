@@ -85,23 +85,11 @@
             android:layout_marginBottom="8dp" />
 
         <!-- Placeholder dla YouTube Video -->
-        <FrameLayout
-            android:id="@+id/flYoutubeContainer"
+        <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
+            android:id="@+id/youtubePlayerView"
             android:layout_width="match_parent"
             android:layout_height="200dp"
-            android:background="#E0E0E0">
-
-            <TextView
-                android:id="@+id/tvVideoPlaceholder"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="center"
-                android:text="📹 Video instruktażowe\n(kliknij aby obejrzeć)"
-                android:textAlignment="center"
-                android:textSize="14sp"
-                android:textColor="@android:color/darker_gray" />
-
-        </FrameLayout>
+            android:visibility="gone" />
 
     </LinearLayout>
 
