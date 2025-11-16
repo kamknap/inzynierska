@@ -76,7 +76,7 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
                 deleteExerciseFromPlan(exercise)
             },
             showDeleteButton = true,
-            lifecycle = viewLifecycleOwner.lifecycle // Dodaj lifecycle
+            lifecycle = viewLifecycleOwner.lifecycle
         )
 
         rvUserExercises.apply {

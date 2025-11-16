@@ -57,5 +57,5 @@ dependencies {
     implementation("com.journeyapps:zxing-android-embedded:4.3.0")
     implementation("com.google.android.material:material:1.9.0")
     // Youtube Android Player API
-    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:12.1.0")
+    implementation("com.pierfrancescosoffritti.androidyoutubeplayer:core:13.0.0")
 }

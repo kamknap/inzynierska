@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
@@ -21,7 +22,8 @@
             android:text="Nazwa ćwiczenia"
             android:textSize="16sp"
             android:textStyle="bold"
-            android:textColor="@android:color/black" />
+            android:textColor="@android:color/holo_blue_bright"
+             />
 
         <ImageButton
             android:id="@+id/btnExpandExercise"
@@ -54,7 +56,8 @@
         android:visibility="gone"
         android:layout_marginTop="8dp"
         android:padding="8dp"
-        android:background="#F5F5F5">
+        android:background="#F5F5F5"
+        tools:ignore="WebViewLayout">
 
         <!-- Opis ćwiczenia -->
         <TextView
@@ -63,7 +66,7 @@
             android:layout_height="wrap_content"
             android:text="Opis ćwiczenia..."
             android:textSize="14sp"
-            android:textColor="@android:color/black"
+            android:textColor="@android:color/holo_blue_bright"
             android:layout_marginBottom="8dp" />
 
         <!-- Instrukcje -->
@@ -73,6 +76,7 @@
             android:text="Instrukcja:"
             android:textStyle="bold"
             android:textSize="14sp"
+            android:textColor="@android:color/holo_blue_bright"
             android:layout_marginBottom="4dp" />
 
         <TextView
@@ -81,12 +85,11 @@
             android:layout_height="wrap_content"
             android:text="1. Krok pierwszy\n2. Krok drugi..."
             android:textSize="13sp"
-            android:textColor="@android:color/darker_gray"
+            android:textColor="@android:color/holo_blue_bright"
             android:layout_marginBottom="8dp" />
 
-        <!-- Placeholder dla YouTube Video -->
-        <com.pierfrancescosoffritti.androidyoutubeplayer.core.player.views.YouTubePlayerView
-            android:id="@+id/youtubePlayerView"
+        <WebView
+            android:id="@+id/webViewYoutube"
             android:layout_width="match_parent"
             android:layout_height="200dp"
             android:visibility="gone" />
