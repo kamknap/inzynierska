@@ -14,16 +14,49 @@
         android:textStyle="bold"
         android:layout_marginBottom="16dp" />
 
-    <Button
-        android:id="@+id/btnShowMuscleModel"
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Wybierz na podstawie modelu" />
-    <Button
-        android:id="@+id/btnSearchExercise"
+        android:orientation="horizontal"
+        android:layout_marginBottom="16dp">
+
+        <Button
+            android:id="@+id/btnShowMuscleModel"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="Wybierz na podstawie modelu" />
+
+        <Button
+            android:id="@+id/btnSearchExercise"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Wyszukaj ćwiczenie" />
+    </LinearLayout>
+
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Wyszukaj ćwiczenie" />
+        android:orientation="horizontal"
+        android:padding="12dp"
+        android:background="?attr/selectableItemBackground"
+        android:layout_marginBottom="16dp">
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Wykonano dzisiaj plan"
+            android:textSize="16sp" />
+
+        <CheckBox
+            android:id="@+id/cbPlanCompleted"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+    </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/rvUserExercises"

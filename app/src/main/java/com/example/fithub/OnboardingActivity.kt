@@ -12,9 +12,6 @@ class OnboardingActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_onboarding)
 
-
-
-
         if (savedInstanceState == null) {
             supportFragmentManager.commit {
                 setReorderingAllowed(true)
@@ -22,7 +19,6 @@ class OnboardingActivity : AppCompatActivity() {
             }
         }
 
-        //callback
         onBackPressedDispatcher.addCallback(this) {
             val fm = supportFragmentManager
             if (fm.backStackEntryCount > 0) {
@@ -32,7 +28,6 @@ class OnboardingActivity : AppCompatActivity() {
             }
         }
     }
-
 
     fun showGoalsFragment(userData: UserData? = null) {
         supportFragmentManager.commit {

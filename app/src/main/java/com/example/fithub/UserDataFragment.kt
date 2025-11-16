@@ -147,7 +147,6 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
     private fun showAgePicker() {
         val calendar = Calendar.getInstance()
 
-        // Jeśli już jest data w polu, sparsuj ją
         val currentDateText = etBirthDate.text.toString()
         if (currentDateText.isNotEmpty()) {
             try {

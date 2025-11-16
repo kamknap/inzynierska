@@ -1,0 +1,173 @@
+package com.example.fithub
+
+import android.os.Bundle
+import android.util.Log
+import androidx.fragment.app.Fragment
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
+import android.widget.Toast
+import androidx.lifecycle.lifecycleScope
+import com.example.fithub.logic.UserCalculator
+import kotlinx.coroutines.launch
+import java.time.Year
+
+
+class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
+
+    private lateinit var tvUserName: TextView
+    private lateinit var tvUserAge: TextView
+    private lateinit var tvUserWeight: TextView
+    private lateinit var tvUserSex: TextView
+    private lateinit var tvUserBMI: TextView
+    private lateinit var tvUserBMR: TextView
+    private lateinit var tvUserGoal: TextView
+    private lateinit var btnEditProfile: Button
+    private lateinit var btnEditGoals: Button
+    private lateinit var btnConnectSmartwatch: Button
+    private lateinit var btnContactAuthor: Button
+
+
+    private var currenUserId = "68cbc06e6cdfa7faa8561f82"
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+
+        tvUserName = view.findViewById(R.id.tvUserName)
+        tvUserAge = view.findViewById(R.id.tvUserAge)
+        tvUserWeight = view.findViewById(R.id.tvUserWeight)
+        tvUserSex = view.findViewById(R.id.tvUserSex)
+        tvUserBMI = view.findViewById(R.id.tvUserBMI)
+        tvUserBMR = view.findViewById(R.id.tvUserBMR)
+        tvUserGoal = view.findViewById(R.id.tvUserGoal)
+        btnEditProfile = view.findViewById(R.id.btnEditProfile)
+        btnEditGoals = view.findViewById(R.id.btnEditGoals)
+        btnConnectSmartwatch = view.findViewById(R.id.btnConnectSmartwatch)
+        btnContactAuthor= view.findViewById(R.id.btnContactAuthor)
+
+        setupButtonListeners(btnEditProfile, btnEditGoals, btnConnectSmartwatch, btnContactAuthor)
+        loadDataForUser(currenUserId)
+
+    }
+
+    private fun setupButtonListeners(
+        btnEditProfile: Button,
+        btnEditGoals: Button,
+        btnConnectSmartwatch: Button,
+        btnContactAuthor: Button
+    ) {
+        btnEditProfile.setOnClickListener {
+            showEditProfileDialog()
+        }
+
+        btnEditGoals.setOnClickListener {
+            showEditGoalsDialog()
+        }
+
+        btnConnectSmartwatch.setOnClickListener {
+            Toast.makeText(context, " wkrótce ", Toast.LENGTH_SHORT).show()
+        }
+
+        btnContactAuthor.setOnClickListener {
+            Toast.makeText(context, "Kontakt: autor@example.com", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun showEditProfileDialog() {
+        lifecycleScope.launch {
+            try {
+                val user = NetworkModule.api.getUserById(currenUserId)
+
+                val dialog = EditProfileDialogFragment().apply {
+                    arguments = Bundle().apply {
+                        putString("userId", user.id)
+                        putString("userName", user.username)
+                        putString("userSex", user.profile.sex)
+                        putString("userBirthDate", user.profile.birthDate)
+                        putInt("userWeight", user.profile.weightKg)
+                        putInt("userHeight", user.profile.heightCm)
+                    }
+                }
+
+                dialog.show(childFragmentManager, "EditProfileDialog")
+
+            } catch (e: Exception) {
+                Toast.makeText(context, "Błąd: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun showEditGoalsDialog() {
+        lifecycleScope.launch {
+            try {
+                val user = NetworkModule.api.getUserById(currenUserId)
+                val userGoals = NetworkModule.api.getUserGoalsByUserId(currenUserId)
+                val activeGoal = userGoals.find { it.status == "active" }
+
+                val dialog = EditGoalsDialogFragment().apply {
+                    arguments = Bundle().apply {
+                        putString("userId", user.id)
+                        putString("goalId", activeGoal?.id)
+                        putString("goalType", activeGoal?.type)
+                        putInt("firstWeight", activeGoal?.firstWeightKg ?: user.profile.weightKg)
+                        putInt("targetWeight", activeGoal?.targetWeightKg ?: user.profile.weightKg)
+                        putInt("activityLevel", user.settings.activityLevel)
+                        putInt("trainingFrequency", user.settings.preferredTrainingFrequencyPerWeek)
+                    }
+                }
+
+                dialog.show(childFragmentManager, "EditGoalsDialog")
+
+            } catch (e: Exception) {
+                Toast.makeText(context, "Błąd: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        loadDataForUser(currenUserId)
+    }
+
+    fun loadDataForUser(userId: String){
+        lifecycleScope.launch {
+            try {
+                val user = NetworkModule.api.getUserById(userId)
+                val userGoals = NetworkModule.api.getUserGoalsByUserId(userId)
+                val calculator = UserCalculator()
+
+                tvUserName.text = user.username
+                val age = calculator.calculateAge(user.profile.birthDate)
+                tvUserAge.text = "$age lat"
+                tvUserWeight.text = "${user.profile.weightKg} kg"
+                tvUserSex.text = when(user.profile.sex) {
+                    "Male" -> "Mężczyzna"
+                    "Female" -> "Kobieta"
+                    else -> "Inna"
+                }
+                tvUserBMI.text = String.format("%.1f", user.computed.bmi)
+                tvUserBMR.text = "${user.computed.bmr.toInt()} kcal"
+
+                val activeGoal = userGoals.find { it.status == "active" }
+                if (activeGoal != null) {
+                    val goalType = when(activeGoal.type) {
+                        "lose_weight" -> "Schudnąć"
+                        "gain_weight" -> "Przytyć"
+                        "maintain" -> "Utrzymać"
+                        else -> activeGoal.type
+                    }
+                    tvUserGoal.text = "$goalType: ${activeGoal.firstWeightKg} → ${activeGoal.targetWeightKg} kg"
+                } else {
+                    tvUserGoal.text = "Brak aktywnego celu"
+                }
+
+            }catch (e: Exception){
+                Log.d("Blad", e.toString())
+                Toast.makeText(context, "Błąd ładowania danych: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+}

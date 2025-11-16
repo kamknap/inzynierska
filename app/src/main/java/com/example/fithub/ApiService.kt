@@ -20,6 +20,18 @@ interface ApiService {
     @GET("/api/user-goals/user/{userId}")
     suspend fun getUserGoalsByUserId(@Path("userId") userId: String): List<UserGoalDto>
 
+    @PUT("/api/users/{id}")
+    suspend fun updateUser(
+        @Path("id") id: String,
+        @Body updateData: UpdateUserDto
+    ): NewUserDto
+
+    @PUT("/api/user-goals/{id}")
+    suspend fun updateUserGoal(
+        @Path("id") id: String,
+        @Body updateData: UpdateUserGoalDto
+    ): UserGoalDto
+
     // Foods endpoints
     @GET("/api/foods")
     suspend fun getFoods(
@@ -91,12 +103,6 @@ interface ApiService {
 
     @POST("/api/weight-history")
     suspend fun createWeightMeasurement(@Body measurement: CreateWeightMeasurementDto): UserWeightHistoryDto
-
-    @PUT("/api/users/{id}")
-    suspend fun updateUser(
-        @Path("id") id: String,
-        @Body updateData: UpdateUserDto
-    ): NewUserDto
 
     //Exercises endpoints
     @GET("/api/exercises")

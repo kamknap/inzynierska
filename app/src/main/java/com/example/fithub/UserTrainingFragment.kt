@@ -1,14 +1,12 @@
 package com.example.fithub
 
-import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.Button
+import android.widget.CheckBox
 import android.widget.TextView
 import android.widget.Toast
-import androidx.compose.runtime.currentRecomposeScope
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
@@ -24,6 +22,7 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
     private lateinit var rvUserExercises: RecyclerView
     private lateinit var exerciseAdapter: ExerciseListAdapter
     private lateinit var exercisePlanName: TextView
+    private lateinit var cbPlanCompleted: CheckBox
 
 
     val currentUserId = "68cbc06e6cdfa7faa8561f82"

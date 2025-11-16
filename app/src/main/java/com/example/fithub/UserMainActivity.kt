@@ -53,7 +53,7 @@ class UserMainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_profile -> {
-                    // TODO: ProfileFragment
+                    loadFragment(UserProfileFragment())
                     true
                 }
                 else -> false

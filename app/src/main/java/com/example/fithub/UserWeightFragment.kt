@@ -284,7 +284,7 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
                         sex = currentUser.profile.sex,
                         birthDate = currentUser.profile.birthDate,
                         heightCm = currentUser.profile.heightCm,
-                        weightKg = weight
+                        weightKg = weight.toInt()
                     )
                 )
                 NetworkModule.api.updateUser(userId, updateUserDto)
