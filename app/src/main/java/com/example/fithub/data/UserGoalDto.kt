@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 data class UserGoalDto(
     @SerializedName("_id") val id: String,
-    val userId: String,
+    val userId: Any,
     val type: String,
     val firstWeightKg: Int,
     val targetWeightKg: Int,

@@ -27,7 +27,6 @@ class EditGoalsDialogFragment : DialogFragment() {
 
         setupSpinners()
 
-        // Wypełnij danymi
         arguments?.let {
             etTargetWeight.setText(it.getInt("targetWeight").toString())
 
@@ -48,15 +47,13 @@ class EditGoalsDialogFragment : DialogFragment() {
         alertDialog = AlertDialog.Builder(requireContext())
             .setTitle("Edytuj cele")
             .setView(view)
-            .setPositiveButton("Zapisz", null) // Ustawione na null - obsługa niżej
+            .setPositiveButton("Zapisz", null)
             .setNegativeButton("Anuluj", null)
             .create()
 
-        // Nadpisz domyślne zachowanie przycisku "Zapisz"
         alertDialog.setOnShowListener {
             val positiveButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
             positiveButton.setOnClickListener {
-                // NIE zamykaj dialogu automatycznie
                 saveGoals()
             }
         }
@@ -88,7 +85,6 @@ class EditGoalsDialogFragment : DialogFragment() {
             return
         }
 
-        // Wyłącz przyciski podczas zapisywania
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
         alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).isEnabled = false
 
@@ -98,7 +94,6 @@ class EditGoalsDialogFragment : DialogFragment() {
 
                 if (targetWeight == null) {
                     Toast.makeText(context, "Nieprawidłowa waga docelowa", Toast.LENGTH_SHORT).show()
-                    // Włącz przyciski z powrotem
                     alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = true
                     alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).isEnabled = true
                     return@launch
@@ -129,17 +124,14 @@ class EditGoalsDialogFragment : DialogFragment() {
 
                 Toast.makeText(context, "Cele zaktualizowane", Toast.LENGTH_SHORT).show()
 
-                // Odśwież fragment rodzica
                 (parentFragment as? UserProfileFragment)?.loadDataForUser(userId)
 
-                // Zamknij dialog DOPIERO TERAZ
                 dismiss()
 
             } catch (e: Exception) {
                 Log.e("EditGoals", "Błąd aktualizacji: ${e.message}", e)
                 Toast.makeText(context, "Błąd: ${e.message}", Toast.LENGTH_LONG).show()
 
-                // Włącz przyciski z powrotem w przypadku błędu
                 alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = true
                 alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).isEnabled = true
             }

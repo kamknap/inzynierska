@@ -34,13 +34,11 @@ class EditProfileDialogFragment : DialogFragment() {
         etBirthDate = view.findViewById(R.id.etBirthDate)
         etSex = view.findViewById(R.id.etSex)
 
-        // Wypełnij danymi z argumentów
         arguments?.let {
             etName.setText(it.getString("userName"))
             etWeight.setText(it.getInt("userWeight").toString())
             etHeight.setText(it.getInt("userHeight").toString())
 
-            // Konwertuj datę z formatu ISO do dd/MM/yyyy dla wyświetlenia
             val birthDateIso = it.getString("userBirthDate")
             if (birthDateIso != null) {
                 try {
@@ -74,11 +72,9 @@ class EditProfileDialogFragment : DialogFragment() {
             .setNegativeButton("Anuluj", null)
             .create()
 
-        // Nadpisz domyślne zachowanie przycisku "Zapisz"
         alertDialog.setOnShowListener {
             val positiveButton = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
             positiveButton.setOnClickListener {
-                // NIE zamykaj dialogu automatycznie
                 saveProfile()
             }
         }
@@ -96,27 +92,24 @@ class EditProfileDialogFragment : DialogFragment() {
     private fun saveProfile() {
         val userId = arguments?.getString("userId") ?: return
 
-        // Wyłącz przyciski podczas zapisywania
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
         alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).isEnabled = false
 
         lifecycleScope.launch {
             try {
                 val calculator = UserCalculator()
-                val weight = etWeight.text.toString().toIntOrNull()      // Zmienione na toIntOrNull
-                val height = etHeight.text.toString().toIntOrNull()      // Zmienione na toIntOrNull
+                val weight = etWeight.text.toString().toIntOrNull()
+                val height = etHeight.text.toString().toIntOrNull()
                 val birthDateDisplay = etBirthDate.text.toString()
                 val sex = etSex.text.toString()
 
                 if (weight == null || height == null) {
                     Toast.makeText(context, "Nieprawidłowa waga lub wzrost", Toast.LENGTH_SHORT).show()
-                    // Włącz przyciski z powrotem
                     alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = true
                     alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).isEnabled = true
                     return@launch
                 }
 
-                // Konwertuj datę z dd/MM/yyyy na yyyy-MM-dd
                 val displayFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
                 val isoFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
                 val birthDate = try {
@@ -127,12 +120,10 @@ class EditProfileDialogFragment : DialogFragment() {
                     birthDateDisplay
                 }
 
-                // Oblicz wiek
                 val age = calculator.calculateAge(birthDate)
 
                 Log.d("EditProfile", "Waga: $weight, Wzrost: $height, Wiek: $age, Płeć: $sex")
 
-                // Użyj Double do obliczeń, ale wyślij Int
                 val bmi = calculator.calculateBMI(weight.toDouble(), height.toDouble())
                 val bmr = calculator.calculateBMR(weight.toDouble(), height.toDouble(), age.toDouble(), sex)
 
@@ -141,8 +132,8 @@ class EditProfileDialogFragment : DialogFragment() {
                 val updateDto = UpdateUserDto(
                     username = etName.text.toString(),
                     profile = UpdateProfileData(
-                        weightKg = weight,           // Int
-                        heightCm = height,           // Int
+                        weightKg = weight,
+                        heightCm = height,
                         sex = sex,
                         birthDate = birthDate
                     ),
@@ -160,10 +151,8 @@ class EditProfileDialogFragment : DialogFragment() {
 
                 Toast.makeText(context, "Profil zaktualizowany", Toast.LENGTH_SHORT).show()
 
-                // Odśwież fragment rodzica
                 (parentFragment as? UserProfileFragment)?.loadDataForUser(userId)
 
-                // Zamknij dialog DOPIERO TERAZ
                 dismiss()
 
             } catch (e: Exception) {

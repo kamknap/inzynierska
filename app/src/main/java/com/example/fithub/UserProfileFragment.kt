@@ -1,5 +1,8 @@
 package com.example.fithub
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.util.Log
 import androidx.fragment.app.Fragment
@@ -9,6 +12,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
+import androidx.compose.ui.unit.IntRect
 import androidx.lifecycle.lifecycleScope
 import com.example.fithub.logic.UserCalculator
 import kotlinx.coroutines.launch
@@ -71,7 +75,17 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         }
 
         btnContactAuthor.setOnClickListener {
-            Toast.makeText(context, "Kontakt: autor@example.com", Toast.LENGTH_SHORT).show()
+            val recipient = "knapikkamil2002@gmail.com"
+            val intent = Intent(Intent.ACTION_SENDTO).apply {
+                data = Uri.parse("mailto:")
+                putExtra(Intent.EXTRA_EMAIL, arrayOf(recipient))
+            }
+            try {
+                startActivity(intent)
+            }
+            catch (e: ActivityNotFoundException){
+                Toast.makeText(context, "Nie znaleziono aplikacji pocztowej", Toast.LENGTH_SHORT).show()
+            }
         }
     }
 
