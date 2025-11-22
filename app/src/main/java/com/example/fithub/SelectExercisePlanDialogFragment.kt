@@ -8,6 +8,8 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.Button
+import android.view.Gravity
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import com.example.fithub.data.CreateUserExercisePlanDto
@@ -20,36 +22,78 @@ class SelectExercisePlanDialogFragment : DialogFragment() {
     }
 
     var onPlanSelectedListener: OnPlanSelectedListener? = null
+    private var plansContainer: LinearLayout? = null
+    private var userId: String? = null
+    private var currentPlanId: String? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val userId = arguments?.getString("userId") ?: return super.onCreateDialog(savedInstanceState)
+        userId = arguments?.getString("userId") ?: return super.onCreateDialog(savedInstanceState)
+        currentPlanId = arguments?.getString("currentPlanId")
 
         val mainLayout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(32, 32, 32, 32)
         }
 
-        val plansContainer = LinearLayout(requireContext()).apply {
+        plansContainer = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
         }
 
         mainLayout.addView(plansContainer)
 
+        loadPlans()
+
+        return AlertDialog.Builder(requireContext())
+            .setTitle("Wybierz plan treningowy")
+            .setView(mainLayout)
+            .setPositiveButton("Nowy plan") { _, _ ->
+                showCreatePlanDialog(userId!!)
+            }
+            .setNegativeButton("Anuluj", null)
+            .create()
+    }
+
+    private fun loadPlans() {
         lifecycleScope.launch {
             try {
-                val plans = NetworkModule.api.getUserExercisePlans(userId)
+                val plans = NetworkModule.api.getUserExercisePlans(userId!!)
+
+                plansContainer?.removeAllViews()
 
                 plans.forEach { plan ->
+                    val planItemLayout = LinearLayout(requireContext()).apply {
+                        orientation = LinearLayout.HORIZONTAL
+                        setPadding(16, 16, 16, 16)
+                        gravity = Gravity.CENTER_VERTICAL
+                    }
+
                     val planView = TextView(requireContext()).apply {
                         text = plan.planName
                         textSize = 18f
-                        setPadding(24, 24, 24, 24)
+                        setPadding(8, 8, 8, 8)
+                        layoutParams = LinearLayout.LayoutParams(
+                            0,
+                            LinearLayout.LayoutParams.WRAP_CONTENT,
+                            1f
+                        )
                         setOnClickListener {
-                            onPlanSelectedListener?.onPlanSelected( plan.id,plan.planName)
+                            onPlanSelectedListener?.onPlanSelected(plan.id, plan.planName)
                             dismiss()
                         }
                     }
-                    plansContainer.addView(planView)
+
+                    val deleteButton = Button(requireContext()).apply {
+                        text = "Usuń"
+                        textSize = 14f
+                        setPadding(16, 8, 16, 8)
+                        setOnClickListener {
+                            showDeleteConfirmationDialog(plan.id, plan.planName)
+                        }
+                    }
+
+                    planItemLayout.addView(planView)
+                    planItemLayout.addView(deleteButton)
+                    plansContainer?.addView(planItemLayout)
                 }
 
                 if (plans.isEmpty()) {
@@ -57,22 +101,56 @@ class SelectExercisePlanDialogFragment : DialogFragment() {
                         text = "Brak planów treningowych"
                         setPadding(24, 24, 24, 24)
                     }
-                    plansContainer.addView(emptyView)
+                    plansContainer?.addView(emptyView)
                 }
 
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_SHORT).show()
+                if (isAdded && context != null) {
+                    Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
+    }
 
-        return AlertDialog.Builder(requireContext())
-            .setTitle("Wybierz plan treningowy")
-            .setView(mainLayout)
-            .setPositiveButton("Nowy plan") { _, _ ->
-                showCreatePlanDialog(userId)
+    private fun showDeleteConfirmationDialog(planId: String, planName: String) {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Usuwanie planu")
+            .setMessage("Czy na pewno chcesz usunąć plan \"$planName\"?")
+            .setPositiveButton("Usuń") { _, _ ->
+                deletePlan(planId, planName)
             }
             .setNegativeButton("Anuluj", null)
-            .create()
+            .show()
+    }
+
+    private fun deletePlan(planId: String, planName: String) {
+        lifecycleScope.launch {
+            try {
+                NetworkModule.api.deleteUserExercisePlan(planId)
+
+                if (isAdded && context != null) {
+                    Toast.makeText(requireContext(), "Usunięto plan: $planName", Toast.LENGTH_SHORT).show()
+
+                    // Jeśli usunięto aktualnie wybrany plan, wybierz inny
+                    if (planId == currentPlanId) {
+                        val remainingPlans = NetworkModule.api.getUserExercisePlans(userId!!)
+                        if (remainingPlans.isNotEmpty()) {
+                            // Automatycznie wybierz pierwszy dostępny plan
+                            onPlanSelectedListener?.onPlanSelected(remainingPlans[0].id, remainingPlans[0].planName)
+                        } else {
+                            // Brak planów - UserTrainingFragment utworzy domyślny
+                            onPlanSelectedListener?.onPlanSelected("", "")
+                        }
+                    }
+
+                    loadPlans() // Odśwież listę planów
+                }
+            } catch (e: Exception) {
+                if (isAdded && context != null) {
+                    Toast.makeText(requireContext(), "Błąd usuwania: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
+            }
+        }
     }
 
     private fun showCreatePlanDialog(userId: String) {
@@ -80,7 +158,7 @@ class SelectExercisePlanDialogFragment : DialogFragment() {
             hint = "Nazwa planu"
         }
 
-        AlertDialog.Builder(requireContext())
+        val createDialog = AlertDialog.Builder(requireContext())
             .setTitle("Nowy plan treningowy")
             .setView(input)
             .setPositiveButton("Utwórz") { _, _ ->
@@ -92,7 +170,9 @@ class SelectExercisePlanDialogFragment : DialogFragment() {
                 }
             }
             .setNegativeButton("Anuluj", null)
-            .show()
+            .create()
+
+        createDialog.show()
     }
 
     private fun createPlan(userId: String, planName: String) {
@@ -104,19 +184,26 @@ class SelectExercisePlanDialogFragment : DialogFragment() {
                         planName = planName
                     )
                 )
-                onPlanSelectedListener?.onPlanSelected(newPlan.id, newPlan.planName)
-                Toast.makeText(requireContext(), "Utworzono: ${newPlan.planName}", Toast.LENGTH_SHORT).show()
+
+                if (isAdded && context != null) {
+                    Toast.makeText(requireContext(), "Utworzono: ${newPlan.planName}", Toast.LENGTH_SHORT).show()
+                    onPlanSelectedListener?.onPlanSelected(newPlan.id, newPlan.planName)
+                    dismiss()
+                }
             } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_SHORT).show()
+                if (isAdded && context != null) {
+                    Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_SHORT).show()
+                }
             }
         }
     }
 
     companion object {
-        fun newInstance(userId: String): SelectExercisePlanDialogFragment {
+        fun newInstance(userId: String, currentPlanId: String? = null): SelectExercisePlanDialogFragment {
             return SelectExercisePlanDialogFragment().apply {
                 arguments = Bundle().apply {
                     putString("userId", userId)
+                    putString("currentPlanId", currentPlanId)
                 }
             }
         }

@@ -35,11 +35,9 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
 
 
     val currentUserId = "68cbc06e6cdfa7faa8561f82"
-    private var currentPlanName = "Plan treningowy 1"
+    private var currentPlanName = ""
     private var currentPlanId = ""
     private var isUserInitiatedChange = true
-
-    private val exercisesInPlan = mutableListOf<ExerciseListAdapter.ExerciseItem>()
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -61,14 +59,18 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
         }
 
         exercisePlanName.setOnClickListener {
-            val dialog = SelectExercisePlanDialogFragment.newInstance(currentUserId)
+            val dialog = SelectExercisePlanDialogFragment.newInstance(currentUserId, currentPlanId)
 
             dialog.onPlanSelectedListener = object : SelectExercisePlanDialogFragment.OnPlanSelectedListener {
                 override fun onPlanSelected(planId: String, planName: String) {
                     currentPlanId = planId
                     currentPlanName = planName
-                    exercisePlanName.text = planName
-                    Toast.makeText(requireContext(), "Wybrano: $planName", Toast.LENGTH_SHORT).show()
+
+                    if (planName.isNotEmpty()) {
+                        exercisePlanName.text = planName
+                        Toast.makeText(requireContext(), "Wybrano: $planName", Toast.LENGTH_SHORT).show()
+                    }
+
                     loadExercisesForCurrentPlan()
                 }
             }
@@ -106,17 +108,35 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
     private fun loadExercisesForCurrentPlan() {
         lifecycleScope.launch {
             try {
-                // Pobierz wszystkie plany użytkownika
-                val plans = NetworkModule.api.getUserExercisePlans(currentUserId)
+                var plans = NetworkModule.api.getUserExercisePlans(currentUserId)
                 Log.d("UserTraining", "Pobrano ${plans.size} planów")
 
-                // Znajdź plan o nazwie currentPlanName
+                if (plans.isEmpty()) {
+                    Log.d("UserTraining", "Brak planów - tworzenie domyślnego planu")
+                    val defaultPlan = NetworkModule.api.createUserExercisePlan(
+                        com.example.fithub.data.CreateUserExercisePlanDto(
+                            userId = currentUserId,
+                            planName = "Domyślny plan treningowy"
+                        )
+                    )
+                    currentPlanName = defaultPlan.planName
+                    currentPlanId = defaultPlan.id
+                    exercisePlanName.text = currentPlanName
+                    Log.d("UserTraining", "Utworzono domyślny plan: $currentPlanName")
+
+                    plans = listOf(defaultPlan)
+                } else if (currentPlanName.isEmpty()) {
+                    currentPlanName = plans[0].planName
+                    currentPlanId = plans[0].id
+                    exercisePlanName.text = currentPlanName
+                    Log.d("UserTraining", "Automatycznie wybrano pierwszy plan: $currentPlanName")
+                }
+
                 val currentPlan = plans.find { it.planName == currentPlanName }
 
                 if (currentPlan != null) {
                     currentPlanId = currentPlan.id
 
-                    // Pobierz ćwiczenia z planu
                     val exercises = currentPlan.planExercises.map { planExercise ->
                         ExerciseListAdapter.ExerciseItem(
                             exercise = planExercise.exerciseId
@@ -141,12 +161,10 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
     private fun deleteExerciseFromPlan(exercise: ExerciseDto) {
         lifecycleScope.launch {
             try {
-                // Usuń ćwiczenie z planu używając istniejącego endpointu
                 NetworkModule.api.removeExerciseFromPlan(currentPlanId, exercise.id)
 
                 Toast.makeText(requireContext(), "Usunięto: ${exercise.name}", Toast.LENGTH_SHORT).show()
 
-                // Odśwież listę
                 loadExercisesForCurrentPlan()
 
             } catch (e: Exception) {
@@ -209,7 +227,6 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
                     addTrainingSummaryToDiary(minutes)
                 } else {
                     Toast.makeText(requireContext(), "Podaj poprawny czas", Toast.LENGTH_SHORT).show()
-                    // Cofamy zaznaczenie jeśli błąd
                     isUserInitiatedChange = false
                     cbPlanCompleted.isChecked = false
                     isUserInitiatedChange = true
