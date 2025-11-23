@@ -13,6 +13,7 @@ import com.example.fithub.data.DailyNutritionDto
 import com.example.fithub.data.FoodItemDto
 import com.example.fithub.data.MealDto
 import com.example.fithub.data.NutritionData
+import com.example.fithub.data.PointsManager
 import com.example.fithub.logic.UserCalculator
 import kotlinx.coroutines.launch
 import kotlin.Double
@@ -146,6 +147,16 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
                     date = date,
                     addMealDto = payload
                 )
+
+                try {
+                    Log.d("AddMealDialog", "Posiłek dodany, przyznaję punkty...")
+                    val leveledUp = PointsManager.addPoints(userId, PointsManager.ActionType.TRAINING)
+
+                    if (leveledUp) {
+                        (activity as? UserMainActivity)?.showLevelUpDialog()
+                    }                } catch (e: Exception) {
+                    Log.e("AddMealDialog", "Nie udało się dodać punktów: ${e.message}")
+                }
 
                 Toast.makeText(
                     requireContext(),

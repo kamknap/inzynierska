@@ -14,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
 import com.example.fithub.data.FoodDto
 import com.example.fithub.data.MealWithFoodsDto
+import com.example.fithub.data.PointsManager
 import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
@@ -147,7 +148,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         tvMealCalories.text = "$calories Kcal"
 
         btnDeleteMeal.setOnClickListener {
-            deleteFoodByItemId(itemId)
+            deleteFoodByItemId(itemId, isTraining)
         }
 
 
@@ -562,7 +563,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         }
     }
 
-    private fun deleteFoodByItemId(itemId: String) {
+    private fun deleteFoodByItemId(itemId: String, isTraining: Boolean) {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val dateStr = dateFormat.format(selectedDate.time)
 
@@ -574,48 +575,24 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                     itemId = itemId
                 )
 
+                try {
+                    val actionType = if (isTraining) {
+                        PointsManager.ActionType.TRAINING
+                    } else {
+                        PointsManager.ActionType.MEAL
+                    }
+                    PointsManager.removePoints(currentUserId, actionType)
+                    Log.d("UserDiary", "Odjęto punkty za usunięcie elementu: $actionType")
+                } catch (e: Exception) {
+                    Log.e("UserDiary", "Błąd odejmowania punktów: ${e.message}")
+                }
+
                 loadDataForDate(selectedDate)
                 Toast.makeText(requireContext(), "Usunięto produkt", Toast.LENGTH_SHORT).show()
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Błąd usuwania: ${e.message}", Toast.LENGTH_LONG).show()
             }
         }
-    }
-
-    private fun addFoodToDb(mealName: String, foodId: String, quantityGrams: Double) {
-        val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-        val dateStr = dateFormat.format(selectedDate.time)
-
-        val mealDto = com.example.fithub.data.MealDto(
-            name = mealName,
-            foods = listOf(
-                com.example.fithub.data.FoodItemDto(
-                    foodId = foodId,
-                    quantity = quantityGrams
-                )
-            )
-        )
-
-        val payload = com.example.fithub.data.AddMealDto(meal = mealDto)
-
-        viewLifecycleOwner.lifecycleScope.launch {
-            try {
-                NetworkModule.api.addMeal(
-                    userId = currentUserId,
-                    date = dateStr,
-                    addMealDto = payload
-                )
-
-                loadDataForDate(selectedDate)
-                Toast.makeText(requireContext(), "Dodano produkt do: $mealName", Toast.LENGTH_SHORT).show()
-            } catch (e: Exception) {
-                Toast.makeText(requireContext(), "Błąd dodawania: ${e.message}", Toast.LENGTH_LONG).show()
-            }
-        }
-    }
-
-    private fun Double.asGramsLabel(): String {
-        return if (this % 1.0 == 0.0) "${this.toInt()} g" else "${"%.1f".format(this)} g"
     }
 
     private fun openExerciseDialog() {

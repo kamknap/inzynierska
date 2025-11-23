@@ -141,4 +141,44 @@ interface ApiService {
         @Path("id") planId: String,
         @Path("exercise_id") exerciseId: String
     ): UserExercisePlanDto
+
+    // User Progress endpoints
+    @GET("/api/user-progress/{userId}")
+    suspend fun getUserProgress(@Path("userId") userId: String): UserProgressDto
+
+    @POST("/api/user-progress")
+    suspend fun createUserProgress(@Body progress: UserProgressDto): UserProgressDto
+
+    @PUT("/api/user-progress/{userId}")
+    suspend fun updateUserProgress(
+        @Path("userId") userId: String,
+        @Body progress: UserProgressDto
+    ): UserProgressDto
+
+    @DELETE("/api/user-progress/{userId}")
+    suspend fun deleteUserProgress(@Path("userId") userId: String): Unit
+
+    // Photos endpoints
+    @GET("/api/photos")
+    suspend fun getAllPhotos(): List<PhotoDto>
+
+    @GET("/api/photos/{id}")
+    suspend fun getPhotoById(@Path("id") id: String): PhotoDto
+
+    @POST("/api/photos")
+    suspend fun addPhoto(@Body photo: PhotoDto): PhotoDto
+
+    @PUT("/api/photos/{id}")
+    suspend fun updatePhoto(@Path("id") id: String, @Body photo: PhotoDto): PhotoDto
+
+    @DELETE("/api/photos/{id}")
+    suspend fun deletePhoto(@Path("id") id: String): Unit
+
+    // Badges endpoints
+    @GET("/api/badges")
+    suspend fun getAllBadges(): List<BadgeDto>
+
+    // Challenges endpoints
+    @GET("/api/challenges")
+    suspend fun getAllChallenges(): List<ChallengeDto>
 }

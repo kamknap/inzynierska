@@ -4,7 +4,6 @@ import android.app.AlertDialog
 import android.app.Dialog
 import android.content.Context
 import android.os.Bundle
-import android.text.TextWatcher
 import android.util.Log
 import android.view.View
 import android.widget.Button
@@ -14,12 +13,8 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.fragment.app.DialogFragment
 import android.widget.Toast
-import androidx.compose.material3.Text
-import androidx.compose.ui.semantics.text
-import androidx.core.widget.addTextChangedListener
 import androidx.core.widget.doAfterTextChanged
 import androidx.lifecycle.lifecycleScope
-import com.example.fithub.NetworkModule
 import com.example.fithub.data.CreateFoodDto
 import com.example.fithub.data.FoodDto
 import com.example.fithub.data.NutritionData
@@ -28,6 +23,8 @@ import kotlinx.coroutines.launch
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import android.view.inputmethod.InputMethodManager
+import com.example.fithub.data.PointsManager
+
 
 
 class AddMealDialogFragment : DialogFragment() {
@@ -375,6 +372,18 @@ class AddMealDialogFragment : DialogFragment() {
                         date = date,
                         addMealDto = addMealData
                     )
+
+                    try {
+                        Log.d("AddMealDialog", "Posiłek dodany, przyznaję punkty...")
+                        val leveledUp = PointsManager.addPoints(userId, PointsManager.ActionType.MEAL)
+
+                        if (leveledUp) {
+                            (activity as? UserMainActivity)?.showLevelUpDialog()
+                        }
+                    } catch (e: Exception) {
+                        Log.e("AddMealDialog", "Nie udało się dodać punktów: ${e.message}")
+                    }
+
                     Toast.makeText(
                         requireContext(),
                         "Dodano ${food.name} do $mealType",
@@ -384,8 +393,10 @@ class AddMealDialogFragment : DialogFragment() {
                     dismiss()
                 }
             catch (e: Exception){
-                android.util.Log.e("AddMealDialog", "Błąd dodawania posiłku", e)
-                Toast.makeText(requireContext(), "Błąd dodawania posiłku: ${e.message}", Toast.LENGTH_LONG).show()
+                if (e is kotlinx.coroutines.CancellationException) {
+                    throw e
+                }
+                Log.e("AddMealDialog", "Błąd wyszukiwania", e)
             }
         }
     }

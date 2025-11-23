@@ -1,7 +1,9 @@
 package com.example.fithub
 
 import android.os.Build
+import android.util.Log
 import okhttp3.OkHttpClient
+import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
@@ -23,7 +25,16 @@ object NetworkModule {
                 || (Build.BRAND.startsWith("generic") && Build.DEVICE.startsWith("generic"))
                 || "google_sdk" == Build.PRODUCT)
     }
-    private val client = OkHttpClient.Builder().build()
+    
+    private val loggingInterceptor = HttpLoggingInterceptor { message ->
+        Log.d("NetworkModule", message)
+    }.apply {
+        level = HttpLoggingInterceptor.Level.BODY
+    }
+    
+    private val client = OkHttpClient.Builder()
+        .addInterceptor(loggingInterceptor)
+        .build()
 
     val api: ApiService by lazy {
         Retrofit.Builder()

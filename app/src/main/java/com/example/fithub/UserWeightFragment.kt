@@ -20,6 +20,7 @@ import java.util.Date
 import java.util.Locale
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.fithub.data.PointsManager
 import com.example.fithub.data.UserWeightHistoryDto
 import java.util.Calendar
 
@@ -288,6 +289,16 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
                     )
                 )
                 NetworkModule.api.updateUser(userId, updateUserDto)
+
+                try {
+                    Log.d("AddWeight", "Waga dodana, przyznaję punkty...")
+                    val leveledUp = PointsManager.addPoints(userId, PointsManager.ActionType.WEIGHT)
+
+                    if (leveledUp) {
+                        (activity as? UserMainActivity)?.showLevelUpDialog()
+                    }                } catch (e: Exception) {
+                    Log.e("AddWeight", "Nie udało się dodać punktów: ${e.message}")
+                }
 
                 Toast.makeText(
                     requireContext(),

@@ -21,6 +21,7 @@ import com.example.fithub.data.ExerciseDto
 import com.example.fithub.data.FoodItemDto
 import com.example.fithub.data.MealDto
 import com.example.fithub.data.NutritionData
+import com.example.fithub.data.PointsManager
 import com.example.fithub.logic.UserCalculator
 import kotlinx.coroutines.launch
 
@@ -285,6 +286,17 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
                     date = dateStr,
                     addMealDto = AddMealDto(meal = mealDto)
                 )
+
+                try {
+                    Log.d("AddWeight", "Waga dodana, przyznaję punkty...")
+                    val leveledUp = PointsManager.addPoints(currentUserId, PointsManager.ActionType.TRAINING_FULL)
+
+                    if (leveledUp) {
+                        (activity as? UserMainActivity)?.showLevelUpDialog()
+                    }                } catch (e: Exception) {
+                    Log.e("AddWeight", "Nie udało się dodać punktów: ${e.message}")
+                }
+
                 Log.e("UserTraining", "Dodano trening do dziennika: ${caloriesBurned.toInt()} kcal")
                 Toast.makeText(requireContext(), "Dodano trening do dziennika: ${caloriesBurned.toInt()} kcal", Toast.LENGTH_LONG).show()
             }
