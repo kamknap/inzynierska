@@ -113,7 +113,7 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
 
                 val exerciseAsFood = CreateFoodDto(
                     name = exerciseName,
-                    brand = "Trening",
+                    brand = "SingleExercise",
                     barcode = null,
                     nutritionPer100g = NutritionData(
                         calories = -caloriesBurned,

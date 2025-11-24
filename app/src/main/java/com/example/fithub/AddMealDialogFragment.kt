@@ -127,25 +127,31 @@ class AddMealDialogFragment : DialogFragment() {
             try {
                 val localFoods = NetworkModule.api.getFoods(search = query)
                 val offFoods = NetworkModule.offApi.searchProducts(query = query, limit = 10)
-                var foodDtoList = listOf<FoodDto>()
+                var offFoodDtoList = listOf<FoodDto>()
 
                 if(offFoods.products?.isNotEmpty() == true){
-                    foodDtoList = offFoods.products.map { product ->
-                        // DODAJ LOGI DO DEBUGOWANIA
-                        Log.d("OpenFoodFacts", "===== Produkt =====")
-                        Log.d("OpenFoodFacts", "Nazwa: ${product.product_name}")
-                        Log.d("OpenFoodFacts", "Nutriments: ${product.nutriments}")
-                        Log.d("OpenFoodFacts", "Kalorie: ${product.nutriments?.energy_kcal_100g}")
-                        Log.d("OpenFoodFacts", "Białko: ${product.nutriments?.proteins_100g}")
-
-                        val mapped = mapOpenFoodFactsToFood(product)
-                        mapped
+                    offFoodDtoList = offFoods.products.map { product ->
+                        mapOpenFoodFactsToFood(product)
                     }
                 }
 
-                val foodList = localFoods.foods + foodDtoList
+                // lączenie list i nałożenie filtra na ćwiczenia
+                val foodList = (localFoods.foods + offFoodDtoList)
+                    .filter { food ->
+                        food.category != "Exercise" &&
+                                food.brand != "TrainingPlan" &&
+                                food.brand != "SingleExercise"
+                    }
 
                 container.removeAllViews()
+
+                if (foodList.isEmpty()) {
+                    val tvEmpty = TextView(requireContext()).apply {
+                        text = "Brak produktów spożywczych"
+                        setPadding(16, 16, 16, 16)
+                    }
+                    container.addView(tvEmpty)
+                }
 
                 foodList.forEach { food ->
                     val foodView = LinearLayout(requireContext()).apply {

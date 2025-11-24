@@ -259,7 +259,7 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
 
                 val trainingFood = CreateFoodDto(
                     name = "Wykonany plan: $currentPlanName",
-                    brand = "Trening",
+                    brand = "TrainingPlan",
                     barcode = null,
                     nutritionPer100g = NutritionData(
                         calories = -caloriesBurned,

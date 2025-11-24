@@ -59,10 +59,12 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
     private var loadedDinner = false
     private var currentLoadId = 0
     private var trainingCalories = 0.0
-
     private val currentUserId = "68cbc06e6cdfa7faa8561f82"
-
-    //TODO albo usunac mozliwosc edycji treningu albo dodac mozliwosc edycji minut
+    enum class TrainingDeleteItemType{
+        NONE,
+        SINGLE_EXERCISE,
+        FULL_TRAINING
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -130,7 +132,8 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                  calories: Int = 0,
                  currentQuantity: Double,
                  foodDto: FoodDto,
-                 isTraining: Boolean = false) {
+                 trainingType: TrainingDeleteItemType = TrainingDeleteItemType.NONE
+    ) {
         val mealView = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_meal, container, false)
 
@@ -148,16 +151,16 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         tvMealCalories.text = "$calories Kcal"
 
         btnDeleteMeal.setOnClickListener {
-            deleteFoodByItemId(itemId, isTraining)
+            deleteFoodByItemId(itemId, trainingType)
         }
 
 
         mealView.setOnClickListener {
-            when(isTraining){
-                true ->
-                    Toast.makeText(requireContext(), "Nie mozna edytować", Toast.LENGTH_SHORT).show()
-                false ->
+            when (trainingType) {
+                TrainingDeleteItemType.NONE ->
                     showEditQuantityDialog(mealName, itemId, currentQuantity, foodDto)
+                else ->
+                    Toast.makeText(requireContext(), "Nie można edytować treningu", Toast.LENGTH_SHORT).show()
             }
         }
 
@@ -481,15 +484,25 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                     }
                 }
 
+                val itemTrainingType = if (mealType.lowercase() == "trening") {
+                    when (foodItem.foodId.brand) {
+                        "TrainingPlan" -> TrainingDeleteItemType.FULL_TRAINING
+                        "SingleExercise" -> TrainingDeleteItemType.SINGLE_EXERCISE
+                        else -> TrainingDeleteItemType.SINGLE_EXERCISE //stare wpisy
+                    }
+                } else {
+                    TrainingDeleteItemType.NONE
+                }
+
                 if (mealType.lowercase() == "trening") {
                     addMealToList(
                         container = container,
                         mealName = food.name,
                         itemId = foodItem.itemId,
-                        calories = calories.toInt(),
+                        calories = calories,
                         currentQuantity = foodItem.quantity,
                         foodDto = food,
-                        isTraining = true
+                        trainingType = itemTrainingType
                     )
                 } else {
                     addMealToList(
@@ -502,7 +515,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                         calories = calories,
                         currentQuantity = foodItem.quantity,
                         foodDto = food,
-                        isTraining = false
+                        trainingType = TrainingDeleteItemType.NONE
                     )
                 }
             }
@@ -563,7 +576,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         }
     }
 
-    private fun deleteFoodByItemId(itemId: String, isTraining: Boolean) {
+    private fun deleteFoodByItemId(itemId: String, trainingType: TrainingDeleteItemType) {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
         val dateStr = dateFormat.format(selectedDate.time)
 
@@ -576,19 +589,27 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                 )
 
                 try {
-                    val actionType = if (isTraining) {
-                        PointsManager.ActionType.TRAINING
-                    } else {
-                        PointsManager.ActionType.MEAL
+                    val actionType = when (trainingType) {
+                        TrainingDeleteItemType.FULL_TRAINING -> PointsManager.ActionType.TRAINING_FULL
+                        TrainingDeleteItemType.SINGLE_EXERCISE -> PointsManager.ActionType.TRAINING
+                        TrainingDeleteItemType.NONE -> PointsManager.ActionType.MEAL
                     }
+
                     PointsManager.removePoints(currentUserId, actionType)
-                    Log.d("UserDiary", "Odjęto punkty za usunięcie elementu: $actionType")
+                    Log.d("UserDiary", "Odjęto punkty za: $actionType")
+
                 } catch (e: Exception) {
                     Log.e("UserDiary", "Błąd odejmowania punktów: ${e.message}")
                 }
 
                 loadDataForDate(selectedDate)
-                Toast.makeText(requireContext(), "Usunięto produkt", Toast.LENGTH_SHORT).show()
+                val message = when(trainingType) {
+                    TrainingDeleteItemType.FULL_TRAINING -> "Usunięto plan treningowy"
+                    TrainingDeleteItemType.SINGLE_EXERCISE -> "Usunięto ćwiczenie"
+                    TrainingDeleteItemType.NONE -> "Usunięto produkt"
+                }
+                Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+
             } catch (e: Exception) {
                 Toast.makeText(requireContext(), "Błąd usuwania: ${e.message}", Toast.LENGTH_LONG).show()
             }
