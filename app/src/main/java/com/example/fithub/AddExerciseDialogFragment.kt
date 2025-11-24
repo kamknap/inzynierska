@@ -40,9 +40,25 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
 
         view.findViewById<TextView>(android.R.id.text1).text = item.name ?: "Bez nazwy"
 
-        val muscleInfo = item.muscleIds?.joinToString(", ") ?: "Brak danych"
+        val muscleInfo = item.muscleIds
+            ?.takeIf { it.isNotEmpty() }
+            ?.joinToString(", ")
+        
         val metsInfo = item.mets?.let { "METS: $it" } ?: ""
-        view.findViewById<TextView>(android.R.id.text2).text = "$muscleInfo${if (metsInfo.isNotEmpty()) " • $metsInfo" else ""}"
+
+        val finalText = buildString {
+            if (!muscleInfo.isNullOrEmpty()) {
+                append(muscleInfo)
+            }
+            if (metsInfo.isNotEmpty()) {
+                if (!muscleInfo.isNullOrEmpty()) {
+                    append(" • ")
+                }
+                append(metsInfo)
+            }
+        }
+
+        view.findViewById<TextView>(android.R.id.text2).text = finalText
 
         return view
     }
