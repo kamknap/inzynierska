@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_margin="24dp"
+    app:cardCornerRadius="16dp"
+    app:cardElevation="8dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="24dp"
+        android:gravity="center">
+
+        <!-- Emoji/Ikona -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="🎉"
+            android:textSize="64sp"
+            android:layout_marginBottom="16dp"/>
+
+        <!-- Tytuł -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Gratulacje!"
+            android:textSize="24sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/black"
+            android:layout_marginBottom="8dp"/>
+
+        <!-- Nazwa wyzwania -->
+        <TextView
+            android:id="@+id/tvChallengeName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Ukończono: 7 dni z rzędu"
+            android:textSize="16sp"
+            android:textColor="@android:color/darker_gray"
+            android:layout_marginBottom="8dp"
+            android:gravity="center"/>
+
+        <!-- Nazwa odznaki -->
+        <TextView
+            android:id="@+id/tvBadgeName"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Zdobyto odznakę: Wytrwały"
+            android:textSize="14sp"
+            android:textColor="@android:color/holo_orange_dark"
+            android:textStyle="bold"
+            android:layout_marginBottom="16dp"
+            android:gravity="center"/>
+
+        <!-- Punkty -->
+        <TextView
+            android:id="@+id/tvPoints"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="+50 pkt"
+            android:textSize="28sp"
+            android:textStyle="bold"
+            android:textColor="@android:color/holo_green_dark"
+            android:layout_marginBottom="24dp"/>
+
+        <!-- Przycisk OK -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/btnOk"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="OK"
+            android:textSize="16sp"
+            android:paddingStart="48dp"
+            android:paddingEnd="48dp"
+            app:cornerRadius="8dp"/>
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

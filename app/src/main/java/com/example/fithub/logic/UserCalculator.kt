@@ -1,8 +1,16 @@
 package com.example.fithub.logic
 
+import com.example.fithub.data.UserGoalDto
 import java.time.LocalDate
 import java.time.Year
+import kotlin.math.abs
 
+data class GoalProgressResult(
+    val label: String,
+    val value: String,
+    val remaining: String?,
+    val fullDesc: String
+)
 class UserCalculator {
      fun calculateBMI(weight: Double, height: Double): Double? {
         if (weight <= 0 || height <= 0) return null
@@ -52,6 +60,47 @@ class UserCalculator {
             age
         } catch (e: Exception) {
             0
+        }
+    }
+
+    fun calculateGoalProgress(currentWeight: Double, goal: UserGoalDto): GoalProgressResult {
+        val startWeight = goal.firstWeightKg.toDouble()
+        val targetWeight = goal.targetWeightKg.toDouble()
+
+        fun fmt(v: Double) = String.format("%.1f", abs(v))
+        return when (goal.type) {
+            "lose_weight" -> {
+                val progress = startWeight - currentWeight
+                val remaining = currentWeight - targetWeight
+                GoalProgressResult(
+                    label = "Schudnięto",
+                    value = "${fmt(progress)} kg",
+                    remaining = "${fmt(remaining)} kg",
+                    fullDesc = "Schudnięto: ${fmt(progress)}kg, pozostało: ${fmt(remaining)}kg"
+                )
+            }
+
+            "gain_weight" -> {
+                val progress = currentWeight - startWeight
+                val remaining = targetWeight - currentWeight
+                GoalProgressResult(
+                    label = "Przybrano",
+                    value = "${fmt(progress)} kg",
+                    remaining = "${fmt(remaining)} kg",
+                    fullDesc = "Przybrano: ${fmt(progress)}kg, pozostało: ${fmt(remaining)}kg"
+                )
+            }
+
+            else -> { // maintain or other
+                val diff = startWeight - currentWeight
+                val sign = if (diff > 0) "-" else "+"
+                GoalProgressResult(
+                    label = "Zmiana wagi",
+                    value = "$sign${fmt(diff)} kg",
+                    remaining = null,
+                    fullDesc = "Różnica względem wagi początkowej: $sign${fmt(diff)}kg"
+                )
+            }
         }
     }
 }

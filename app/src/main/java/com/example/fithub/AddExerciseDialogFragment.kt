@@ -43,7 +43,7 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
         val muscleInfo = item.muscleIds
             ?.takeIf { it.isNotEmpty() }
             ?.joinToString(", ")
-        
+
         val metsInfo = item.mets?.let { "METS: $it" } ?: ""
 
         val finalText = buildString {

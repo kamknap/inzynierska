@@ -11,7 +11,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
+import com.example.fithub.data.ChallengeType
 import com.example.fithub.data.PointsManager
+import com.example.fithub.logic.ChallengeManager
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
@@ -25,6 +27,10 @@ class UserMainActivity : AppCompatActivity() {
         setContentView(R.layout.activity_user_main)
 
         bottomNavigation = findViewById(R.id.bottom_navigation)
+
+        ChallengeManager.onChallengeCompleted = { challengeName, badgeName, points ->
+            showChallengeCompleteDialog(challengeName, badgeName, points)
+        }
 
         //check daily login
         val currentUserId = "68cbc06e6cdfa7faa8561f82"
@@ -42,6 +48,7 @@ class UserMainActivity : AppCompatActivity() {
                         Snackbar.LENGTH_LONG
                     ).setAnchorView(bottomNavigation).show()
                 }
+                ChallengeManager.checkChallengeProgress(currentUserId, ChallengeType.STREAK)
             }
 
             if (result.levelUp) {
@@ -66,6 +73,11 @@ class UserMainActivity : AppCompatActivity() {
         }
     }
 
+    override fun onDestroy() {
+        super.onDestroy()
+        ChallengeManager.onChallengeCompleted = null // Wyczyść callback
+    }
+
     private fun setupBottomNavigation() {
         bottomNavigation.setOnItemSelectedListener { item ->
             when (item.itemId) {
@@ -82,7 +94,7 @@ class UserMainActivity : AppCompatActivity() {
                     true
                 }
                 R.id.nav_stats -> {
-                    // TODO: StatsFragment
+                    loadFragment(UserProgressFragment())
                     true
                 }
                 R.id.nav_profile -> {
@@ -131,6 +143,33 @@ class UserMainActivity : AppCompatActivity() {
 
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
+            .create()
+
+        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+        btnOk.setOnClickListener {
+            dialog.dismiss()
+        }
+
+        dialog.show()
+    }
+
+    fun showChallengeCompleteDialog(challengeName: String, badgeName: String, points: Int) {
+        val dialogView = LayoutInflater.from(this).inflate(R.layout.challenge_complete_dialog, null)
+
+        // Ustaw teksty (musisz utworzyć layout challenge_complete_dialog.xml)
+        val tvChallengeName = dialogView.findViewById<TextView>(R.id.tvChallengeName)
+        val tvBadgeName = dialogView.findViewById<TextView>(R.id.tvBadgeName)
+        val tvPoints = dialogView.findViewById<TextView>(R.id.tvPoints)
+        val btnOk = dialogView.findViewById<Button>(R.id.btnOk)
+
+        tvChallengeName.text = "Ukończono: $challengeName"
+        tvBadgeName.text = "Zdobyto odznakę: $badgeName"
+        tvPoints.text = "+$points pkt"
+
+        val dialog = AlertDialog.Builder(this)
+            .setView(dialogView)
+            .setCancelable(false)
             .create()
 
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)

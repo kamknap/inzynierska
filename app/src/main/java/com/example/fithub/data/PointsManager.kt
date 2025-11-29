@@ -30,13 +30,13 @@ object PointsManager {
         return 100 + (level - 1) * 25
     }
 
-    suspend fun addPoints(userId: String, action: ActionType, customStreak: Int? = null): Boolean {
+    suspend fun addPoints(userId: String, action: ActionType, customStreak: Int? = null, customPoints: Int? = null): Boolean {
         try {
             Log.d("PointsManager", "Rozpoczynam addPoints dla userId=$userId, action=$action")
             val currentProgress = NetworkModule.api.getUserProgress(userId)
             Log.d("PointsManager", "Pobrano currentProgress: level=${currentProgress.level}, currentPoints=${currentProgress.currentPoints}")
 
-            val pointsToAdd = when (action) {
+            val pointsToAdd = customPoints ?: when (action) {
                 ActionType.MEAL -> POINTS_MEAL
                 ActionType.LOGIN -> POINTS_LOGIN
                 ActionType.WEIGHT -> POINTS_WEIGHT

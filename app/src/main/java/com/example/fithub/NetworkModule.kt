@@ -2,6 +2,7 @@ package com.example.fithub
 
 import android.os.Build
 import android.util.Log
+import com.google.gson.GsonBuilder
 import okhttp3.OkHttpClient
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
@@ -31,7 +32,11 @@ object NetworkModule {
     }.apply {
         level = HttpLoggingInterceptor.Level.BODY
     }
-    
+
+    private val gson = GsonBuilder()
+        .serializeNulls()
+        .create()
+
     private val client = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
         .build()
@@ -40,7 +45,7 @@ object NetworkModule {
         Retrofit.Builder()
             .baseUrl(BASE_URL)
             .client(client)
-            .addConverterFactory(GsonConverterFactory.create())
+            .addConverterFactory(GsonConverterFactory.create(gson))
             .build()
             .create(ApiService::class.java)
     }

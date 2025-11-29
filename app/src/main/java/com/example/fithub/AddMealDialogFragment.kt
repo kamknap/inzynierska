@@ -23,8 +23,9 @@ import kotlinx.coroutines.launch
 import com.journeyapps.barcodescanner.ScanContract
 import com.journeyapps.barcodescanner.ScanOptions
 import android.view.inputmethod.InputMethodManager
+import com.example.fithub.data.ChallengeType
 import com.example.fithub.data.PointsManager
-
+import com.example.fithub.logic.ChallengeManager
 
 
 class AddMealDialogFragment : DialogFragment() {
@@ -378,6 +379,8 @@ class AddMealDialogFragment : DialogFragment() {
                         date = date,
                         addMealDto = addMealData
                     )
+
+                    ChallengeManager.checkChallengeProgress(userId, ChallengeType.MEAL_COUNT, 1.0)
 
                     try {
                         Log.d("AddMealDialog", "Posiłek dodany, przyznaję punkty...")

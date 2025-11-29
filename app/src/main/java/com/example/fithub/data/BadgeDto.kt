@@ -7,5 +7,5 @@ data class BadgeDto(
     val name: String,
     val desc: String,
     val iconUrl: String,
-    val unlockedAt: String? = null
-)
+    val type: ChallengeType,
+    )

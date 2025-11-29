@@ -20,8 +20,11 @@ import java.util.Date
 import java.util.Locale
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.fithub.data.ChallengeType
 import com.example.fithub.data.PointsManager
 import com.example.fithub.data.UserWeightHistoryDto
+import com.example.fithub.logic.ChallengeManager
+import com.example.fithub.logic.UserCalculator
 import java.util.Calendar
 
 class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
@@ -156,33 +159,19 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
                     return@launch
                 }
 
-                val currentWeight = user.profile.weightKg
+                val currentWeight = user.profile.weightKg.toDouble()
 
                 val activeGoal = userGoals.firstOrNull { it.status == "active" }
                     ?: userGoals.first()
 
-                val startWeight = activeGoal.firstWeightKg
-                val targetWeight = activeGoal.targetWeightKg
                 val goalType = activeGoal.type
 
                 currentGoalType = goalType
 
-                when (goalType){
-                    "lose_weight" -> {
-                        val remaining = currentWeight - targetWeight
-                        val progress = startWeight - currentWeight
-                        userProgress.text = "Schudnięto: ${progress}kg, pozostało: ${remaining}kg"
-                    }
-                    "gain_weight" -> {
-                        val remaining = targetWeight - currentWeight
-                        val progress = currentWeight - startWeight
-                        userProgress.text = "Przybrano: ${progress}kg, pozostało: ${remaining}kg"
-                    }
-                    "maintain" -> {
-                        val difference = startWeight - currentWeight
-                        userProgress.text = "Różnica względem wagi początkowej: ${difference}kg"
-                    }
-                }
+                val calculator = UserCalculator()
+                val result = calculator.calculateGoalProgress(currentWeight, activeGoal)
+
+                userProgress.text = result.fullDesc
             }
             catch (e: Exception){
                 Log.e("UserWeightFragment", "Błąd: ${e.message}", e)
@@ -279,6 +268,12 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
         viewLifecycleOwner.lifecycleScope.launch {
             try {
                 val currentUser = NetworkModule.api.getUserById(userId)
+
+                val oldWeight = currentUser.profile.weightKg
+                val diff = oldWeight - weight
+                if (diff > 0){
+                    ChallengeManager.checkChallengeProgress(userId, ChallengeType.WEIGHT_LOSS, diff)
+                }
 
                 val updateUserDto = UpdateUserDto(
                     profile = UpdateProfileData(
