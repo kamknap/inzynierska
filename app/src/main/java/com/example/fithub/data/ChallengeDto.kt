@@ -15,5 +15,6 @@ enum class ChallengeType {
     STREAK,      // Logowanie dzień po dniu
     MEAL_COUNT,  // Liczba dodanych posiłków
     WEIGHT_LOSS,  // Ilość zrzuconych kilogramów (różnica start vs current)
-    TRAINING_COUNT // Liczba wykonanych treningow
+    TRAINING_COUNT, // Liczba wykonanych treningow
+    TRAINING_PLAN_COUNT // Liczba wykonanych planów treingowych
 }

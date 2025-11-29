@@ -35,6 +35,9 @@ object ChallengeManager {
                 ChallengeType.TRAINING_COUNT -> {
                     newCounter += 1
                 }
+                ChallengeType.TRAINING_PLAN_COUNT -> {
+                    newCounter += 1
+                }
             }
 
             if (newCounter >= activeChallenge.totalToFinish) {

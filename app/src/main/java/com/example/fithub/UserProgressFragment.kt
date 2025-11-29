@@ -127,7 +127,8 @@ class UserProgressFragment : Fragment(R.layout.fragment_user_progress) {
                             ChallengeType.STREAK -> "dni"
                             ChallengeType.MEAL_COUNT -> "posiłków"
                             ChallengeType.WEIGHT_LOSS -> "kg"
-                            ChallengeType.TRAINING_COUNT -> "treningów"
+                            ChallengeType.TRAINING_COUNT -> "ćwiczeń"
+                            ChallengeType.TRAINING_PLAN_COUNT -> "planów"
                         }
 
                         val currentValue = activeChallengeProgress.counter

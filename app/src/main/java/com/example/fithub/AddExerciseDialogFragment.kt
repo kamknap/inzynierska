@@ -8,12 +8,14 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
 import com.example.fithub.data.AddMealDto
+import com.example.fithub.data.ChallengeType
 import com.example.fithub.data.CreateFoodDto
 import com.example.fithub.data.DailyNutritionDto
 import com.example.fithub.data.FoodItemDto
 import com.example.fithub.data.MealDto
 import com.example.fithub.data.NutritionData
 import com.example.fithub.data.PointsManager
+import com.example.fithub.logic.ChallengeManager
 import com.example.fithub.logic.UserCalculator
 import kotlinx.coroutines.launch
 import kotlin.Double
@@ -73,30 +75,39 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
             setPadding(48, 24, 48, 24)
         }
 
-
         val etDuration = android.widget.EditText(requireContext()).apply {
             hint = "Czas trwania (min)"
             inputType = android.text.InputType.TYPE_CLASS_NUMBER
         }
 
-
         dialogLayout.addView(etDuration)
 
-        android.app.AlertDialog.Builder(requireContext())
+        val dialog = android.app.AlertDialog.Builder(requireContext())
             .setTitle("Szczegóły: ${exercise.name ?: "Ćwiczenie"}")
             .setView(dialogLayout)
-            .setPositiveButton("Dodaj") { _, _ ->
-                val duration = etDuration.text.toString().toDouble()
-
-                if (duration <= 0) {
-                    Toast.makeText(requireContext(), "Podaj czas trwania", Toast.LENGTH_SHORT).show()
-                    return@setPositiveButton
-                }
-
-                saveExercise(exercise, duration)
-            }
+            .setPositiveButton("Dodaj", null)
             .setNegativeButton("Anuluj", null)
-            .show()
+            .create()
+
+        dialog.setOnShowListener {
+            val button = dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)
+            button.setOnClickListener {
+                val durationText = etDuration.text.toString()
+                val duration = durationText.toDoubleOrNull()
+
+                if (duration == null || duration <= 0) {
+                    etDuration.error = "Podaj poprawną liczbę minut"
+                    Toast.makeText(requireContext(), "Podaj czas trwania (np. 30)", Toast.LENGTH_SHORT).show()
+                } else {
+                    saveExercise(exercise, duration)
+                    dialog.dismiss()
+                }
+            }
+        }
+
+        dialog.show()
+
+        etDuration.requestFocus()
     }
 
     private fun saveExercise(exercise: ExerciseDto, duration: Double){
@@ -167,6 +178,8 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
                 try {
                     Log.d("AddMealDialog", "Posiłek dodany, przyznaję punkty...")
                     val leveledUp = PointsManager.addPoints(userId, PointsManager.ActionType.TRAINING)
+
+                    ChallengeManager.checkChallengeProgress(userId, ChallengeType.TRAINING_COUNT, 1.0)
 
                     if (leveledUp) {
                         (activity as? UserMainActivity)?.showLevelUpDialog()

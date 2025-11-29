@@ -292,7 +292,7 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
                 try {
                     Log.d("AddWeight", "Waga dodana, przyznaję punkty...")
                     val leveledUp = PointsManager.addPoints(currentUserId, PointsManager.ActionType.TRAINING_FULL)
-                    ChallengeManager.checkChallengeProgress(currentUserId, ChallengeType.TRAINING_COUNT, 1.0)
+                    ChallengeManager.checkChallengeProgress(currentUserId, ChallengeType.TRAINING_PLAN_COUNT, 1.0)
 
                     if (leveledUp) {
                         (activity as? UserMainActivity)?.showLevelUpDialog()

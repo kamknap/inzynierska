@@ -10,6 +10,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fithub.data.BadgeDto
 import com.example.fithub.data.ChallengeDto
+import com.example.fithub.data.ChallengeType
 import com.example.fithub.data.PhotoDto
 
 enum class ChallengeState { AVAILABLE, ACTIVE, LOCKED }
@@ -65,16 +66,18 @@ class UniversalProgressAdapter(
             name.text = item.dto.name
             desc.text = item.dto.desc
 
-            if (item.isUnlocked) {
-                itemView.alpha = 1.0f
-                name.setTextColor(Color.BLACK)
-                icon.setColorFilter(null)
-            } else {
-                itemView.alpha = 0.5f
-                name.setTextColor(Color.GRAY)
-                icon.setColorFilter(Color.GRAY) // Szara ikona
-                desc.text = "Zablokowane"
+            val iconResId = when (item.dto.type) {
+                ChallengeType.STREAK -> android.R.drawable.ic_menu_my_calendar // Kalendarz dla dni z rzędu
+                ChallengeType.MEAL_COUNT -> android.R.drawable.ic_menu_camera // Aparat/Galeria dla posiłków
+                ChallengeType.WEIGHT_LOSS -> android.R.drawable.ic_menu_sort_by_size // Skala/Wykres dla wagi
+                ChallengeType.TRAINING_COUNT -> android.R.drawable.ic_menu_compass // Kompas/Aktywność dla treningów
+                ChallengeType.TRAINING_PLAN_COUNT -> android.R.drawable.ic_menu_agenda // Np. ikona agendy/listy
             }
+
+            icon.setImageResource(iconResId)
+            itemView.alpha = 1.0f
+            name.setTextColor(Color.BLACK)
+            icon.clearColorFilter()
         }
     }
 
