@@ -5,12 +5,12 @@ import java.text.SimpleDateFormat
 import java.util.Locale
 import java.util.Calendar
 
-data class UserData(
+data class OnboardingUserData(
     val name: String = "",
     val weight: Double? = null,
     val height: Double? = null,
     val birthDate: String = "",
-    val sex: String = "Other",
+    val sex: String = "Male",
     val bmr: Double? = null,
     val bmi: Double? = null
 ) {

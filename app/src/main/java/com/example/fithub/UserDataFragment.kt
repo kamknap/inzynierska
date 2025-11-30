@@ -8,7 +8,7 @@ import android.text.TextWatcher
 import android.view.View
 import android.widget.*
 import androidx.fragment.app.Fragment
-import com.example.fithub.data.UserData
+import com.example.fithub.data.OnboardingUserData
 import com.example.fithub.logic.UserCalculator
 import java.text.SimpleDateFormat
 import java.util.Calendar
@@ -72,13 +72,21 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
         }
     }
 
-    private fun getUserData(): UserData {
-        return UserData(
+    private fun getUserData(): OnboardingUserData {
+        val sexDisplay = etSex.text.toString()
+        // Mapowanie z polskiego (z UI) na angielski (do modelu danych)
+        val sex = when(sexDisplay) {
+            "Mężczyzna" -> "Male"
+            "Kobieta" -> "Female"
+            else -> "Male"
+        }
+        
+        return OnboardingUserData(
             name = etName.text.toString().trim(),
             weight = etWeight.text.toString().toDoubleOrNull(),
             height = etHeight.text.toString().toDoubleOrNull(),
             birthDate = etBirthDate.text.toString(),
-            sex = etSex.text.toString()
+            sex = sex
         )
     }
 
@@ -185,7 +193,7 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
     }
 
     private fun showSexPicker() {
-        val values = arrayOf("Male", "Female", "Other")
+        val values = arrayOf("Mężczyzna", "Kobieta")
         val currentValue = etSex.text.toString()
         val currentIndex = values.indexOf(currentValue).takeIf { it >= 0 } ?: 0
 

@@ -56,10 +56,11 @@ class EditProfileDialogFragment : DialogFragment() {
             }
 
             val sex = it.getString("userSex")
+            // Mapowanie z angielskiego (z API) na polski (do wyświetlenia)
             etSex.setText(when(sex) {
-                "Male" -> "Male"
-                "Female" -> "Female"
-                else -> "Other"
+                "Male" -> "Mężczyzna"
+                "Female" -> "Kobieta"
+                else -> "Mężczyzna"
             })
         }
 
@@ -101,7 +102,14 @@ class EditProfileDialogFragment : DialogFragment() {
                 val weight = etWeight.text.toString().toIntOrNull()
                 val height = etHeight.text.toString().toIntOrNull()
                 val birthDateDisplay = etBirthDate.text.toString()
-                val sex = etSex.text.toString()
+                val sexDisplay = etSex.text.toString()
+                
+                // Mapowanie z polskiego (z UI) na angielski (do API)
+                val sex = when(sexDisplay) {
+                    "Mężczyzna" -> "Male"
+                    "Kobieta" -> "Female"
+                    else -> "Male"
+                }
 
                 if (weight == null || height == null) {
                     Toast.makeText(context, "Nieprawidłowa waga lub wzrost", Toast.LENGTH_SHORT).show()
@@ -206,7 +214,7 @@ class EditProfileDialogFragment : DialogFragment() {
     }
 
     private fun showSexPicker() {
-        val options = arrayOf("Male", "Female", "Other")
+        val options = arrayOf("Mężczyzna", "Kobieta")
         val currentValue = etSex.text.toString()
         val currentIndex = options.indexOf(currentValue).takeIf { it >= 0 } ?: 0
 

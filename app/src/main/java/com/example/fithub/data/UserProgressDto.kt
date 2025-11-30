@@ -13,7 +13,6 @@ data class UserProgressDto(
     val badges: List<String> = emptyList(),
     val completedChallenges: List<String> = emptyList(),
     val activeChallenges: ActiveChallenge? = null,
-    val motivationNotifications: MotivationNotifications? = null,
     val statistics: Statistics? = null,
     val photos: List<PhotoReference> = emptyList()
 )
@@ -23,14 +22,6 @@ data class ActiveChallenge(
     val counter: Int = 0,
     val totalToFinish: Int,
     val startedDate: String
-)
-
-data class MotivationNotifications(
-    val enabled: Boolean = true,
-    val achievementAlerts: Boolean = true,
-    val dailyReminder: Boolean = true,
-    val quotes: Boolean = true,
-    val reminderTime: String = "09:00"
 )
 
 data class Statistics(

@@ -120,6 +120,9 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 val userGoals = NetworkModule.api.getUserGoalsByUserId(currenUserId)
                 val activeGoal = userGoals.find { it.status == "active" }
 
+                val currentActivityLevel = user.settings?.activityLevel ?: 1
+                val currentTrainingFreq = user.settings?.preferredTrainingFrequencyPerWeek ?: 3
+
                 val dialog = EditGoalsDialogFragment().apply {
                     arguments = Bundle().apply {
                         putString("userId", user.id)
@@ -127,14 +130,15 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                         putString("goalType", activeGoal?.type)
                         putInt("firstWeight", activeGoal?.firstWeightKg ?: user.profile.weightKg)
                         putInt("targetWeight", activeGoal?.targetWeightKg ?: user.profile.weightKg)
-                        putInt("activityLevel", user.settings.activityLevel)
-                        putInt("trainingFrequency", user.settings.preferredTrainingFrequencyPerWeek)
+                        putInt("activityLevel", currentActivityLevel)
+                        putInt("trainingFrequency", currentTrainingFreq)
                     }
                 }
 
                 dialog.show(childFragmentManager, "EditGoalsDialog")
 
             } catch (e: Exception) {
+                Log.e("UserProfile", "Błąd otwierania celów", e)
                 Toast.makeText(context, "Błąd: ${e.message}", Toast.LENGTH_SHORT).show()
             }
         }
@@ -159,7 +163,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 tvUserSex.text = when(user.profile.sex) {
                     "Male" -> "Mężczyzna"
                     "Female" -> "Kobieta"
-                    else -> "Inna"
+                    else -> "Mężczyzna"
                 }
                 tvUserBMI.text = String.format("%.1f", user.computed.bmi)
                 tvUserBMR.text = "${user.computed.bmr.toInt()} kcal"

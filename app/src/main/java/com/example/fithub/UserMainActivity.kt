@@ -1,19 +1,24 @@
 package com.example.fithub
 
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
-import android.widget.TextView
 import android.widget.Button
-import android.widget.Toast
+import android.widget.TextView
 import androidx.activity.addCallback
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.commit
 import androidx.lifecycle.lifecycleScope
 import com.example.fithub.data.ChallengeType
 import com.example.fithub.data.PointsManager
 import com.example.fithub.logic.ChallengeManager
+import com.example.fithub.logic.ReminderScheduler
 import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.android.material.snackbar.Snackbar
 import kotlinx.coroutines.launch
@@ -22,39 +27,76 @@ class UserMainActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigation: BottomNavigationView
 
+    // 1. Launcher do zapytania o uprawnienia powiadomień
+    private val requestPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestPermission()
+    ) { isGranted: Boolean ->
+        // Tutaj można obsłużyć reakcję na decyzję użytkownika, np. logiem
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_user_main)
 
         bottomNavigation = findViewById(R.id.bottom_navigation)
 
+        // 2. Sprawdzenie i prośba o uprawnienia (tylko dla Android 13+)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            }
+        }
+
         ChallengeManager.onChallengeCompleted = { challengeName, badgeName, points ->
             showChallengeCompleteDialog(challengeName, badgeName, points)
         }
 
-        //check daily login
+        // Ustawienie ID użytkownika (docelowo powinno być pobierane z sesji/preferencji)
         val currentUserId = "68cbc06e6cdfa7faa8561f82"
 
         lifecycleScope.launch {
-            val result = PointsManager.checkDailyLogin(currentUserId)
-            if(result.isNewLogin){
-                if (result.streakBonus){
-                    showStreakDialog(result.currentStreak, result.pointsAdded)
+            try {
+                val result = PointsManager.checkDailyLogin(currentUserId)
+                if(result.isNewLogin){
+                    if (result.streakBonus){
+                        showStreakDialog(result.currentStreak, result.pointsAdded)
+                    }
+                    else{
+                        Snackbar.make(
+                            bottomNavigation,
+                            "Witaj ponownie! Zdobyto +${result.pointsAdded} pkt.",
+                            Snackbar.LENGTH_LONG
+                        ).setAnchorView(bottomNavigation).show()
+                    }
+                    ChallengeManager.checkChallengeProgress(currentUserId, ChallengeType.STREAK)
                 }
-                else{
-                    Snackbar.make(
-                        bottomNavigation,
-                        "Witaj ponownie! Zdobyto +${result.pointsAdded} pkt.",
-                        Snackbar.LENGTH_LONG
-                    ).setAnchorView(bottomNavigation).show()
+
+                if (result.levelUp) {
+                    showLevelUpDialog()
                 }
-                ChallengeManager.checkChallengeProgress(currentUserId, ChallengeType.STREAK)
-            }
 
-            if (result.levelUp) {
-                showLevelUpDialog()
-            }
+                // 3. Konfiguracja powiadomień z zabezpieczeniem przed nullem w bazie
+                val user = NetworkModule.api.getUserById(currentUserId)
 
+                // Używamy bezpiecznego wywołania ?. bo settings może być null
+                val notifSettings = user.settings?.notifications
+
+                ReminderScheduler.scheduleAllReminders(
+                    context = this@UserMainActivity,
+                    userId = user.id,
+                    // Jeśli ustawienia są null, domyślnie włączamy powiadomienia (true)
+                    workoutEnabled = notifSettings?.types?.workoutReminders ?: true,
+                    mealEnabled = notifSettings?.types?.mealReminders ?: true,
+                    measureEnabled = notifSettings?.types?.measureReminders ?: true
+                )
+
+            } catch (e: Exception) {
+                e.printStackTrace() // Log błędu, żeby aplikacja nie padła przy braku sieci
+            }
         }
 
         if (savedInstanceState == null) {
@@ -75,7 +117,7 @@ class UserMainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        ChallengeManager.onChallengeCompleted = null // Wyczyść callback
+        ChallengeManager.onChallengeCompleted = null
     }
 
     private fun setupBottomNavigation() {
@@ -131,9 +173,7 @@ class UserMainActivity : AppCompatActivity() {
             dialog.dismiss()
         }
 
-        // przezroczyste tło
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-
         dialog.show()
     }
 
@@ -157,7 +197,6 @@ class UserMainActivity : AppCompatActivity() {
     fun showChallengeCompleteDialog(challengeName: String, badgeName: String, points: Int) {
         val dialogView = LayoutInflater.from(this).inflate(R.layout.challenge_complete_dialog, null)
 
-        // Ustaw teksty (musisz utworzyć layout challenge_complete_dialog.xml)
         val tvChallengeName = dialogView.findViewById<TextView>(R.id.tvChallengeName)
         val tvBadgeName = dialogView.findViewById<TextView>(R.id.tvBadgeName)
         val tvPoints = dialogView.findViewById<TextView>(R.id.tvPoints)

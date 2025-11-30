@@ -1,6 +1,5 @@
 package com.example.fithub.data
 import com.google.gson.annotations.SerializedName
-import java.util.Date
 
 data class NewUserDto(
     @SerializedName("_id") val id: String,
@@ -40,7 +39,6 @@ data class SettingsData(
 data class NotificationSettings(
     val enabled: Boolean,
     val types: NotificationTypes,
-    val channels: NotificationChannels
 )
 
 data class NotificationTypes(
@@ -49,7 +47,3 @@ data class NotificationTypes(
     val measureReminders: Boolean
 )
 
-data class NotificationChannels(
-    val push: Boolean,
-    val email: Boolean
-)

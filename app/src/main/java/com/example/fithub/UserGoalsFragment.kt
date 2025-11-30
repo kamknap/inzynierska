@@ -26,13 +26,13 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
     private lateinit var btnConfirmGoals: Button
     private lateinit var tvDetailedGoalLabel: TextView
 
-    private var userData: UserData? = null
+    private var userData: OnboardingUserData? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         arguments?.let { bundle ->
-            userData = UserData(
+            userData = OnboardingUserData(
                 name = bundle.getString("userName", ""),
                 sex = bundle.getString("userSex", ""),
                 birthDate = bundle.getString("userBirthDate", ""),
@@ -230,10 +230,6 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
                                     workoutReminders = goals.notifyTraining,
                                     mealReminders = goals.notifyMeals,
                                     measureReminders = goals.notifyWeighIn
-                                ),
-                                channels = NotificationChannels(
-                                    push = true,
-                                    email = false
                                 )
                             ),
                             preferredTrainingFrequencyPerWeek = goals.trainingFrequencyPerWeek

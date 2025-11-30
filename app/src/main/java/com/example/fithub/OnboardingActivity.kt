@@ -4,7 +4,7 @@ import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
 import androidx.activity.addCallback
 import androidx.fragment.app.commit
-import com.example.fithub.data.UserData
+import com.example.fithub.data.OnboardingUserData
 
 class OnboardingActivity : AppCompatActivity() {
 
@@ -29,7 +29,7 @@ class OnboardingActivity : AppCompatActivity() {
         }
     }
 
-    fun showGoalsFragment(userData: UserData? = null) {
+    fun showGoalsFragment(userData: OnboardingUserData? = null) {
         supportFragmentManager.commit {
             setReorderingAllowed(true)
             val goalsFragment = GoalsFragment()

@@ -2,18 +2,29 @@ package com.example.fithub
 
 import android.app.AlertDialog
 import android.app.Dialog
+import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.util.Log
 import android.view.LayoutInflater
+import android.widget.Button
+import android.widget.ImageView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.FileProvider
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fithub.data.ActiveChallenge
+import com.example.fithub.data.PhotoDto
+import com.example.fithub.data.PhotoReference
 import kotlinx.coroutines.launch
+import java.io.File
+import java.text.SimpleDateFormat
 import java.time.Instant
-
+import java.util.Date
+import java.util.Locale
 
 enum class DisplayMode {
     BADGES, CHALLENGES, PHOTOS
@@ -24,7 +35,42 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
     private lateinit var rvList: RecyclerView
     private lateinit var adapter: UniversalProgressAdapter
     private var mode: DisplayMode = DisplayMode.BADGES
+
+    // Upewnij się, że to ID jest poprawne w Twojej bazie!
     private val currentUserId = "68cbc06e6cdfa7faa8561f82"
+
+    private var currentPhotoUri: Uri? = null
+    private var currentPhotoPath: String? = null
+
+    // Launcher aparatu
+    private val takePictureLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
+        if (success) {
+            // TUTAJ BYŁ BŁĄD: Jeśli system zresetował fragment, currentPhotoPath był null
+            if (currentPhotoPath != null) {
+                savePhotoToDatabase(currentPhotoPath!!)
+            } else {
+                Toast.makeText(context, "Błąd: Zgubiono ścieżkę zdjęcia po powrocie z aparatu.", Toast.LENGTH_LONG).show()
+            }
+        } else {
+            Toast.makeText(context, "Anulowano robienie zdjęcia", Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    // --- POPRAWKA: Zapamiętywanie ścieżki przy restarcie aplikacji ---
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // Odzyskaj ścieżkę, jeśli aplikacja została ubita przez system
+        if (savedInstanceState != null) {
+            currentPhotoPath = savedInstanceState.getString("camera_photo_path")
+        }
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        // Zapisz ścieżkę przed wyjściem do aparatu
+        outState.putString("camera_photo_path", currentPhotoPath)
+    }
+    // -----------------------------------------------------------------
 
     interface OnChallengeActionListener {
         fun onChallengeActionCompleted()
@@ -48,17 +94,177 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
 
         adapter = UniversalProgressAdapter(mode,
             onChallengeAction = { challengeId, action -> handleChallengeAction(challengeId, action) },
-            onPhotoClick = { photoUrl -> showPhotoPreview(photoUrl) }
+            onPhotoClick = { photoDto -> showPhotoDetailDialog(photoDto) }
         )
         rvList.adapter = adapter
 
         loadData()
 
-        return AlertDialog.Builder(requireContext())
+        val builder = AlertDialog.Builder(requireContext())
             .setTitle(title)
             .setView(view)
-            .setNegativeButton("Zamknij", null)
-            .create()
+            .setNegativeButton("Zamknij", null) // Ten przycisk zamyka okno - to OK
+
+        if (mode == DisplayMode.PHOTOS) {
+            // Ustawiamy przycisk, ale BEZ listenera tutaj (null), żeby nie zamykał okna domyślnie
+            builder.setPositiveButton("Dodaj zdjęcie", null)
+        }
+
+        val dialog = builder.create()
+
+        // KLUCZOWA ZMIANA: Nadpisujemy zachowanie przycisku PO pokazaniu dialogu
+        dialog.setOnShowListener {
+            if (mode == DisplayMode.PHOTOS) {
+                val button: Button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                button.setOnClickListener {
+                    // Ta akcja wykona się bez zamykania okna!
+                    dispatchTakePictureIntent()
+                }
+            }
+        }
+
+        return dialog
+    }
+
+    private fun showPhotoDetailDialog(photo: PhotoDto) {
+        val imageView = ImageView(context)
+        imageView.adjustViewBounds = true
+        imageView.setPadding(20, 20, 20, 20)
+
+        // Próba wczytania obrazka. Uwaga: przy dużych zdjęciach bez bibliotek (Glide/Picasso)
+        // setImageURI może być wolne lub zużywać dużo pamięci, ale to najprostsza metoda.
+        try {
+            imageView.setImageURI(Uri.parse(photo.photoUrl))
+        } catch (e: Exception) {
+            Toast.makeText(context, "Nie można wczytać zdjęcia", Toast.LENGTH_SHORT).show()
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle("Podgląd zdjęcia")
+            .setMessage("Waga: ${photo.weightKg} kg\nData: ${photo.uploadedAt.take(10)}")
+            .setView(imageView)
+            .setPositiveButton("Zamknij", null)
+            .setNegativeButton("Usuń") { _, _ ->
+                // Potwierdzenie usunięcia
+                AlertDialog.Builder(requireContext())
+                    .setTitle("Potwierdzenie")
+                    .setMessage("Czy na pewno chcesz usunąć to zdjęcie?")
+                    .setPositiveButton("Tak") { _, _ -> deletePhoto(photo) }
+                    .setNegativeButton("Nie", null)
+                    .show()
+            }
+            .show()
+    }
+
+    private fun deletePhoto(photo: PhotoDto) {
+        lifecycleScope.launch {
+            try {
+                if (photo.id == null) return@launch
+
+                Toast.makeText(context, "Usuwanie...", Toast.LENGTH_SHORT).show()
+
+                // 1. Usuń zdjęcie z kolekcji Photos (API)
+                NetworkModule.api.deletePhoto(photo.id)
+
+                // 2. Usuń referencję z UserProgress (API)
+                val userProgress = NetworkModule.api.getUserProgress(currentUserId)
+
+                // Filtrujemy listę, wyrzucając usuwane zdjęcie
+                val updatedPhotosList = userProgress.photos.filter { it.photoId != photo.id }
+
+                val updatedProgress = userProgress.copy(photos = updatedPhotosList)
+                NetworkModule.api.updateUserProgress(currentUserId, updatedProgress)
+
+                Toast.makeText(context, "Zdjęcie usunięte", Toast.LENGTH_SHORT).show()
+                loadData() // Odśwież listę
+
+            } catch (e: Exception) {
+                Log.e("PhotoDelete", "Błąd usuwania", e)
+                Toast.makeText(context, "Błąd usuwania: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+        }
+    }
+
+    private fun dispatchTakePictureIntent() {
+        val photoFile: File? = try {
+            createImageFile()
+        } catch (ex: Exception) {
+            Toast.makeText(context, "Błąd tworzenia pliku: ${ex.message}", Toast.LENGTH_SHORT).show()
+            null
+        }
+
+        photoFile?.also {
+            try {
+                val photoURI: Uri = FileProvider.getUriForFile(
+                    requireContext(),
+                    "${requireContext().packageName}.fileprovider",
+                    it
+                )
+                currentPhotoUri = photoURI
+                currentPhotoPath = "file://${it.absolutePath}"
+
+                // Logowanie, żebyś widział co się dzieje (jeśli adb nie padnie)
+                Log.d("PhotoDebug", "Uruchamiam aparat. Ścieżka: $currentPhotoPath")
+
+                takePictureLauncher.launch(photoURI)
+            } catch (e: Exception) {
+                Toast.makeText(context, "Błąd FileProvider: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
+    }
+
+    private fun createImageFile(): File {
+        val timeStamp: String = SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val storageDir: File? = requireContext().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        return File.createTempFile(
+            "JPEG_${timeStamp}_",
+            ".jpg",
+            storageDir
+        )
+    }
+
+    private fun savePhotoToDatabase(localPath: String) {
+        lifecycleScope.launch {
+            try {
+                Toast.makeText(context, "Wysyłanie zdjęcia...", Toast.LENGTH_SHORT).show()
+
+                // 1. Pobierz usera (dla wagi)
+                val user = NetworkModule.api.getUserById(currentUserId)
+                val currentWeight = user.profile.weightKg.toDouble()
+
+                // 2. Utwórz PhotoDto
+                val newPhotoDto = PhotoDto(
+                    photoUrl = localPath,
+                    uploadedAt = Instant.now().toString(),
+                    weightKg = currentWeight
+                )
+                val createdPhoto = NetworkModule.api.addPhoto(newPhotoDto)
+                Log.d("PhotoUpload", "Utworzono zdjęcie ID: ${createdPhoto.id}")
+
+                // 3. Aktualizuj UserProgress
+                if (createdPhoto.id != null) {
+                    val userProgress = NetworkModule.api.getUserProgress(currentUserId)
+
+                    val newPhotoRef = PhotoReference(
+                        photoId = createdPhoto.id,
+                        tag = "other"
+                    )
+
+                    val updatedList = userProgress.photos.toMutableList()
+                    updatedList.add(newPhotoRef)
+
+                    val updatedProgress = userProgress.copy(photos = updatedList)
+                    NetworkModule.api.updateUserProgress(currentUserId, updatedProgress)
+
+                    Toast.makeText(context, "Zdjęcie zapisane pomyślnie!", Toast.LENGTH_SHORT).show()
+                    loadData()
+                }
+
+            } catch (e: Exception) {
+                Log.e("PhotoUpload", "Błąd zapisu", e)
+                Toast.makeText(context, "Błąd zapisu API: ${e.message}", Toast.LENGTH_LONG).show()
+            }
+        }
     }
 
     private fun loadData() {
@@ -78,16 +284,11 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                     }
                     DisplayMode.CHALLENGES -> {
                         val allChallenges = NetworkModule.api.getAllChallenges()
-
-                        val activeChallengeId = userProgress.activeChallenges
-                            ?.takeIf { it.challengeId.isNotEmpty() }
-                            ?.challengeId
-
+                        val activeChallengeId = userProgress.activeChallenges?.takeIf { it.challengeId.isNotEmpty() }?.challengeId
                         val uiItems = allChallenges.map { challenge ->
                             val state = when {
                                 activeChallengeId == challenge.id -> ChallengeState.ACTIVE
                                 activeChallengeId != null -> ChallengeState.LOCKED
-
                                 else -> ChallengeState.AVAILABLE
                             }
                             UniversalItem.ChallengeItem(challenge, state)
@@ -95,13 +296,21 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                         adapter.submitList(uiItems)
                     }
                     DisplayMode.PHOTOS -> {
-                        val photos = NetworkModule.api.getAllPhotos()
-                        val uiItems = photos.map { UniversalItem.PhotoItem(it) }
+                        val userPhotoIds = userProgress.photos.map { it.photoId }
+                        val allPhotos = NetworkModule.api.getAllPhotos()
+                        val userPhotos = allPhotos.filter { photo ->
+                            userPhotoIds.contains(photo.id)
+                        }.sortedByDescending { it.uploadedAt }
+
+                        val uiItems = userPhotos.map { UniversalItem.PhotoItem(it) }
                         adapter.submitList(uiItems)
                     }
                 }
             } catch (e: Exception) {
-                Toast.makeText(context, "Błąd ładowania: ${e.message}", Toast.LENGTH_SHORT).show()
+                if(context != null) {
+                    // Cichy błąd ładowania, żeby nie spamować toastami przy starcie
+                    Log.e("LoadData", "Błąd: ${e.message}")
+                }
             }
         }
     }
@@ -179,10 +388,6 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                 ).show()
             }
         }
-    }
-
-    private fun showPhotoPreview(url: String) {
-        Toast.makeText(context, "Otwieranie zdjęcia...", Toast.LENGTH_SHORT).show()
     }
 
     companion object {

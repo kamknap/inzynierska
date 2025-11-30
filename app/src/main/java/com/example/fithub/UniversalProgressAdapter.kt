@@ -24,7 +24,7 @@ sealed class UniversalItem {
 class UniversalProgressAdapter(
     private val mode: DisplayMode,
     private val onChallengeAction: (String, String) -> Unit,
-    private val onPhotoClick: (String) -> Unit
+    private val onPhotoClick: (PhotoDto) -> Unit
 ) : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
 
     private var items: List<UniversalItem> = emptyList()
@@ -67,11 +67,11 @@ class UniversalProgressAdapter(
             desc.text = item.dto.desc
 
             val iconResId = when (item.dto.type) {
-                ChallengeType.STREAK -> android.R.drawable.ic_menu_my_calendar // Kalendarz dla dni z rzędu
-                ChallengeType.MEAL_COUNT -> android.R.drawable.ic_menu_camera // Aparat/Galeria dla posiłków
-                ChallengeType.WEIGHT_LOSS -> android.R.drawable.ic_menu_sort_by_size // Skala/Wykres dla wagi
-                ChallengeType.TRAINING_COUNT -> android.R.drawable.ic_menu_compass // Kompas/Aktywność dla treningów
-                ChallengeType.TRAINING_PLAN_COUNT -> android.R.drawable.ic_menu_agenda // Np. ikona agendy/listy
+                ChallengeType.STREAK -> android.R.drawable.ic_menu_my_calendar
+                ChallengeType.MEAL_COUNT -> android.R.drawable.ic_menu_camera
+                ChallengeType.WEIGHT_LOSS -> android.R.drawable.ic_menu_sort_by_size
+                ChallengeType.TRAINING_COUNT -> android.R.drawable.ic_menu_compass
+                ChallengeType.TRAINING_PLAN_COUNT -> android.R.drawable.ic_menu_agenda
             }
 
             icon.setImageResource(iconResId)
@@ -115,14 +115,14 @@ class UniversalProgressAdapter(
     class PhotoViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val date: TextView = view.findViewById(R.id.tvPhotoDate)
         val weight: TextView = view.findViewById(R.id.tvPhotoWeight)
-        // val image: ImageView = ...
 
-        fun bind(item: UniversalItem.PhotoItem, clickListener: (String) -> Unit) {
-            date.text = item.dto.uploadedAt.take(10)
+        fun bind(item: UniversalItem.PhotoItem, clickListener: (PhotoDto) -> Unit) {
+            val dateStr = if (item.dto.uploadedAt.length >= 10) item.dto.uploadedAt.take(10) else item.dto.uploadedAt
+            date.text = dateStr
             weight.text = "${item.dto.weightKg} kg"
 
             itemView.setOnClickListener {
-                clickListener(item.dto.photoUrl)
+                clickListener(item.dto)
             }
         }
     }

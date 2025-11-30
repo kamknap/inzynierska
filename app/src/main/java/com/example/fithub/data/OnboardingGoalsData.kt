@@ -36,28 +36,7 @@ data class GoalsData(
         return wOk && aOk && fOk
     }
 
-    fun toDto(): AddGoalsDto = AddGoalsDto(
-        mainGoal = mainGoalKey,
-        firstWeight = firstWeightKg?.toInt() ?:0,
-        targetWeight = targetWeightKg?.toInt() ?: 0,
-        activityLevel = activityLevel,
-        trainingFrequencyPerWeek = trainingFrequencyPerWeek,
-        notifyMeals = notifyMeals,
-        notifyTraining = notifyTraining,
-        notifyWeighIn = notifyWeighIn
-    )
 }
-
-data class AddGoalsDto(
-    val mainGoal: String, // "lose_weight" | "maintain" | "gain_weight"
-    val firstWeight: Int,
-    val targetWeight: Int,             // kg
-    val activityLevel: Int,            // 1..5
-    val trainingFrequencyPerWeek: Int, // 0..7
-    val notifyMeals: Boolean,
-    val notifyTraining: Boolean,
-    val notifyWeighIn: Boolean
-)
 
 enum class MainGoal(val apiKey: String) {
     LOSE("lose_weight"),
