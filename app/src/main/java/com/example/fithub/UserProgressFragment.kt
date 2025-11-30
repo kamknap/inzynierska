@@ -31,13 +31,20 @@ class UserProgressFragment : Fragment(R.layout.fragment_user_progress) {
     private lateinit var btnUserBadges: Button
     private lateinit var btnUserComparePhotos: Button
     private lateinit var btnUserChallenges: Button
-    private lateinit var btnUserSettings: Button
 
-    val currentUserId = "68cbc06e6cdfa7faa8561f82"
+    companion object {
+        private const val CURRENT_USER_ID = "68cbc06e6cdfa7faa8561f82"
+        private const val TAG = "UserProgress"
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
+        initializeViews(view)
+        setupClickListeners()
+        loadData()
+    }
 
+    private fun initializeViews(view: View) {
         tvUserLevel = view.findViewById(R.id.tvUserLevel)
         tvUserPoints = view.findViewById(R.id.tvUserPoints)
         tvUserPointsNextLevel = view.findViewById(R.id.tvPointsToNextLevel)
@@ -50,38 +57,36 @@ class UserProgressFragment : Fragment(R.layout.fragment_user_progress) {
         btnUserBadges = view.findViewById(R.id.btnBadges)
         btnUserComparePhotos = view.findViewById(R.id.btnComparePhotos)
         btnUserChallenges = view.findViewById(R.id.btnChallenges)
-        btnUserSettings = view.findViewById(R.id.btnSettings)
+    }
 
-        loadData()
-
+    private fun setupClickListeners() {
         btnUserBadges.setOnClickListener {
-            ProgressUniversalListDialogFragment.newInstance(DisplayMode.BADGES).show(childFragmentManager, "BadgesDialog")
+            ProgressUniversalListDialogFragment.newInstance(DisplayMode.BADGES)
+                .show(childFragmentManager, "BadgesDialog")
         }
 
         btnUserChallenges.setOnClickListener {
             val dialog = ProgressUniversalListDialogFragment.newInstance(DisplayMode.CHALLENGES)
-
             dialog.onChallengeActionListener = object : ProgressUniversalListDialogFragment.OnChallengeActionListener {
                 override fun onChallengeActionCompleted() {
                     loadData()
                 }
             }
-
             dialog.show(childFragmentManager, "ChallengesDialog")
         }
 
         btnUserComparePhotos.setOnClickListener {
-            ProgressUniversalListDialogFragment.newInstance(DisplayMode.PHOTOS).show(childFragmentManager, "PhotosDialog")
+            ProgressUniversalListDialogFragment.newInstance(DisplayMode.PHOTOS)
+                .show(childFragmentManager, "PhotosDialog")
         }
-
     }
 
-    private fun loadData(){
+    private fun loadData() {
         lifecycleScope.launch {
             try {
-                val progress = NetworkModule.api.getUserProgress(currentUserId)
-                val user = NetworkModule.api.getUserById(currentUserId)
-                val userGoals = NetworkModule.api.getUserGoalsByUserId(currentUserId)
+                val progress = NetworkModule.api.getUserProgress(CURRENT_USER_ID)
+                val user = NetworkModule.api.getUserById(CURRENT_USER_ID)
+                val userGoals = NetworkModule.api.getUserGoalsByUserId(CURRENT_USER_ID)
                 val challengesApi = NetworkModule.api.getAllChallenges()
 
 

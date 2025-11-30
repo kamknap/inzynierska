@@ -282,17 +282,6 @@
                     android:text="🎯\nWyzwania"
                     android:textSize="14sp"
                     style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
-
-                <!-- Ustawienia -->
-                <com.google.android.material.button.MaterialButton
-                    android:id="@+id/btnSettings"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_columnWeight="1"
-                    android:layout_margin="8dp"
-                    android:text="⚙️\nUstawienia"
-                    android:textSize="14sp"
-                    style="@style/Widget.MaterialComponents.Button.OutlinedButton" />
             </GridLayout>
         </androidx.cardview.widget.CardView>
 

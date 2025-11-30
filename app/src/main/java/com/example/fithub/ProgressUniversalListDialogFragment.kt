@@ -35,42 +35,46 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
     private lateinit var rvList: RecyclerView
     private lateinit var adapter: UniversalProgressAdapter
     private var mode: DisplayMode = DisplayMode.BADGES
-
-    // Upewnij się, że to ID jest poprawne w Twojej bazie!
-    private val currentUserId = "68cbc06e6cdfa7faa8561f82"
-
     private var currentPhotoUri: Uri? = null
     private var currentPhotoPath: String? = null
+
+    companion object {
+        private const val CURRENT_USER_ID = "68cbc06e6cdfa7faa8561f82"
+        private const val TAG = "ProgressDialog"
+        private const val ARG_MODE = "MODE"
+        private const val KEY_PHOTO_PATH = "camera_photo_path"
+
+        fun newInstance(mode: DisplayMode): ProgressUniversalListDialogFragment {
+            return ProgressUniversalListDialogFragment().apply {
+                arguments = Bundle().apply {
+                    putString(ARG_MODE, mode.name)
+                }
+            }
+        }
+    }
 
     // Launcher aparatu
     private val takePictureLauncher = registerForActivityResult(ActivityResultContracts.TakePicture()) { success ->
         if (success) {
-            // TUTAJ BYŁ BŁĄD: Jeśli system zresetował fragment, currentPhotoPath był null
-            if (currentPhotoPath != null) {
-                savePhotoToDatabase(currentPhotoPath!!)
-            } else {
-                Toast.makeText(context, "Błąd: Zgubiono ścieżkę zdjęcia po powrocie z aparatu.", Toast.LENGTH_LONG).show()
-            }
+            currentPhotoPath?.let { path ->
+                savePhotoToDatabase(path)
+            } ?: Toast.makeText(context, "Błąd: Zgubiono ścieżkę zdjęcia po powrocie z aparatu.", Toast.LENGTH_LONG).show()
         } else {
             Toast.makeText(context, "Anulowano robienie zdjęcia", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // --- POPRAWKA: Zapamiętywanie ścieżki przy restarcie aplikacji ---
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        // Odzyskaj ścieżkę, jeśli aplikacja została ubita przez system
-        if (savedInstanceState != null) {
-            currentPhotoPath = savedInstanceState.getString("camera_photo_path")
+        savedInstanceState?.getString(KEY_PHOTO_PATH)?.let {
+            currentPhotoPath = it
         }
     }
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        // Zapisz ścieżkę przed wyjściem do aparatu
-        outState.putString("camera_photo_path", currentPhotoPath)
+        outState.putString(KEY_PHOTO_PATH, currentPhotoPath)
     }
-    // -----------------------------------------------------------------
 
     interface OnChallengeActionListener {
         fun onChallengeActionCompleted()
@@ -83,8 +87,7 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
         rvList = view.findViewById(R.id.rvUniversalList)
         rvList.layoutManager = LinearLayoutManager(context)
 
-        val modeStr = arguments?.getString("MODE") ?: "BADGES"
-        mode = DisplayMode.valueOf(modeStr)
+        mode = arguments?.getString(ARG_MODE)?.let { DisplayMode.valueOf(it) } ?: DisplayMode.BADGES
 
         val title = when (mode) {
             DisplayMode.BADGES -> "Twoja Gablota"
@@ -167,13 +170,13 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                 NetworkModule.api.deletePhoto(photo.id)
 
                 // 2. Usuń referencję z UserProgress (API)
-                val userProgress = NetworkModule.api.getUserProgress(currentUserId)
+                val userProgress = NetworkModule.api.getUserProgress(CURRENT_USER_ID)
 
                 // Filtrujemy listę, wyrzucając usuwane zdjęcie
                 val updatedPhotosList = userProgress.photos.filter { it.photoId != photo.id }
 
                 val updatedProgress = userProgress.copy(photos = updatedPhotosList)
-                NetworkModule.api.updateUserProgress(currentUserId, updatedProgress)
+                NetworkModule.api.updateUserProgress(CURRENT_USER_ID, updatedProgress)
 
                 Toast.makeText(context, "Zdjęcie usunięte", Toast.LENGTH_SHORT).show()
                 loadData() // Odśwież listę
@@ -229,7 +232,7 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                 Toast.makeText(context, "Wysyłanie zdjęcia...", Toast.LENGTH_SHORT).show()
 
                 // 1. Pobierz usera (dla wagi)
-                val user = NetworkModule.api.getUserById(currentUserId)
+                val user = NetworkModule.api.getUserById(CURRENT_USER_ID)
                 val currentWeight = user.profile.weightKg.toDouble()
 
                 // 2. Utwórz PhotoDto
@@ -243,7 +246,7 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
 
                 // 3. Aktualizuj UserProgress
                 if (createdPhoto.id != null) {
-                    val userProgress = NetworkModule.api.getUserProgress(currentUserId)
+                    val userProgress = NetworkModule.api.getUserProgress(CURRENT_USER_ID)
 
                     val newPhotoRef = PhotoReference(
                         photoId = createdPhoto.id,
@@ -254,7 +257,7 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                     updatedList.add(newPhotoRef)
 
                     val updatedProgress = userProgress.copy(photos = updatedList)
-                    NetworkModule.api.updateUserProgress(currentUserId, updatedProgress)
+                    NetworkModule.api.updateUserProgress(CURRENT_USER_ID, updatedProgress)
 
                     Toast.makeText(context, "Zdjęcie zapisane pomyślnie!", Toast.LENGTH_SHORT).show()
                     loadData()
@@ -270,7 +273,7 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
     private fun loadData() {
         lifecycleScope.launch {
             try {
-                val userProgress = NetworkModule.api.getUserProgress(currentUserId)
+                val userProgress = NetworkModule.api.getUserProgress(CURRENT_USER_ID)
 
                 when (mode) {
                     DisplayMode.BADGES -> {
@@ -318,7 +321,7 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
     private fun handleChallengeAction(challengeId: String, action: String) {
         lifecycleScope.launch {
             try {
-                val userProgress = NetworkModule.api.getUserProgress(currentUserId)
+                val userProgress = NetworkModule.api.getUserProgress(CURRENT_USER_ID)
 
                 when (action) {
                     "START" -> {
@@ -348,7 +351,7 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                             activeChallenges = newActiveChallenge
                         )
 
-                        NetworkModule.api.updateUserProgress(currentUserId, updatedProgress)
+                        NetworkModule.api.updateUserProgress(CURRENT_USER_ID, updatedProgress)
 
                         Toast.makeText(
                             context,
@@ -364,7 +367,7 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                             activeChallenges = null
                         )
 
-                        NetworkModule.api.updateUserProgress(currentUserId, updatedProgress)
+                        NetworkModule.api.updateUserProgress(CURRENT_USER_ID, updatedProgress)
 
                         Toast.makeText(
                             context,
@@ -380,23 +383,13 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                 onChallengeActionListener?.onChallengeActionCompleted()
 
             } catch (e: Exception) {
-                Log.e("ChallengeAction", "Błąd: ${e.message}", e)
+                Log.e(TAG, "Błąd: ${e.message}", e)
                 Toast.makeText(
                     context,
                     "Błąd: ${e.message}",
                     Toast.LENGTH_SHORT
                 ).show()
             }
-        }
-    }
-
-    companion object {
-        fun newInstance(mode: DisplayMode): ProgressUniversalListDialogFragment {
-            val fragment = ProgressUniversalListDialogFragment()
-            val args = Bundle()
-            args.putString("MODE", mode.name)
-            fragment.arguments = args
-            return fragment
         }
     }
 }
