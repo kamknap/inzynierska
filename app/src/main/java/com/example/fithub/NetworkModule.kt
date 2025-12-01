@@ -10,10 +10,17 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object NetworkModule {
 
-    private val BASE_URL = if (isEmulator()) {
-        "http://10.0.2.2:4000" // emulator
+    private const val USE_AZURE = true
+
+    private val BASE_URL = if (USE_AZURE) {
+        "https://fithubapp-backend.calmriver-05379b6c.polandcentral.azurecontainerapps.io"
     } else {
-        "http://192.168.1.28:4000" // fizyczny telefon
+        // Lokalny serwer
+        if (isEmulator()) {
+            "http://10.0.2.2:4000" // emulator
+        } else {
+            "http://192.168.1.28:4000" // fizyczny telefon
+        }
     }
 
     private fun isEmulator(): Boolean {
