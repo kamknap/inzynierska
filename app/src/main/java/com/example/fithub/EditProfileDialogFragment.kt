@@ -36,7 +36,7 @@ class EditProfileDialogFragment : DialogFragment() {
 
         arguments?.let {
             etName.setText(it.getString("userName"))
-            etWeight.setText(it.getInt("userWeight").toString())
+            etWeight.setText(it.getDouble("userWeight").toString())
             etHeight.setText(it.getInt("userHeight").toString())
 
             val birthDateIso = it.getString("userBirthDate")
