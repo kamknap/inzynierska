@@ -216,7 +216,7 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
                             sex = user.sex,
                             birthDate = birthDateIso,
                             heightCm = user.height.toInt(),
-                            weightKg = user.weight.toInt()
+                            weightKg = user.weight
                         ),
                         computed = ComputedData(
                             bmi = roundedBMI,
@@ -277,8 +277,8 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
                             "maintain" -> "maintain"
                             else -> "maintain"
                         },
-                        firstWeightKg = goals.firstWeight?.toInt() ?: 0,
-                        targetWeightKg = goals.targetWeight?.toInt() ?: 0,
+                        firstWeightKg = goals.firstWeight ?: 0.0,
+                        targetWeightKg = goals.targetWeight ?: 0.0,
                         plan = GoalPlanData(
                             trainingFrequencyPerWeek = goals.trainingFrequencyPerWeek,
                             estimatedDurationWeeks = estimatedWeeks,

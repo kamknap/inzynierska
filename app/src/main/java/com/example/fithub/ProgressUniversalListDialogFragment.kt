@@ -106,21 +106,18 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
         val builder = AlertDialog.Builder(requireContext())
             .setTitle(title)
             .setView(view)
-            .setNegativeButton("Zamknij", null) // Ten przycisk zamyka okno - to OK
+            .setNegativeButton("Zamknij", null)
 
         if (mode == DisplayMode.PHOTOS) {
-            // Ustawiamy przycisk, ale BEZ listenera tutaj (null), żeby nie zamykał okna domyślnie
             builder.setPositiveButton("Dodaj zdjęcie", null)
         }
 
         val dialog = builder.create()
 
-        // KLUCZOWA ZMIANA: Nadpisujemy zachowanie przycisku PO pokazaniu dialogu
         dialog.setOnShowListener {
             if (mode == DisplayMode.PHOTOS) {
                 val button: Button = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
                 button.setOnClickListener {
-                    // Ta akcja wykona się bez zamykania okna!
                     dispatchTakePictureIntent()
                 }
             }
@@ -134,8 +131,6 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
         imageView.adjustViewBounds = true
         imageView.setPadding(20, 20, 20, 20)
 
-        // Próba wczytania obrazka. Uwaga: przy dużych zdjęciach bez bibliotek (Glide/Picasso)
-        // setImageURI może być wolne lub zużywać dużo pamięci, ale to najprostsza metoda.
         try {
             imageView.setImageURI(Uri.parse(photo.photoUrl))
         } catch (e: Exception) {
@@ -148,7 +143,6 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
             .setView(imageView)
             .setPositiveButton("Zamknij", null)
             .setNegativeButton("Usuń") { _, _ ->
-                // Potwierdzenie usunięcia
                 AlertDialog.Builder(requireContext())
                     .setTitle("Potwierdzenie")
                     .setMessage("Czy na pewno chcesz usunąć to zdjęcie?")
@@ -166,20 +160,17 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
 
                 Toast.makeText(context, "Usuwanie...", Toast.LENGTH_SHORT).show()
 
-                // 1. Usuń zdjęcie z kolekcji Photos (API)
                 NetworkModule.api.deletePhoto(photo.id)
 
-                // 2. Usuń referencję z UserProgress (API)
                 val userProgress = NetworkModule.api.getUserProgress(CURRENT_USER_ID)
 
-                // Filtrujemy listę, wyrzucając usuwane zdjęcie
                 val updatedPhotosList = userProgress.photos.filter { it.photoId != photo.id }
 
                 val updatedProgress = userProgress.copy(photos = updatedPhotosList)
                 NetworkModule.api.updateUserProgress(CURRENT_USER_ID, updatedProgress)
 
                 Toast.makeText(context, "Zdjęcie usunięte", Toast.LENGTH_SHORT).show()
-                loadData() // Odśwież listę
+                loadData()
 
             } catch (e: Exception) {
                 Log.e("PhotoDelete", "Błąd usuwania", e)
@@ -206,7 +197,6 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                 currentPhotoUri = photoURI
                 currentPhotoPath = "file://${it.absolutePath}"
 
-                // Logowanie, żebyś widział co się dzieje (jeśli adb nie padnie)
                 Log.d("PhotoDebug", "Uruchamiam aparat. Ścieżka: $currentPhotoPath")
 
                 takePictureLauncher.launch(photoURI)
@@ -231,11 +221,9 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
             try {
                 Toast.makeText(context, "Wysyłanie zdjęcia...", Toast.LENGTH_SHORT).show()
 
-                // 1. Pobierz usera (dla wagi)
                 val user = NetworkModule.api.getUserById(CURRENT_USER_ID)
-                val currentWeight = user.profile.weightKg.toDouble()
+                val currentWeight = user.profile.weightKg
 
-                // 2. Utwórz PhotoDto
                 val newPhotoDto = PhotoDto(
                     photoUrl = localPath,
                     uploadedAt = Instant.now().toString(),
@@ -244,7 +232,6 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                 val createdPhoto = NetworkModule.api.addPhoto(newPhotoDto)
                 Log.d("PhotoUpload", "Utworzono zdjęcie ID: ${createdPhoto.id}")
 
-                // 3. Aktualizuj UserProgress
                 if (createdPhoto.id != null) {
                     val userProgress = NetworkModule.api.getUserProgress(CURRENT_USER_ID)
 
@@ -311,7 +298,6 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                 }
             } catch (e: Exception) {
                 if(context != null) {
-                    // Cichy błąd ładowania, żeby nie spamować toastami przy starcie
                     Log.e("LoadData", "Błąd: ${e.message}")
                 }
             }

@@ -1,6 +1,6 @@
 package com.example.fithub.data
 
-// Wspólne klasy używane w różnych DTOs użytkownika
+// Wspólne klasy używane w różnych DTO użytkownika
 // Przeniesione tutaj aby uniknąć duplikacji
 
 data class AuthData(
@@ -12,7 +12,7 @@ data class ProfileData(
     val sex: String,
     val birthDate: String,
     val heightCm: Int,
-    val weightKg: Int
+    val weightKg: Double
 )
 
 data class ComputedData(

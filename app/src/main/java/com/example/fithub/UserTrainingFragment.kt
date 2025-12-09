@@ -249,7 +249,7 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
         lifecycleScope.launch {
             try {
                 val user = NetworkModule.api.getUserById(currentUserId)
-                val weight = user.profile.weightKg.toDouble()
+                val weight = user.profile.weightKg
 
                 val averageMets = 5.0
 

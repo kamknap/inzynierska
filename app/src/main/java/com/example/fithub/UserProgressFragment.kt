@@ -108,7 +108,7 @@ class UserProgressFragment : Fragment(R.layout.fragment_user_progress) {
                 if(activeGoal != null && user.profile.weightKg > 0){
                     val calculator = UserCalculator()
                     val result = calculator.calculateGoalProgress(
-                        currentWeight = user.profile.weightKg.toDouble(),
+                        currentWeight = user.profile.weightKg,
                         goal = activeGoal
                     )
                     tvUserWeightChangeLabel.text = result.label

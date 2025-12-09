@@ -125,13 +125,13 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
                     return@launch
                 }
 
-                currentUserWeight = user.profile.weightKg.toDouble()
+                currentUserWeight = user.profile.weightKg
 
                 val activeGoal = userGoals.firstOrNull { it.status == "active" }
                     ?: userGoals.first()
 
                 currentGoalType = activeGoal.type
-                referenceWeight = activeGoal.firstWeightKg.toDouble()
+                referenceWeight = activeGoal.firstWeightKg
                 Log.d("UserWeightFragment", "firstMeasured: $referenceWeight")
 
 
@@ -159,7 +159,7 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
                     return@launch
                 }
 
-                val currentWeight = user.profile.weightKg.toDouble()
+                val currentWeight = user.profile.weightKg
 
                 val activeGoal = userGoals.firstOrNull { it.status == "active" }
                     ?: userGoals.first()
@@ -280,7 +280,7 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
                         sex = currentUser.profile.sex,
                         birthDate = currentUser.profile.birthDate,
                         heightCm = currentUser.profile.heightCm,
-                        weightKg = weight.toInt()
+                        weightKg = weight
                     )
                 )
                 NetworkModule.api.updateUser(userId, updateUserDto)

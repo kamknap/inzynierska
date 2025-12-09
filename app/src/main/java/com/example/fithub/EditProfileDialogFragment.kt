@@ -140,7 +140,7 @@ class EditProfileDialogFragment : DialogFragment() {
                 val updateDto = UpdateUserDto(
                     username = etName.text.toString(),
                     profile = UpdateProfileData(
-                        weightKg = weight,
+                        weightKg = weight.toDouble(),
                         heightCm = height,
                         sex = sex,
                         birthDate = birthDate

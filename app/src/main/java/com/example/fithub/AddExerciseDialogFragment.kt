@@ -118,7 +118,7 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
             try {
 
                 val user = NetworkModule.api.getUserById(userId)
-                val userWeight = user.profile.weightKg.toDouble()
+                val userWeight = user.profile.weightKg
                 val mets = exercise.mets ?: run{
                     Log.d("brak mets", "Brak danych mets w bazie")
                     return@launch

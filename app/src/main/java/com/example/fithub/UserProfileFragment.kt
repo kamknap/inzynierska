@@ -100,7 +100,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                         putString("userName", user.username)
                         putString("userSex", user.profile.sex)
                         putString("userBirthDate", user.profile.birthDate)
-                        putInt("userWeight", user.profile.weightKg)
+                        putDouble("userWeight", user.profile.weightKg)
                         putInt("userHeight", user.profile.heightCm)
                     }
                 }
@@ -128,8 +128,8 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                         putString("userId", user.id)
                         putString("goalId", activeGoal?.id)
                         putString("goalType", activeGoal?.type)
-                        putInt("firstWeight", activeGoal?.firstWeightKg ?: user.profile.weightKg)
-                        putInt("targetWeight", activeGoal?.targetWeightKg ?: user.profile.weightKg)
+                        putDouble("firstWeight", activeGoal?.firstWeightKg ?: user.profile.weightKg)
+                        putDouble("targetWeight", activeGoal?.targetWeightKg ?: user.profile.weightKg)
                         putInt("activityLevel", currentActivityLevel)
                         putInt("trainingFrequency", currentTrainingFreq)
                     }

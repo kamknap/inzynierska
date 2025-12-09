@@ -64,8 +64,8 @@ class UserCalculator {
     }
 
     fun calculateGoalProgress(currentWeight: Double, goal: UserGoalDto): GoalProgressResult {
-        val startWeight = goal.firstWeightKg.toDouble()
-        val targetWeight = goal.targetWeightKg.toDouble()
+        val startWeight = goal.firstWeightKg
+        val targetWeight = goal.targetWeightKg
 
         fun fmt(v: Double) = String.format("%.1f", abs(v))
         return when (goal.type) {

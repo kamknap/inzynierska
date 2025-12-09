@@ -28,7 +28,7 @@ class EditGoalsDialogFragment : DialogFragment() {
         setupSpinners()
 
         arguments?.let {
-            etTargetWeight.setText(it.getInt("targetWeight").toString())
+            etTargetWeight.setText(it.getDouble("targetWeight").toString())
 
             val goalType = it.getString("goalType")
             val goalIndex = when(goalType) {
@@ -108,7 +108,7 @@ class EditGoalsDialogFragment : DialogFragment() {
 
                 val updateDto = UpdateUserGoalDto(
                     type = goalTypeApi,
-                    targetWeightKg = targetWeight,
+                    targetWeightKg = targetWeight.toDouble(),
                     plan = GoalPlanData(
                         trainingFrequencyPerWeek = spTrainingFrequency.selectedItemPosition,
                         estimatedDurationWeeks = null,
