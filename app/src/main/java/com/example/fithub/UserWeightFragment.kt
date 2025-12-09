@@ -200,6 +200,31 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
             inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
             setText("")
             layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+
+            // walidacja do 1 kropki i jednej cyfry po kropce
+            addTextChangedListener(object : android.text.TextWatcher {
+                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+
+                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+
+                override fun afterTextChanged(s: android.text.Editable?) {
+                    val text = s.toString()
+
+                    if (text.contains(".")) {
+                        val parts = text.split(".")
+
+                        if (parts.size > 2) {
+                            s?.delete(text.length - 1, text.length)
+                            return
+                        }
+
+                        if (parts.size == 2 && parts[1].length > 1) {
+                            s?.delete(text.length - 1, text.length)
+                            return
+                        }
+                    }
+                }
+            })
         }
 
         val unitTextView = TextView(requireContext()).apply {
