@@ -33,7 +33,10 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
     override fun getSearchHint(): String = "Wyszukaj ćwiczenie.."
 
     override suspend fun performSearch(query: String): List<ExerciseDto> {
-        return NetworkModule.api.getExercisesByName(query)
+        val exercises = NetworkModule.api.getExercisesByName(query)
+        return exercises.distinctBy {
+            it.name?.trim()?.lowercase()
+        }
     }
 
     override fun createResultView(item: ExerciseDto): View {
