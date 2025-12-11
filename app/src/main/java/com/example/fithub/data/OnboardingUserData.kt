@@ -1,9 +1,8 @@
 package com.example.fithub.data
 
-import java.util.Date
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.Calendar
+import java.time.LocalDate
+import java.time.Period
+import java.time.format.DateTimeFormatter
 
 data class OnboardingUserData(
     val name: String = "",
@@ -18,21 +17,18 @@ data class OnboardingUserData(
     fun isValidForBMR(): Boolean = weight != null && height != null && birthDate != "" && sex.isNotBlank()
     fun isComplete(): Boolean = name.isNotBlank() && isValidForBMR()
 
-    fun getBirthDateAsDate(): Date?{
+    fun getBirthDateAsDate(): LocalDate?{
         if (birthDate.isBlank()) return null
         return try {
-            val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            dateFormat.parse(birthDate)
-        }
-        catch (e: Exception){
+            LocalDate.parse(birthDate, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+        } catch (e: Exception) {
             null
         }
     }
 
     fun getBirthDateAsIsoString(): String? {
-        val date = getBirthDateAsDate() ?: return null
         return try {
-            SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date)
+            DateTimeFormatter.ISO_LOCAL_DATE.toString()
         } catch (e: Exception) {
             null
         }
@@ -41,17 +37,8 @@ data class OnboardingUserData(
     fun getAge(): Int? {
         if (birthDate.isBlank()) return null
         return try {
-            val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            val birth = dateFormat.parse(birthDate)
-            if (birth != null) {
-                val birthCalendar = Calendar.getInstance().apply { time = birth }
-                val today = Calendar.getInstance()
-                var age = today.get(Calendar.YEAR) - birthCalendar.get(Calendar.YEAR)
-                if (today.get(Calendar.DAY_OF_YEAR) < birthCalendar.get(Calendar.DAY_OF_YEAR)) {
-                    age--
-                }
-                age
-            } else null
+            val birthLocalDate = LocalDate.parse(birthDate, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+            Period.between(birthLocalDate, LocalDate.now()).years
         } catch (e: Exception) {
             null
         }

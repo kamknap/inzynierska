@@ -16,15 +16,17 @@ import com.example.fithub.data.FoodDto
 import com.example.fithub.data.MealWithFoodsDto
 import com.example.fithub.data.PointsManager
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import kotlin.math.roundToInt
 
 class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogFragment.OnMealAddedListener {
 
     private lateinit var llDaysContainer: LinearLayout
     private lateinit var hsvWeek: HorizontalScrollView
-    private var selectedDate = Calendar.getInstance()
+    private var selectedDate = LocalDate.now()
     private lateinit var btnBreakfast: ImageButton
     private lateinit var btnLunch: ImageButton
     private lateinit var btnDinner: ImageButton
@@ -104,8 +106,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
     }
 
     private fun openMealDialog(mealType: String){
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val formattedDate = dateFormat.format(selectedDate.time)
+        val formattedDate = selectedDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
 
         val dialog = AddMealDialogFragment().apply{
             arguments = Bundle().apply {
@@ -247,8 +248,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
     }
 
     private fun updateFoodQuantity(itemId: String, newQuantity: Double) {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val dateStr = dateFormat.format(selectedDate.time)
+        val dateStr = (selectedDate.toString())
 
         lifecycleScope.launch {
             try {
@@ -268,92 +268,80 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
     }
 
     private fun initDaysView() {
-        val currentMonth = selectedDate.get(Calendar.MONTH)
-        val currentYear = selectedDate.get(Calendar.YEAR)
+        val currentMonth = selectedDate.monthValue
+        val currentYear = selectedDate.year
 
-        val firstDayOfMonth = Calendar.getInstance().apply {
-            set(Calendar.YEAR, currentYear)
-            set(Calendar.MONTH, currentMonth)
-            set(Calendar.DAY_OF_MONTH, 1)
-        }
-
-        val lastDayOfMonth = firstDayOfMonth.getActualMaximum(Calendar.DAY_OF_MONTH)
+        val yearMonth = YearMonth.of(currentYear, currentMonth)
+        val lastDayOfMonth = yearMonth.lengthOfMonth()
 
         for (day in 1..lastDayOfMonth) {
-            val dayCalendar = Calendar.getInstance().apply {
-                set(Calendar.YEAR, currentYear)
-                set(Calendar.MONTH, currentMonth)
-                set(Calendar.DAY_OF_MONTH, day)
-            }
-
-            addDayView(dayCalendar, day)
+            val dayDate = LocalDate.of(currentYear, currentMonth, day)
+            addDayView(dayDate, day)
         }
 
         selectTodayAndScroll()
     }
 
-    private fun addDayView(dayCalendar: Calendar, dayNumber: Int) {
+    private fun addDayView(dayDate: LocalDate, dayNumber: Int) {
         val dayView = LayoutInflater.from(requireContext())
             .inflate(R.layout.item_day, llDaysContainer, false)
 
         val tvDayLetter = dayView.findViewById<TextView>(R.id.tvDayLetter)
         val tvDayNumber = dayView.findViewById<TextView>(R.id.tvDayNumber)
 
-        val dayOfWeek = dayCalendar.get(Calendar.DAY_OF_WEEK)
+        val dayOfWeek = dayDate.dayOfWeek
         tvDayLetter.text = getDayLetter(dayOfWeek)
 
         tvDayNumber.text = dayNumber.toString()
 
         dayView.setOnClickListener {
-            selectDay(dayView, dayCalendar)
+            selectDay(dayView, dayDate)
         }
 
         llDaysContainer.addView(dayView)
     }
 
-    private fun getDayLetter(dayOfWeek: Int): String {
+    private fun getDayLetter(dayOfWeek: DayOfWeek): String {
         return when (dayOfWeek) {
-            Calendar.MONDAY -> "P"
-            Calendar.TUESDAY -> "W"
-            Calendar.WEDNESDAY -> "Ś"
-            Calendar.THURSDAY -> "C"
-            Calendar.FRIDAY -> "P"
-            Calendar.SATURDAY -> "S"
-            Calendar.SUNDAY -> "N"
-            else -> "?"
+            DayOfWeek.MONDAY -> "P"
+            DayOfWeek.TUESDAY -> "W"
+            DayOfWeek.WEDNESDAY -> "Ś"
+            DayOfWeek.THURSDAY -> "C"
+            DayOfWeek.FRIDAY -> "P"
+            DayOfWeek.SATURDAY -> "S"
+            DayOfWeek.SUNDAY -> "N"
         }
     }
 
-    private fun isSameDay(cal1: Calendar, cal2: Calendar): Boolean {
-        return cal1.get(Calendar.YEAR) == cal2.get(Calendar.YEAR) &&
-                cal1.get(Calendar.DAY_OF_YEAR) == cal2.get(Calendar.DAY_OF_YEAR)
+    private fun isSameDay(date1: LocalDate, date2: LocalDate): Boolean {
+        return date1 == date2
     }
 
-    private fun selectDay(dayView: View, dayCalendar: Calendar) {
+    private fun selectDay(dayView: View, dayDate: LocalDate) {
         for (i in 0 until llDaysContainer.childCount) {
             llDaysContainer.getChildAt(i).isSelected = false
         }
 
         dayView.isSelected = true
-        selectedDate = dayCalendar.clone() as Calendar
+        selectedDate = dayDate
 
         loadDataForDate(selectedDate)
     }
 
     private fun selectTodayAndScroll() {
-        val today = Calendar.getInstance()
+        val today = LocalDate.now()
 
         for (i in 0 until llDaysContainer.childCount) {
             val dayView = llDaysContainer.getChildAt(i)
-            val dayCalendar = Calendar.getInstance().apply {
-                set(Calendar.YEAR, today.get(Calendar.YEAR))
-                set(Calendar.MONTH, today.get(Calendar.MONTH))
-                set(Calendar.DAY_OF_MONTH, i + 1)
-            }
+            val dayDate = LocalDate.of(
+                selectedDate.year,
+                selectedDate.monthValue,
+                i + 1
+            )
 
-            if (isSameDay(dayCalendar, today)) {
+            if (isSameDay(dayDate, today)) {
                 dayView.isSelected = true
-                selectedDate = dayCalendar.clone() as Calendar
+                selectedDate = dayDate
 
                 dayView.post {
                     scrollToDay(dayView)
@@ -530,12 +518,11 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
     }
 
 
-    private fun loadDataForDate(date: Calendar) {
+    private fun loadDataForDate(date: LocalDate) {
         currentLoadId++
         clearAllMacrosAndUi()
 
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val formattedDate = dateFormat.format(date.time)
+        val formattedDate = date.toString()
 
         loadAllMealsForUser(currentUserId, formattedDate)
     }
@@ -577,8 +564,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
     }
 
     private fun deleteFoodByItemId(itemId: String, trainingType: TrainingDeleteItemType) {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val dateStr = dateFormat.format(selectedDate.time)
+        val dateStr = selectedDate.toString()
 
         lifecycleScope.launch {
             try {
@@ -617,8 +603,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
     }
 
     private fun openExerciseDialog() {
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val formattedDate = dateFormat.format(selectedDate.time)
+        val formattedDate = selectedDate.toString()
 
         val dialog = AddExerciseDialogFragment().apply {
             arguments = Bundle().apply {

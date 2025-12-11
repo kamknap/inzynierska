@@ -15,9 +15,6 @@ import androidx.lifecycle.lifecycleScope
 import com.example.fithub.data.UpdateProfileData
 import com.example.fithub.data.UpdateUserDto
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fithub.data.ChallengeType
@@ -25,7 +22,9 @@ import com.example.fithub.data.PointsManager
 import com.example.fithub.data.UserWeightHistoryDto
 import com.example.fithub.logic.ChallengeManager
 import com.example.fithub.logic.UserCalculator
-import java.util.Calendar
+import java.time.LocalDate
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
 
@@ -247,7 +246,7 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
             textSize = 16F
         }
 
-        val currentDate = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault()).format(Date())
+        val currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
         val etDate = TextView(requireContext()).apply {
             text = currentDate
             textSize = 16F
@@ -407,28 +406,20 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
             return data
         }
 
-        val calendar = Calendar.getInstance()
-        val now = calendar.time
-
-        calendar.time = now
-        when (range) {
-            DateRange.YEAR -> calendar.add(Calendar.YEAR, -1)
-            DateRange.SIX_MONTHS -> calendar.add(Calendar.MONTH, -6)
-            DateRange.THREE_MONTHS -> calendar.add(Calendar.MONTH, -3)
-            DateRange.MONTH -> calendar.add(Calendar.MONTH, -1)
-            DateRange.WEEK -> calendar.add(Calendar.DAY_OF_YEAR, -7)
+        val now = ZonedDateTime.now()
+        val cutoffDate = when (range) {
+            DateRange.YEAR -> now.minusYears(1)
+            DateRange.SIX_MONTHS -> now.minusMonths(6)
+            DateRange.THREE_MONTHS -> now.minusMonths(3)
+            DateRange.MONTH -> now.minusMonths(1)
+            DateRange.WEEK -> now.minusDays(7)
             else -> return data
-        }
-
-        val cutoffDate = calendar.time
-        val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
-            timeZone = java.util.TimeZone.getTimeZone("UTC")
         }
 
         return data.filter { history ->
             try {
-                val measureDate = isoFormat.parse(history.measuredAt)
-                measureDate != null && measureDate.after(cutoffDate)
+                val measureDate = ZonedDateTime.parse(history.measuredAt)
+                measureDate.isAfter(cutoffDate)
             } catch (e: Exception) {
                 false
             }

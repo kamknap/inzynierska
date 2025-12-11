@@ -13,8 +13,8 @@ import com.example.fithub.data.UpdateProfileData
 import com.example.fithub.data.UpdateUserDto
 import com.example.fithub.logic.UserCalculator
 import kotlinx.coroutines.launch
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
 class EditProfileDialogFragment : DialogFragment() {
 
@@ -36,20 +36,19 @@ class EditProfileDialogFragment : DialogFragment() {
 
         arguments?.let {
             etName.setText(it.getString("userName"))
-            etWeight.setText(it.getDouble("userWeight").toString())
+            etWeight.setText(it.getDouble("userWeight").toInt().toString())
             etHeight.setText(it.getInt("userHeight").toString())
 
             val birthDateIso = it.getString("userBirthDate")
             if (birthDateIso != null) {
                 try {
-                    val isoFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-                    val displayFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+                    val displayFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
                     val date = if (birthDateIso.contains("T")) {
-                        isoFormat.parse(birthDateIso.substring(0, 10))
+                        LocalDate.parse(birthDateIso.substring(0, 10))
                     } else {
-                        isoFormat.parse(birthDateIso)
+                        LocalDate.parse(birthDateIso)
                     }
-                    etBirthDate.setText(displayFormat.format(date!!))
+                    etBirthDate.setText(date.format(displayFormat))
                 } catch (e: Exception) {
                     etBirthDate.setText(birthDateIso)
                 }
@@ -118,11 +117,11 @@ class EditProfileDialogFragment : DialogFragment() {
                     return@launch
                 }
 
-                val displayFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                val isoFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                val displayFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                val isoFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
                 val birthDate = try {
-                    val date = displayFormat.parse(birthDateDisplay)
-                    isoFormat.format(date!!)
+                    val date = LocalDate.parse(birthDateDisplay, displayFormat)
+                    date.format(isoFormat)
                 } catch (e: Exception) {
                     Log.e("EditProfile", "Błąd konwersji daty: ${e.message}")
                     birthDateDisplay
@@ -188,17 +187,15 @@ class EditProfileDialogFragment : DialogFragment() {
     }
 
     private fun showDatePicker() {
-        val calendar = Calendar.getInstance()
+        // Domyslna data 25 lat temu
+        var selectedDate = LocalDate.now().minusYears(25)
 
-        // Spróbuj sparsować aktualną datę
         try {
-            val displayFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-            val date = displayFormat.parse(etBirthDate.text.toString())
-            if (date != null) {
-                calendar.time = date
-            }
+            val displayFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+            val parsed = LocalDate.parse(etBirthDate.text.toString(), displayFormat)
+            selectedDate = parsed
         } catch (e: Exception) {
-            calendar.add(Calendar.YEAR, -25)
+
         }
 
         DatePickerDialog(
@@ -207,9 +204,9 @@ class EditProfileDialogFragment : DialogFragment() {
                 val date = String.format("%02d/%02d/%04d", day, month + 1, year)
                 etBirthDate.setText(date)
             },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
+            selectedDate.year,
+            selectedDate.monthValue - 1,
+            selectedDate.dayOfMonth
         ).show()
     }
 

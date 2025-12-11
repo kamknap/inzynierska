@@ -2,7 +2,7 @@ package com.example.fithub.logic
 
 import android.content.Context
 import androidx.work.*
-import java.util.Calendar
+import java.time.ZonedDateTime
 import java.util.concurrent.TimeUnit
 
 object ReminderScheduler {
@@ -14,7 +14,6 @@ object ReminderScheduler {
 
         val workManager = WorkManager.getInstance(context)
 
-        // Anuluj stare, żeby nie dublować przy ponownym logowaniu/edycji
         workManager.cancelAllWorkByTag("FITHUB_REMINDER")
 
         if (measureEnabled) {
@@ -33,18 +32,15 @@ object ReminderScheduler {
     }
 
     private fun scheduleDailyWork(context: Context, userId: String, type: String, hour: Int, minute: Int) {
-        val now = Calendar.getInstance()
-        val target = Calendar.getInstance().apply {
-            set(Calendar.HOUR_OF_DAY, hour)
-            set(Calendar.MINUTE, minute)
-            set(Calendar.SECOND, 0)
+        val now = ZonedDateTime.now()
+        var target = now.toLocalDate().atTime(hour, minute, 0)
+            .atZone(now.zone)
+
+        if (target.isBefore(now) || target.isEqual(now)) {
+            target = target.plusDays(1)
         }
 
-        if (target.before(now)) {
-            target.add(Calendar.DAY_OF_YEAR, 1)
-        }
-
-        val initialDelay = target.timeInMillis - now.timeInMillis
+        val initialDelay = java.time.Duration.between(now, target).toMillis()
 
         val data = Data.Builder()
             .putString("USER_ID", userId)

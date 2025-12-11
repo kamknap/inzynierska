@@ -6,13 +6,11 @@ import android.graphics.Color
 import android.util.AttributeSet
 import android.view.View
 import com.example.fithub.data.UserWeightHistoryDto
-import java.text.SimpleDateFormat
-import java.util.Locale
-import java.util.TimeZone
 import android.graphics.Paint
 import android.graphics.Path
 import android.text.TextPaint
-import java.util.Date
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
 
 
 // TODO wykres crashuje jak nie ma danych na dany tydzien
@@ -22,14 +20,10 @@ class WeightChartView @JvmOverloads constructor(
     defStyleAttr: Int = 0
 ): View(context, attrs, defStyleAttr){
 
-    private val isoFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault()).apply {
-        timeZone = TimeZone.getTimeZone("UTC")
-    }
-
     private var data: List<UserWeightHistoryDto> = emptyList()
 
     data class ParsedPoint(
-        val date: Date,
+        val date: ZonedDateTime,
         val weight: Float
     )
 
@@ -67,7 +61,7 @@ class WeightChartView @JvmOverloads constructor(
     private val topPadding = dp(30f)
     private val bottomPadding = dp(50f)
 
-    private val dateFormat = SimpleDateFormat("dd.MM", Locale.getDefault())
+    private val dateFormatter = DateTimeFormatter.ofPattern("dd.MM")
 
     fun setData(weightHistory: List<UserWeightHistoryDto>) {
         this.data = weightHistory.sortedBy { it.measuredAt }
@@ -85,7 +79,7 @@ class WeightChartView @JvmOverloads constructor(
         val parsedData = data.mapNotNull { history ->
             try {
                 ParsedPoint(
-                    date = isoFormat.parse(history.measuredAt)!!,
+                    date = ZonedDateTime.parse(history.measuredAt),
                     weight = history.weightKg.toFloat()
                 )
             } catch (e: Exception) {
@@ -137,7 +131,7 @@ class WeightChartView @JvmOverloads constructor(
             canvas.drawText("${point.weight}", x, y - dp(8f), weightPaint)
 
             if (index == 0 || index == parsedData.size - 1 || (index > 0 && index % step == 0)) {
-                canvas.drawText(dateFormat.format(point.date), x, bottomY + dp(20f), labelPaint)
+                canvas.drawText(point.date.format(dateFormatter), x, bottomY + dp(20f), labelPaint)
             }
         }
 
@@ -145,7 +139,7 @@ class WeightChartView @JvmOverloads constructor(
         val weightStep = 2.0f
         var currentWeight = (minWeight / weightStep).toInt() * weightStep
         while (currentWeight <= maxWeight) {
-            if (currentWeight > minWeight) { // Dodaj ten warunek
+            if (currentWeight > minWeight) {
                 val y = topPadding + (1f - (currentWeight - minWeight) / (maxWeight - minWeight)) * chartHeight
 
                 canvas.drawText("${currentWeight.toInt()}kg", leftPadding - dp(10f), y, labelPaint.apply {

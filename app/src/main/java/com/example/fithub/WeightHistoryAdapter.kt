@@ -9,8 +9,9 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.example.fithub.data.UserWeightHistoryDto
-import java.text.SimpleDateFormat
-import java.util.*
+import java.time.ZonedDateTime
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 class WeightHistoryAdapter(private val referenceWeight: Double? = null, private val goalType: String? = null) : ListAdapter<UserWeightHistoryDto, WeightHistoryAdapter.WeightHistoryViewHolder>(WeightHistoryDiffCallback()) {
 
@@ -97,12 +98,9 @@ class WeightHistoryAdapter(private val referenceWeight: Double? = null, private 
             }
 
             try {
-                val inputFormat = SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'", Locale.getDefault())
-                inputFormat.timeZone = TimeZone.getTimeZone("UTC")
-                val outputFormat = SimpleDateFormat("dd.MM.yyyy", Locale.getDefault())
-
-                val date = inputFormat.parse(history.measuredAt)
-                tvDate.text = date?.let { outputFormat.format(it) } ?: history.measuredAt.substring(0, 10)
+                val zonedDateTime = ZonedDateTime.parse(history.measuredAt)
+                val formatter = DateTimeFormatter.ofPattern("dd.MM.yyyy")
+                tvDate.text = zonedDateTime.format(formatter)
             } catch (e: Exception) {
                 tvDate.text = history.measuredAt.substring(0, 10)
             }

@@ -28,7 +28,7 @@ class EditGoalsDialogFragment : DialogFragment() {
         setupSpinners()
 
         arguments?.let {
-            etTargetWeight.setText(it.getDouble("targetWeight").toString())
+            etTargetWeight.setText(it.getDouble("targetWeight").toInt().toString())
 
             val goalType = it.getString("goalType")
             val goalIndex = when(goalType) {

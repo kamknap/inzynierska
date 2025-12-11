@@ -10,9 +10,8 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.fithub.NetworkModule
 import com.example.fithub.R
-import java.text.SimpleDateFormat
-import java.util.Date
-import java.util.Locale
+import java.time.LocalDate
+
 
 class ReminderWorker(
     context: Context,
@@ -33,7 +32,7 @@ class ReminderWorker(
 
     private suspend fun shouldSendNotification(userId: String, type: String): Boolean {
         return try {
-            val today = SimpleDateFormat("yyyy-MM-dd", Locale.US).format(Date())
+            val today = LocalDate.now().toString()
 
             when (type) {
                 "WEIGHT" -> {

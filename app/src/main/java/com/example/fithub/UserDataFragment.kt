@@ -10,9 +10,9 @@ import android.widget.*
 import androidx.fragment.app.Fragment
 import com.example.fithub.data.OnboardingUserData
 import com.example.fithub.logic.UserCalculator
-import java.text.SimpleDateFormat
-import java.util.Calendar
-import java.util.Locale
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.format.DateTimeFormatter
 
 class UserDataFragment : Fragment(R.layout.fragment_user_data) {
     private lateinit var etWeight: EditText
@@ -153,40 +153,32 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
     }
 
     private fun showAgePicker() {
-        val calendar = Calendar.getInstance()
+        var selectedDate = LocalDate.now().minusYears(25)
 
         val currentDateText = etBirthDate.text.toString()
         if (currentDateText.isNotEmpty()) {
             try {
-                val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                val date = dateFormat.parse(currentDateText)
-                if (date != null) {
-                    calendar.time = date
-                }
+                selectedDate = LocalDate.parse(currentDateText, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
             } catch (e: Exception) {
-                calendar.add(Calendar.YEAR, -25)
             }
-        } else {
-            calendar.add(Calendar.YEAR, -25)
         }
 
         DatePickerDialog(
             requireContext(),
             { _, year, month, dayOfMonth ->
-                val selectedDate = Calendar.getInstance().apply {
-                    set(year, month, dayOfMonth)
-                }
-
-                val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
-                val formattedDate = dateFormat.format(selectedDate.time)
+                val date = LocalDate.of(year, month + 1, dayOfMonth)
+                val formattedDate = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
                 etBirthDate.setText(formattedDate)
             },
-            calendar.get(Calendar.YEAR),
-            calendar.get(Calendar.MONTH),
-            calendar.get(Calendar.DAY_OF_MONTH)
+            selectedDate.year,
+            selectedDate.monthValue - 1,
+            selectedDate.dayOfMonth
         ).apply {
             datePicker.maxDate = System.currentTimeMillis()
-            datePicker.minDate = Calendar.getInstance().apply { add(Calendar.YEAR, -120) }.timeInMillis
+            datePicker.minDate = LocalDate.now().minusYears(120)
+                .atStartOfDay(java.time.ZoneId.systemDefault())
+                .toInstant()
+                .toEpochMilli()
             setTitle("Wybierz datę urodzenia")
             show()
         }

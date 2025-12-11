@@ -45,17 +45,11 @@
         android:background="?attr/selectableItemBackground"
         android:layout_marginBottom="16dp">
 
-        <TextView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Wykonano dzisiaj plan"
-            android:textSize="16sp" />
-
-        <CheckBox
-            android:id="@+id/cbPlanCompleted"
+        <Button
+            android:id="@+id/btnSaveToDiary"
             android:layout_width="wrap_content"
-            android:layout_height="wrap_content" />
+            android:layout_height="wrap_content"
+            android:text="Zapisz plan w dzienniku kalorii" />
     </LinearLayout>
 
     <androidx.recyclerview.widget.RecyclerView

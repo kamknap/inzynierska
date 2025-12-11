@@ -26,6 +26,7 @@ import com.example.fithub.data.PointsManager
 import com.example.fithub.logic.ChallengeManager
 import com.example.fithub.logic.UserCalculator
 import kotlinx.coroutines.launch
+import java.time.LocalDate
 
 class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
 
@@ -34,13 +35,12 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
     private lateinit var rvUserExercises: RecyclerView
     private lateinit var exerciseAdapter: ExerciseListAdapter
     private lateinit var exercisePlanName: TextView
-    private lateinit var cbPlanCompleted: CheckBox
+    private lateinit var btnSaveToDiary: Button
 
 
     val currentUserId = "68cbc06e6cdfa7faa8561f82"
     private var currentPlanName = ""
     private var currentPlanId = ""
-    private var isUserInitiatedChange = true
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -49,7 +49,7 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
         btnSearchExercise = view.findViewById(R.id.btnSearchExercise)
         rvUserExercises = view.findViewById(R.id.rvUserExercises)
         exercisePlanName = view.findViewById(R.id.tvExercisePlanName)
-        cbPlanCompleted = view.findViewById(R.id.cbPlanCompleted)
+        btnSaveToDiary = view.findViewById(R.id.btnSaveToDiary)
 
         setupRecyclerView()
 
@@ -59,6 +59,10 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
 
         btnSearchExercise.setOnClickListener {
             openAddExerciseToPlanDialog()
+        }
+        
+        btnSaveToDiary.setOnClickListener {
+            showFinishTrainingDialog()
         }
 
         exercisePlanName.setOnClickListener {
@@ -78,13 +82,6 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
                 }
             }
             dialog.show(parentFragmentManager, "SelectPlanDialog")
-        }
-
-        cbPlanCompleted.setOnCheckedChangeListener {
-            _, isChecked ->
-            if (isUserInitiatedChange && isChecked){
-                showFinishTrainingDialog()
-            }
         }
 
         loadExercisesForCurrentPlan()
@@ -230,18 +227,9 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
                     addTrainingSummaryToDiary(minutes)
                 } else {
                     Toast.makeText(requireContext(), "Podaj poprawny czas", Toast.LENGTH_SHORT).show()
-                    isUserInitiatedChange = false
-                    cbPlanCompleted.isChecked = false
-                    isUserInitiatedChange = true
                 }
             }
-            .setNegativeButton("Anuluj") { _, _ ->
-            }
-            .setOnCancelListener {
-                isUserInitiatedChange = false
-                cbPlanCompleted.isChecked = false
-                isUserInitiatedChange = true
-            }
+            .setNegativeButton("Anuluj", null)
             .show()
     }
 
@@ -256,8 +244,7 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
                 val calculator = UserCalculator()
                 val caloriesBurned =  calculator.calculateEnergyExpenditure(weight,averageMets, minutes) ?: 0.0
 
-                val dateFormat = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
-                val dateStr = dateFormat.format(java.util.Date())
+                val dateStr = LocalDate.now().toString()
 
                 val trainingFood = CreateFoodDto(
                     name = "Wykonany plan: $currentPlanName",
@@ -306,10 +293,6 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
             catch (e: Exception){
                 Log.e("UserTraining", "Błąd dodawania treningu", e)
                 Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_SHORT).show()
-
-                isUserInitiatedChange = false
-                cbPlanCompleted.isChecked = false
-                isUserInitiatedChange = true
             }
         }
     }
