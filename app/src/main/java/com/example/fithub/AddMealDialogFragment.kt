@@ -143,6 +143,19 @@ class AddMealDialogFragment : DialogFragment() {
                                 food.brand != "TrainingPlan" &&
                                 food.brand != "SingleExercise"
                     }
+                    .distinctBy { food ->
+                        // klucz unikalności:
+                        // Nazwa małymi literami
+                        val nameKey = food.name.trim().lowercase()
+
+                        // Marka
+                        val brandKey = food.brand?.trim()?.lowercase() ?: ""
+
+                        // Kalorie
+                        val kcalKey = food.nutritionPer100g.calories.toInt()
+
+                        "$nameKey|$brandKey|$kcalKey"
+                    }
 
                 container.removeAllViews()
 
