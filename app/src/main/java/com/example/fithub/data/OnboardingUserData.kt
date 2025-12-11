@@ -20,7 +20,7 @@ data class OnboardingUserData(
     fun getBirthDateAsDate(): LocalDate?{
         if (birthDate.isBlank()) return null
         return try {
-            LocalDate.parse(birthDate, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+            LocalDate.parse(birthDate, DateTimeFormatter.ofPattern("dd.MM.yyyy"))
         } catch (e: Exception) {
             null
         }
@@ -28,7 +28,7 @@ data class OnboardingUserData(
 
     fun getBirthDateAsIsoString(): String? {
         return try {
-            DateTimeFormatter.ISO_LOCAL_DATE.toString()
+            getBirthDateAsDate()?.format(DateTimeFormatter.ISO_LOCAL_DATE)
         } catch (e: Exception) {
             null
         }
@@ -37,7 +37,7 @@ data class OnboardingUserData(
     fun getAge(): Int? {
         if (birthDate.isBlank()) return null
         return try {
-            val birthLocalDate = LocalDate.parse(birthDate, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+            val birthLocalDate = LocalDate.parse(birthDate, DateTimeFormatter.ofPattern("dd.MM.yyyy"))
             Period.between(birthLocalDate, LocalDate.now()).years
         } catch (e: Exception) {
             null

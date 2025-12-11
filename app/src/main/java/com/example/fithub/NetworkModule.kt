@@ -10,7 +10,7 @@ import retrofit2.converter.gson.GsonConverterFactory
 
 object NetworkModule {
 
-    private const val USE_AZURE = true
+    private const val USE_AZURE = false
 
     private val BASE_URL = if (USE_AZURE) {
         "https://fithubapp-backend.calmriver-05379b6c.polandcentral.azurecontainerapps.io"

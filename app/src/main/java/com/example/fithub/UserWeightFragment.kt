@@ -22,7 +22,9 @@ import com.example.fithub.data.PointsManager
 import com.example.fithub.data.UserWeightHistoryDto
 import com.example.fithub.logic.ChallengeManager
 import com.example.fithub.logic.UserCalculator
+import java.time.Instant
 import java.time.LocalDate
+import java.time.ZoneId
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
@@ -418,7 +420,7 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
 
         return data.filter { history ->
             try {
-                val measureDate = ZonedDateTime.parse(history.measuredAt)
+                val measureDate = Instant.parse(history.measuredAt).atZone(ZoneId.systemDefault())
                 measureDate.isAfter(cutoffDate)
             } catch (e: Exception) {
                 false

@@ -158,7 +158,7 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
         val currentDateText = etBirthDate.text.toString()
         if (currentDateText.isNotEmpty()) {
             try {
-                selectedDate = LocalDate.parse(currentDateText, DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                selectedDate = LocalDate.parse(currentDateText, DateTimeFormatter.ofPattern("dd.MM.yyyy"))
             } catch (e: Exception) {
             }
         }
@@ -167,7 +167,7 @@ class UserDataFragment : Fragment(R.layout.fragment_user_data) {
             requireContext(),
             { _, year, month, dayOfMonth ->
                 val date = LocalDate.of(year, month + 1, dayOfMonth)
-                val formattedDate = date.format(DateTimeFormatter.ofPattern("dd/MM/yyyy"))
+                val formattedDate = date.format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
                 etBirthDate.setText(formattedDate)
             },
             selectedDate.year,

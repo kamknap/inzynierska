@@ -41,11 +41,14 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
             )
         }
 
-            initViews(view)
+        initViews(view)
         setupFrequencySpinner()
         setupClickListeners()
         setupTextWatchers()
         setupActivitySpinner()
+
+        sbMainGoal.progress = 1
+        updateGoalUi(1)
     }
 
     private fun initViews(view: View) {
@@ -58,6 +61,40 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
         cbNotifyWeighIn = view.findViewById(R.id.cbNotifyWeighIn)
         btnConfirmGoals = view.findViewById(R.id.btnConfirmGoals)
         tvDetailedGoalLabel = view.findViewById(R.id.tvDetailedGoalLabel)
+    }
+
+    private fun updateGoalUi(progress: Int) {
+        when (progress) {
+            0 -> {
+                Toast.makeText(requireContext(), "Cel: Schudnąć", Toast.LENGTH_SHORT).show()
+                tvDetailedGoalLabel.text = "Wybierz docelową wagę"
+                tvTargetWeight.text = ""
+                tvTargetWeight.hint = "Waga docelowa (kg)"
+                tvTargetWeight.isClickable = true
+                tvTargetWeight.isFocusable = true
+                tvTargetWeight.setOnClickListener { showTargetWeightPicker("loose", userData?.weight) }
+            }
+            1 -> {
+                Toast.makeText(requireContext(), "Cel: Utrzymać wagę", Toast.LENGTH_SHORT).show()
+                userData?.weight?.let { currentWeight ->
+                    tvDetailedGoalLabel.text = "Waga aktualna"
+                    tvTargetWeight.text = currentWeight.toInt().toString()
+                    tvTargetWeight.hint = ""
+                    tvTargetWeight.isClickable = false
+                    tvTargetWeight.isFocusable = false
+                    tvTargetWeight.setOnClickListener(null)
+                }
+            }
+            2 -> {
+                Toast.makeText(requireContext(), "Cel: Przytyć", Toast.LENGTH_SHORT).show()
+                tvDetailedGoalLabel.text = "Wybierz docelową wagę"
+                tvTargetWeight.text = ""
+                tvTargetWeight.hint = "Waga docelowa (kg)"
+                tvTargetWeight.isClickable = true
+                tvTargetWeight.isFocusable = true
+                tvTargetWeight.setOnClickListener { showTargetWeightPicker("gain", userData?.weight) }
+            }
+        }
     }
 
     private fun setupFrequencySpinner() {
@@ -76,40 +113,9 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
         sbMainGoal.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar?, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
-                    when (progress) {
-                        0 -> {
-                            Toast.makeText(requireContext(), "Cel: Schudnąć", Toast.LENGTH_SHORT).show()
-                            tvDetailedGoalLabel.text = "Wybierz docelową wagę"
-                            tvTargetWeight.text = ""
-                            tvTargetWeight.hint = "Waga docelowa (kg)"
-                            tvTargetWeight.isClickable = true
-                            tvTargetWeight.isFocusable = true
-                            tvTargetWeight.setOnClickListener { showTargetWeightPicker("loose", userData?.weight) }
-                        }
-                        1 -> {
-                            Toast.makeText(requireContext(), "Cel: Utrzymać wagę", Toast.LENGTH_SHORT).show()
-                            userData?.weight?.let { currentWeight ->
-                                tvDetailedGoalLabel.text = "Waga aktualna"
-                                tvTargetWeight.text = currentWeight.toInt().toString()
-                                tvTargetWeight.hint = ""
-                                tvTargetWeight.isClickable = false
-                                tvTargetWeight.isFocusable = false
-                                tvTargetWeight.setOnClickListener(null) // Usuń listener
-                            }
-                        }
-                        2 -> {
-                            Toast.makeText(requireContext(), "Cel: Przytyć", Toast.LENGTH_SHORT).show()
-                            tvDetailedGoalLabel.text = "Wybierz docelową wagę"
-                            tvTargetWeight.text = ""
-                            tvTargetWeight.hint = "Waga docelowa (kg)"
-                            tvTargetWeight.isClickable = true
-                            tvTargetWeight.isFocusable = true
-                            tvTargetWeight.setOnClickListener { showTargetWeightPicker("gain", userData?.weight) }
-                        }
-                    }
+                    updateGoalUi(progress)
                 }
             }
-
             override fun onStartTrackingTouch(seekBar: SeekBar?) {}
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })

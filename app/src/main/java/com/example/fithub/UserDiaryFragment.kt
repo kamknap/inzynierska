@@ -248,7 +248,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
     }
 
     private fun updateFoodQuantity(itemId: String, newQuantity: Double) {
-        val dateStr = (selectedDate.toString())
+        val dateStr = selectedDate.format(DateTimeFormatter.ISO_LOCAL_DATE)
 
         lifecycleScope.launch {
             try {
