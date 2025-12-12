@@ -123,7 +123,7 @@ class AddExerciseToPlanDialogFragment : SearchDialogFragment<ExerciseDto>() {
 
         dialog.show()
     }
-    
+
     private fun setupWebView(webView: WebView) {
         webView.settings.apply {
             javaScriptEnabled = true

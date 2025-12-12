@@ -98,7 +98,7 @@ class EditProfileDialogFragment : DialogFragment() {
         lifecycleScope.launch {
             try {
                 val calculator = UserCalculator()
-                val weight = etWeight.text.toString().toIntOrNull()
+                val weight = etWeight.text.toString().replace(",", ".").toDoubleOrNull()
                 val height = etHeight.text.toString().toIntOrNull()
                 val birthDateDisplay = etBirthDate.text.toString()
                 val sexDisplay = etSex.text.toString()
@@ -118,7 +118,7 @@ class EditProfileDialogFragment : DialogFragment() {
                 }
 
                 val displayFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
-                val isoFormat = DateTimeFormatter.ofPattern("dd/MM/yyyy")
+                val isoFormat = DateTimeFormatter.ofPattern("yyyy-MM-dd")
                 val birthDate = try {
                     val date = LocalDate.parse(birthDateDisplay, displayFormat)
                     date.format(isoFormat)
@@ -131,15 +131,15 @@ class EditProfileDialogFragment : DialogFragment() {
 
                 Log.d("EditProfile", "Waga: $weight, Wzrost: $height, Wiek: $age, Płeć: $sex")
 
-                val bmi = calculator.calculateBMI(weight.toDouble(), height.toDouble())
-                val bmr = calculator.calculateBMR(weight.toDouble(), height.toDouble(), age.toDouble(), sex)
+                val bmi = calculator.calculateBMI(weight, height.toDouble())
+                val bmr = calculator.calculateBMR(weight, height.toDouble(), age.toDouble(), sex)
 
                 Log.d("EditProfile", "BMI: $bmi, BMR: $bmr")
 
                 val updateDto = UpdateUserDto(
                     username = etName.text.toString(),
                     profile = UpdateProfileData(
-                        weightKg = weight.toDouble(),
+                        weightKg = weight,
                         heightCm = height,
                         sex = sex,
                         birthDate = birthDate
