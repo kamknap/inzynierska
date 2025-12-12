@@ -3,6 +3,8 @@ package com.example.fithub
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
+import android.webkit.WebSettings
+import android.webkit.WebView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
@@ -76,19 +78,124 @@ class AddExerciseToPlanDialogFragment : SearchDialogFragment<ExerciseDto>() {
     }
 
     private fun showExerciseDetailsDialog(exercise: ExerciseDto) {
-        val dialogLayout = android.widget.LinearLayout(requireContext()).apply {
-            orientation = android.widget.LinearLayout.VERTICAL
-            setPadding(48, 24, 48, 24)
+        val view = LayoutInflater.from(requireContext())
+            .inflate(R.layout.item_exercise, null)
+
+        val tvName = view.findViewById<TextView>(R.id.tvExerciseName)
+        val tvDesc = view.findViewById<TextView>(R.id.tvExerciseDescription)
+        val tvInstructions = view.findViewById<TextView>(R.id.tvExerciseInstructions)
+        val llExpandedDetails = view.findViewById<View>(R.id.llExpandedDetails)
+        val btnExpand = view.findViewById<View>(R.id.btnExpandExercise)
+        val btnDelete = view.findViewById<View>(R.id.btnDeleteExercise)
+        val webViewVideo = view.findViewById<WebView>(R.id.webViewYoutube)
+
+        tvName.text = exercise.name ?: "Ćwiczenie"
+        tvDesc.text = exercise.desc ?: "Brak opisu"
+        tvInstructions.text = exercise.instructions?.mapIndexed { index, instruction ->
+            "${index + 1}. $instruction"
+        }?.joinToString("\n") ?: "Brak instrukcji"
+
+        llExpandedDetails.visibility = View.VISIBLE
+        btnExpand.visibility = View.GONE
+        btnDelete.visibility = View.GONE
+
+        setupWebView(webViewVideo)
+
+        if (exercise.videoUrl != null) {
+            webViewVideo.visibility = View.VISIBLE
+            playVideo(webViewVideo, exercise.videoUrl)
+        } else {
+            webViewVideo.visibility = View.GONE
         }
 
-        android.app.AlertDialog.Builder(requireContext())
-            .setTitle("Szczegóły: ${exercise.name ?: "Ćwiczenie"}")
-            .setView(dialogLayout)
+        val dialog = android.app.AlertDialog.Builder(requireContext())
+            .setTitle("Szczegóły ćwiczenia")
+            .setView(view)
             .setPositiveButton("Dodaj") { _, _ ->
                 addExerciseToPlan(exercise)
             }
             .setNegativeButton("Anuluj", null)
-            .show()
+            .create()
+
+        dialog.setOnDismissListener {
+            stopVideo(webViewVideo)
+        }
+
+        dialog.show()
+    }
+    
+    private fun setupWebView(webView: WebView) {
+        webView.settings.apply {
+            javaScriptEnabled = true
+            loadWithOverviewMode = true
+            useWideViewPort = true
+            mediaPlaybackRequiresUserGesture = false
+            domStorageEnabled = true
+            cacheMode = WebSettings.LOAD_NO_CACHE
+        }
+        webView.setBackgroundColor(0)
+        webView.setLayerType(View.LAYER_TYPE_HARDWARE, null)
+    }
+
+    private fun playVideo(webView: WebView, videoUrl: String) {
+        val embedHtml = """
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+                <style>
+                    * { margin: 0; padding: 0; box-sizing: border-box; }
+                    html, body { 
+                        width: 100%; 
+                        height: 100%; 
+                        background: transparent;
+                        overflow: hidden; 
+                    }
+                    .video-container { 
+                        position: relative; 
+                        width: 100%; 
+                        height: 0; 
+                        padding-bottom: 56.25%;
+                        background: transparent;
+                    }
+                    .video-container iframe { 
+                        position: absolute; 
+                        top: 0; 
+                        left: 0; 
+                        width: 100%; 
+                        height: 100%; 
+                        border: none;
+                        display: block;
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="video-container">
+                    <iframe 
+                        src="$videoUrl?badge=0&autopause=1&autoplay=0&loop=0" 
+                        allow="autoplay; fullscreen; picture-in-picture; clipboard-write" 
+                        allowfullscreen
+                        frameborder="0"
+                        title="Vimeo Video Player">
+                    </iframe>
+                </div>
+            </body>
+            </html>
+        """.trimIndent()
+
+        webView.loadDataWithBaseURL(
+            "https://player.vimeo.com",
+            embedHtml,
+            "text/html",
+            "UTF-8",
+            null
+        )
+    }
+
+    private fun stopVideo(webView: WebView) {
+        webView.loadUrl("about:blank")
+        webView.clearHistory()
+        webView.clearCache(true)
     }
 
     private fun addExerciseToPlan(exercise: ExerciseDto) {
