@@ -207,7 +207,7 @@
                     android:text="Wykres zmian wagi w czasie"
                     android:layout_marginBottom="8dp"/>
 
-                <com.example.fithub.WeightChartView
+                <pl.fithubapp.WeightChartView
                     android:id="@+id/weightChartView"
                     android:layout_width="match_parent"
                     android:layout_height="300dp"
