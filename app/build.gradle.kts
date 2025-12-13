@@ -4,11 +4,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.fithub"
+    namespace = "pl.fithubapp"
     compileSdk = 36
 
     defaultConfig {
-        applicationId = "com.example.fithub"
+        applicationId = "pl.fithubapp"
         minSdk = 28
         targetSdk = 36
         versionCode = 1
