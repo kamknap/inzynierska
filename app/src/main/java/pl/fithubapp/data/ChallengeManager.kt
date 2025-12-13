@@ -10,10 +10,19 @@ object ChallengeManager {
     suspend fun checkChallengeProgress(action: ChallengeType, value: Double = 1.0) {
         try {
             val userProgress = NetworkModule.api.getUserProgress()
-            val activeChallenge = userProgress.activeChallenges ?: return
+            var activeChallenge = userProgress.activeChallenges ?: return
 
             val allChallenges = NetworkModule.api.getAllChallenges()
             val challengeDef = allChallenges.find { it.id == activeChallenge.challengeId } ?: return
+
+            // Naprawa dla starych wyzwań WEIGHT_LOSS z niepoprawnym totalToFinish
+            if (challengeDef.type == ChallengeType.WEIGHT_LOSS && activeChallenge.totalToFinish < 10) {
+                val correctedTotalToFinish = challengeDef.targetValue * 10
+                activeChallenge = activeChallenge.copy(totalToFinish = correctedTotalToFinish)
+                val correctedProgress = userProgress.copy(activeChallenges = activeChallenge)
+                NetworkModule.api.updateUserProgress(correctedProgress)
+                Log.d("ChallengeManager", "Naprawiono totalToFinish: ${activeChallenge.totalToFinish} -> $correctedTotalToFinish")
+            }
 
             if (challengeDef.type != action) return
 
@@ -28,7 +37,9 @@ object ChallengeManager {
                     newCounter += 1
                 }
                 ChallengeType.WEIGHT_LOSS -> {
-                    newCounter += (value * 10).toInt()
+                    // Dla WEIGHT_LOSS value to całkowita utrata wagi, nie przyrost
+                    // Może być ujemna jeśli użytkownik przytył
+                    newCounter = (value * 10).toInt().coerceAtLeast(0)
                 }
                 ChallengeType.TRAINING_COUNT -> {
                     newCounter += 1

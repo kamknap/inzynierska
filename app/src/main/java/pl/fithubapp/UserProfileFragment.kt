@@ -195,13 +195,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
                 val activeGoal = userGoals.find { it.status == "active" }
                 if (activeGoal != null) {
-                    val goalType = when(activeGoal.type) {
-                        "lose_weight" -> "Schudnąć"
-                        "gain_weight" -> "Przytyć"
-                        "maintain" -> "Utrzymać"
-                        else -> activeGoal.type
-                    }
-                    tvUserGoal.text = "$goalType: ${activeGoal.firstWeightKg} → ${activeGoal.targetWeightKg} kg"
+                    tvUserGoal.text = "${activeGoal.firstWeightKg} → ${activeGoal.targetWeightKg} kg"
                 } else {
                     tvUserGoal.text = "Brak aktywnego celu"
                 }

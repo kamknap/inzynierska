@@ -20,6 +20,7 @@ import pl.fithubapp.data.ActiveChallenge
 import pl.fithubapp.data.PhotoDto
 import pl.fithubapp.data.PhotoReference
 import kotlinx.coroutines.launch
+import pl.fithubapp.data.ChallengeType
 import java.io.File
 import java.time.Instant
 import java.time.LocalDateTime
@@ -327,10 +328,16 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                             return@launch
                         }
 
+                        val totalToFinish = if (challenge.type == ChallengeType.WEIGHT_LOSS) {
+                            challenge.targetValue * 10 // Dla WEIGHT_LOSS używamy dziesiętnych części kg
+                        } else {
+                            challenge.targetValue
+                        }
+                        
                         val newActiveChallenge = ActiveChallenge(
                             challengeId = challengeId,
                             counter = 0,
-                            totalToFinish = challenge.targetValue,
+                            totalToFinish = totalToFinish,
                             startedDate = Instant.now().toString()
                         )
 

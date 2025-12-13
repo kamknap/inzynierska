@@ -99,6 +99,7 @@ class WeightChartView @JvmOverloads constructor(
         // Zakresy
         val minWeight = parsedData.minOf { it.weight } - 1
         val maxWeight = parsedData.maxOf { it.weight } + 1
+        val weightRange = (maxWeight - minWeight).coerceAtLeast(0.1f) // Zabezpieczenie przed dzieleniem przez zero
 
 
         // Osie
@@ -109,14 +110,14 @@ class WeightChartView @JvmOverloads constructor(
         val path = Path()
         parsedData.forEachIndexed { index, point ->
             val x = leftPadding + (index.toFloat() / (parsedData.size - 1).coerceAtLeast(1)) * chartWidth
-            val y = topPadding + (1f - (point.weight - minWeight) / (maxWeight - minWeight)) * chartHeight
+            val y = topPadding + (1f - (point.weight - minWeight) / weightRange) * chartHeight
             if (index == 0) path.moveTo(x, y) else path.lineTo(x, y)
         }
         canvas.drawPath(path, linePaint)
 
         val maxLabels = 5
         val step = if (parsedData.size > 1) {
-            (parsedData.size - 1) / (maxLabels - 1).coerceAtLeast(1)
+            ((parsedData.size - 1) / (maxLabels - 1)).coerceAtLeast(1)
         } else {
             1
         }
@@ -124,7 +125,7 @@ class WeightChartView @JvmOverloads constructor(
         // Punkty i etykiety
         parsedData.forEachIndexed { index, point ->
             val x = leftPadding + (index.toFloat() / (parsedData.size - 1).coerceAtLeast(1)) * chartWidth
-            val y = topPadding + (1f - (point.weight - minWeight) / (maxWeight - minWeight)) * chartHeight
+            val y = topPadding + (1f - (point.weight - minWeight) / weightRange) * chartHeight
 
             canvas.drawCircle(x, y, dp(5f), pointPaint)
 
@@ -140,7 +141,7 @@ class WeightChartView @JvmOverloads constructor(
         var currentWeight = (minWeight / weightStep).toInt() * weightStep
         while (currentWeight <= maxWeight) {
             if (currentWeight > minWeight) {
-                val y = topPadding + (1f - (currentWeight - minWeight) / (maxWeight - minWeight)) * chartHeight
+                val y = topPadding + (1f - (currentWeight - minWeight) / weightRange) * chartHeight
 
                 canvas.drawText("${currentWeight.toInt()}kg", leftPadding - dp(10f), y, labelPaint.apply {
                     textAlign = Paint.Align.RIGHT

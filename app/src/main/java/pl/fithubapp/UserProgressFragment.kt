@@ -136,14 +136,28 @@ class UserProgressFragment : Fragment(R.layout.fragment_user_progress) {
                             ChallengeType.TRAINING_PLAN_COUNT -> "planów"
                         }
 
-                        val currentValue = activeChallengeProgress.counter
-                        val totalValue = activeChallengeProgress.totalToFinish
+                        // Dla WEIGHT_LOSS dzielimy przez 10, bo przechowujemy w dziesiętnych częściach
+                        val currentValue = if (type == ChallengeType.WEIGHT_LOSS) {
+                            activeChallengeProgress.counter / 10.0
+                        } else {
+                            activeChallengeProgress.counter.toDouble()
+                        }
+                        
+                        val totalValue = if (type == ChallengeType.WEIGHT_LOSS) {
+                            activeChallengeProgress.totalToFinish / 10.0
+                        } else {
+                            activeChallengeProgress.totalToFinish.toDouble()
+                        }
 
                         tvUserActiveChallengeTitle.text = challengeDefinition.name
-                        tvUserActiveChallengeProgress.text = "$currentValue / $totalValue $unit"
+                        tvUserActiveChallengeProgress.text = if (type == ChallengeType.WEIGHT_LOSS) {
+                            String.format("%.1f / %.1f %s", currentValue, totalValue, unit)
+                        } else {
+                            "${currentValue.toInt()} / ${totalValue.toInt()} $unit"
+                        }
 
-                        pbUserActiveChallenge.max = totalValue
-                        pbUserActiveChallenge.progress = currentValue
+                        pbUserActiveChallenge.max = activeChallengeProgress.totalToFinish
+                        pbUserActiveChallenge.progress = activeChallengeProgress.counter
 
                         pbUserActiveChallenge.visibility = View.VISIBLE
                         tvUserActiveChallengeProgress.visibility = View.VISIBLE
