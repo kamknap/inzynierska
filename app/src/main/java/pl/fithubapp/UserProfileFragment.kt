@@ -5,6 +5,7 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import android.view.View
 import android.widget.Button
@@ -29,9 +30,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private lateinit var btnEditGoals: Button
     private lateinit var btnConnectSmartwatch: Button
     private lateinit var btnContactAuthor: Button
-
-
-    private var currenUserId = "68cbc06e6cdfa7faa8561f82"
+    private lateinit var btnLogout: Button
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -47,9 +46,17 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         btnEditGoals = view.findViewById(R.id.btnEditGoals)
         btnConnectSmartwatch = view.findViewById(R.id.btnConnectSmartwatch)
         btnContactAuthor= view.findViewById(R.id.btnContactAuthor)
+        btnLogout = view.findViewById(R.id.btnLogout)
 
-        setupButtonListeners(btnEditProfile, btnEditGoals, btnConnectSmartwatch, btnContactAuthor)
-        loadDataForUser(currenUserId)
+        setupButtonListeners(btnEditProfile, btnEditGoals, btnConnectSmartwatch, btnContactAuthor, btnLogout)
+        
+        // Pobierz ID zalogowanego użytkownika z Firebase
+        val currentUserId = AuthManager.currentUserId
+        if (currentUserId != null) {
+            loadDataForUser(currentUserId)
+        } else {
+            Toast.makeText(context, "Błąd: Brak zalogowanego użytkownika", Toast.LENGTH_SHORT).show()
+        }
 
     }
 
@@ -57,7 +64,8 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         btnEditProfile: Button,
         btnEditGoals: Button,
         btnConnectSmartwatch: Button,
-        btnContactAuthor: Button
+        btnContactAuthor: Button,
+        btnLogout: Button
     ) {
         btnEditProfile.setOnClickListener {
             showEditProfileDialog()
@@ -84,12 +92,39 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 Toast.makeText(context, "Nie znaleziono aplikacji pocztowej", Toast.LENGTH_SHORT).show()
             }
         }
+
+        btnLogout.setOnClickListener {
+            showLogoutDialog()
+        }
+    }
+
+    private fun showLogoutDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Wylogowanie")
+            .setMessage("Czy na pewno chcesz się wylogować?")
+            .setPositiveButton("Tak") { _, _ ->
+                performLogout()
+            }
+            .setNegativeButton("Nie", null)
+            .show()
+    }
+
+    private fun performLogout() {
+        AuthManager.logout()
+        Toast.makeText(context, "Zostałeś wylogowany", Toast.LENGTH_SHORT).show()
+        
+        // Przekieruj do SplashActivity, które przekieruje do LoginActivity
+        val intent = Intent(requireContext(), SplashActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        requireActivity().finish()
     }
 
     private fun showEditProfileDialog() {
+        val currentUserId = AuthManager.currentUserId ?: return
         lifecycleScope.launch {
             try {
-                val user = NetworkModule.api.getUserById(currenUserId)
+                val user = NetworkModule.api.getUserById(currentUserId)
 
                 val dialog = EditProfileDialogFragment().apply {
                     arguments = Bundle().apply {
@@ -111,10 +146,11 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     }
 
     private fun showEditGoalsDialog() {
+        val currentUserId = AuthManager.currentUserId ?: return
         lifecycleScope.launch {
             try {
-                val user = NetworkModule.api.getUserById(currenUserId)
-                val userGoals = NetworkModule.api.getUserGoalsByUserId(currenUserId)
+                val user = NetworkModule.api.getUserById(currentUserId)
+                val userGoals = NetworkModule.api.getUserGoalsByUserId(currentUserId)
                 val activeGoal = userGoals.find { it.status == "active" }
 
                 val currentActivityLevel = user.settings?.activityLevel ?: 1
@@ -143,7 +179,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
     override fun onResume() {
         super.onResume()
-        loadDataForUser(currenUserId)
+        AuthManager.currentUserId?.let { loadDataForUser(it) }
     }
 
     fun loadDataForUser(userId: String){

@@ -53,6 +53,10 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
     private lateinit var btnRangeWeek: Button
     private var fullHistoryList: List<UserWeightHistoryDto> = emptyList()
     private var currentRange: DateRange = DateRange.THREE_MONTHS
+    
+    private val currentUserId: String
+        get() = AuthManager.currentUserId ?: ""
+    
     enum class DateRange {
         ALL, YEAR, SIX_MONTHS, THREE_MONTHS, MONTH, WEEK
     }
@@ -74,13 +78,12 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
         btnRangeWeek = view.findViewById(R.id.btnRangeWeek)
 
 
-        val userId = "68cbc06e6cdfa7faa8561f82"
-        getCurrentWeight(userId)
-        updateProgressStats(userId)
-        fillHistory(userId)
+        getCurrentWeight(currentUserId)
+        updateProgressStats(currentUserId)
+        fillHistory(currentUserId)
 
         btnAddWeight.setOnClickListener {
-            showAddWeightDialog(userId)
+            showAddWeightDialog(currentUserId)
         }
 
         btnRangeAll.setOnClickListener {
@@ -377,7 +380,7 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
         if (::weightHistoryAdapter.isInitialized) {
             weightHistoryAdapter = WeightHistoryAdapter(referenceWeight, currentGoalType)
             rvWeightHistory.adapter = weightHistoryAdapter
-            fillHistory("68cbc06e6cdfa7faa8561f82")
+            fillHistory(currentUserId)
         }
     }
 

@@ -69,7 +69,8 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
     private var loadedDinner = false
     private var currentLoadId = 0
     private var trainingCalories = 0.0
-    private val currentUserId = "68cbc06e6cdfa7faa8561f82"
+    private val currentUserId: String
+        get() = AuthManager.currentUserId ?: ""
     enum class TrainingDeleteItemType{
         NONE,
         SINGLE_EXERCISE,

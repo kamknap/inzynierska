@@ -2,6 +2,7 @@ package pl.fithubapp
 
 import android.annotation.SuppressLint
 import android.app.AlertDialog
+import android.content.Intent
 import android.os.Bundle
 import android.text.Editable
 import android.text.TextWatcher
@@ -213,12 +214,19 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
                     val roundedBMR = String.format("%.0f", bmr).toDouble()
                     val birthDateIso = user.getBirthDateAsIsoString() ?: ""
 
+                    // Pobierz Firebase UID zalogowanego użytkownika
+                    val firebaseUid = AuthManager.currentUserId
+                    if (firebaseUid == null) {
+                        Toast.makeText(requireContext(), "Błąd: Brak zalogowanego użytkownika", Toast.LENGTH_SHORT).show()
+                        return@launch
+                    }
+
                     // Przygotuj dane użytkownika
                     val createUserDto = CreateUserDto(
                         username = user.name,
                         auth = AuthData(
-                            provider = "local", // tymczasowo, póki nie ma Firebase
-                            firebaseUid = null
+                            provider = "firebase",
+                            firebaseUid = firebaseUid
                         ),
                         profile = ProfileData(
                             sex = user.sex,
@@ -300,6 +308,12 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
                     NetworkModule.api.createUserGoal(createGoalDto)
 
                     Toast.makeText(requireContext(), "Dane i cele zapisane", Toast.LENGTH_SHORT).show()
+                    
+                    // Przekieruj do głównej aplikacji
+                    val intent = Intent(requireActivity(), UserMainActivity::class.java).apply {
+                        flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    }
+                    startActivity(intent)
                     requireActivity().finish()
                 } ?: run {
                     Toast.makeText(requireContext(), "Brak danych użytkownika", Toast.LENGTH_SHORT).show()

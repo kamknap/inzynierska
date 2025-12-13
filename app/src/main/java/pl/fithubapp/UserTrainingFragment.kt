@@ -39,7 +39,8 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
     private lateinit var btnSaveToDiary: Button
 
 
-    val currentUserId = "68cbc06e6cdfa7faa8561f82"
+    private val currentUserId: String
+        get() = AuthManager.currentUserId ?: ""
     private var currentPlanName = ""
     private var currentPlanId = ""
 
