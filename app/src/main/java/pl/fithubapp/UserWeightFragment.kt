@@ -315,7 +315,11 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
                         weightKg = weight
                     )
                 )
+<<<<<<< Updated upstream
                 NetworkModule.api.updateUser(userId, updateUserDto)
+=======
+                NetworkModule.api.updateUser(updateUserDto)
+>>>>>>> Stashed changes
 
                 try {
                     Log.d("AddWeight", "Waga dodana, przyznaję punkty...")

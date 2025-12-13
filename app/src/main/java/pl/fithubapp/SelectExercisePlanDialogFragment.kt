@@ -179,7 +179,6 @@ class SelectExercisePlanDialogFragment : DialogFragment() {
             try {
                 val newPlan = NetworkModule.api.createUserExercisePlan(
                     CreateUserExercisePlanDto(
-                        userId = userId,
                         planName = planName
                     )
                 )

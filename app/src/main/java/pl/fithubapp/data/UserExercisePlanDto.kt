@@ -17,9 +17,9 @@ data class PlanExerciseDto(
 )
 
 data class CreateUserExercisePlanDto(
-    @SerializedName("user_id") val userId: String,
     @SerializedName("plan_name") val planName: String,
     @SerializedName("plan_exercises") val planExercises: List<PlanExerciseItemDto> = emptyList()
+    // userId is now taken from Firebase Auth token, not from request body
 )
 
 data class PlanExerciseItemDto(

@@ -5,11 +5,16 @@ import retrofit2.http.*
 
 
 interface ApiService {
+<<<<<<< Updated upstream
     @GET("/api/users")
     suspend fun getUsers(): List<NewUserDto>
 
     @GET("/api/users/{id}")
     suspend fun getUserById(@Path("id") id: String): NewUserDto
+=======
+    @GET("/api/users/me")
+    suspend fun getCurrentUser(): NewUserDto
+>>>>>>> Stashed changes
 
     @POST("/api/users")
     suspend fun createUser(@Body user: CreateUserDto): NewUserDto
@@ -20,11 +25,8 @@ interface ApiService {
     @GET("/api/user-goals/user/{userId}")
     suspend fun getUserGoalsByUserId(@Path("userId") userId: String): List<UserGoalDto>
 
-    @PUT("/api/users/{id}")
-    suspend fun updateUser(
-        @Path("id") id: String,
-        @Body updateData: UpdateUserDto
-    ): NewUserDto
+    @PUT("/api/users/me")
+    suspend fun updateUser(@Body updateData: UpdateUserDto): NewUserDto
 
     @PUT("/api/user-goals/{id}")
     suspend fun updateUserGoal(
@@ -67,6 +69,7 @@ interface ApiService {
         @Body addMealDto: AddMealDto
     ): DailyNutritionWithFoodsDto
 
+<<<<<<< Updated upstream
     @DELETE("/api/nutrition/{userId}/{date}/meal/{mealIndex}")
     suspend fun deleteMeal(
         @Path("userId") userId: String,
@@ -83,6 +86,9 @@ interface ApiService {
     ): DailyNutritionWithFoodsDto
 
     @DELETE("/api/nutrition/{userId}/{date}/food/{itemId}")
+=======
+    @DELETE("/api/nutrition/me/{date}/food/{itemId}")
+>>>>>>> Stashed changes
     suspend fun deleteFoodByItemId(
         @Path("userId") userId: String,
         @Path("date") date: String,
@@ -115,10 +121,7 @@ interface ApiService {
     @GET("/api/user-exercise-plans")
     suspend fun getUserExercisePlans(@Query("user_id") userId: String): List<UserExercisePlanDto>
 
-    @GET("/api/user-exercise-plans/{id}")
-    suspend fun getUserExercisePlanById(@Path("id") id: String): UserExercisePlanDto
-
-    @POST("/api/user-exercise-plans")
+    @POST("/api/user-exercise-plans/me")
     suspend fun createUserExercisePlan(@Body plan: CreateUserExercisePlanDto): UserExercisePlanDto
 
     @PUT("/api/user-exercise-plans/{id}")
@@ -146,6 +149,7 @@ interface ApiService {
     @GET("/api/user-progress/{userId}")
     suspend fun getUserProgress(@Path("userId") userId: String): UserProgressDto
 
+<<<<<<< Updated upstream
     @POST("/api/user-progress")
     suspend fun createUserProgress(@Body progress: UserProgressDto): UserProgressDto
 
@@ -158,12 +162,14 @@ interface ApiService {
     @DELETE("/api/user-progress/{userId}")
     suspend fun deleteUserProgress(@Path("userId") userId: String): Unit
 
+=======
+    @PUT("/api/user-progress/me")
+    suspend fun updateUserProgress(@Body progress: UserProgressDto): UserProgressDto
+
+>>>>>>> Stashed changes
     // Photos endpoints
     @GET("/api/photos")
     suspend fun getAllPhotos(): List<PhotoDto>
-
-    @GET("/api/photos/{id}")
-    suspend fun getPhotoById(@Path("id") id: String): PhotoDto
 
     @POST("/api/photos")
     suspend fun addPhoto(@Body photo: PhotoDto): PhotoDto

@@ -90,8 +90,6 @@ class EditProfileDialogFragment : DialogFragment() {
     }
 
     private fun saveProfile() {
-        val userId = arguments?.getString("userId") ?: return
-
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).isEnabled = false
         alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).isEnabled = false
 
@@ -152,7 +150,7 @@ class EditProfileDialogFragment : DialogFragment() {
 
                 Log.d("EditProfile", "Wysyłam dane: $updateDto")
 
-                val response = NetworkModule.api.updateUser(userId, updateDto)
+                val response = NetworkModule.api.updateUser(updateDto)
 
                 Log.d("EditProfile", "Odpowiedź: $response")
 

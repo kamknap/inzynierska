@@ -116,7 +116,6 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
                     Log.d("UserTraining", "Brak planów - tworzenie domyślnego planu")
                     val defaultPlan = NetworkModule.api.createUserExercisePlan(
                         CreateUserExercisePlanDto(
-                            userId = currentUserId,
                             planName = "Domyślny plan treningowy"
                         )
                     )
