@@ -30,10 +30,10 @@ object PointsManager {
         return 100 + (level - 1) * 25
     }
 
-    suspend fun addPoints(userId: String, action: ActionType, customStreak: Int? = null, customPoints: Int? = null): Boolean {
+    suspend fun addPoints(action: ActionType, customStreak: Int? = null, customPoints: Int? = null): Boolean {
         try {
-            Log.d("PointsManager", "Rozpoczynam addPoints dla userId=$userId, action=$action")
-            val currentProgress = NetworkModule.api.getUserProgress(userId)
+            Log.d("PointsManager", "Rozpoczynam addPoints dla action=$action")
+            val currentProgress = NetworkModule.api.getUserProgress()
             Log.d("PointsManager", "Pobrano currentProgress: level=${currentProgress.level}, currentPoints=${currentProgress.currentPoints}")
 
             val pointsToAdd = customPoints ?: when (action) {
@@ -76,8 +76,8 @@ object PointsManager {
                 loginStreak = finalStreak
             )
 
-            Log.d("PointsManager", "Wysyłam update do API dla userId=$userId")
-            NetworkModule.api.updateUserProgress(userId, updatedProgress)
+            Log.d("PointsManager", "Wysyłam update do API")
+            NetworkModule.api.updateUserProgress(updatedProgress)
             Log.d("PointsManager", "Update wysłany pomyślnie")
 
             Log.d("PointsManager", "Przyznano $pointsToAdd pkt za $action. Streak: $finalStreak. Nowy level: $newLevel, punkty: $newCurrentPoints")
@@ -90,10 +90,10 @@ object PointsManager {
         }
     }
 
-    suspend fun removePoints(userId: String, action: ActionType) {
+    suspend fun removePoints(action: ActionType) {
         try {
-            Log.d("PointsManager", "Rozpoczynam removePoints dla userId=$userId, action=$action")
-            val currentProgress = NetworkModule.api.getUserProgress(userId)
+            Log.d("PointsManager", "Rozpoczynam removePoints dla action=$action")
+            val currentProgress = NetworkModule.api.getUserProgress()
 
             val pointsToRemove = when (action) {
                 ActionType.MEAL -> POINTS_MEAL
@@ -135,16 +135,16 @@ object PointsManager {
             )
 
             Log.d("PointsManager", "Wysyłam update (remove) do API. Nowy level: $newLevel, punkty: $newCurrentPoints")
-            NetworkModule.api.updateUserProgress(userId, updatedProgress)
+            NetworkModule.api.updateUserProgress(updatedProgress)
 
         } catch (e: Exception) {
             Log.e("PointsManager", "Błąd removePoints: ${e.message}", e)
         }
     }
 
-    suspend fun checkDailyLogin(userId: String): LoginResult {
+    suspend fun checkDailyLogin(): LoginResult {
         try {
-            val progress = NetworkModule.api.getUserProgress(userId)
+            val progress = NetworkModule.api.getUserProgress()
             val today = getTodaySimpleDate()
             val yesterday = getYesterdaySimpleDate()
 
@@ -172,14 +172,14 @@ object PointsManager {
                 isStreakBonus = true
                 pointsEarned += POINTS_STREAK_LOGIN
                 Log.d("PointsManager", "Aktualizacja streak: $today")
-                addPoints(userId, ActionType.STREAK)
+                addPoints(ActionType.STREAK)
             } else {
                 Log.d("PointsManager", "Streak przerwany lub pierwsze logowanie. Reset do 1.")
             }
 
-            addPoints(userId, ActionType.LOGIN, customStreak = newStreak)
+            addPoints(ActionType.LOGIN, customStreak = newStreak)
 
-            val updatedProgress = NetworkModule.api.getUserProgress(userId)
+            val updatedProgress = NetworkModule.api.getUserProgress()
             val isLevelUp = updatedProgress.level > progress.level
 
             return LoginResult(

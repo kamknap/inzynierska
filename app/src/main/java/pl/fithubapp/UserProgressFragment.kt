@@ -29,9 +29,11 @@ class UserProgressFragment : Fragment(R.layout.fragment_user_progress) {
     private lateinit var btnUserBadges: Button
     private lateinit var btnUserComparePhotos: Button
     private lateinit var btnUserChallenges: Button
+    
+    private val currentUserId: String
+        get() = AuthManager.currentUserId ?: ""
 
     companion object {
-        private const val CURRENT_USER_ID = "68cbc06e6cdfa7faa8561f82"
         private const val TAG = "UserProgress"
     }
 
@@ -82,9 +84,9 @@ class UserProgressFragment : Fragment(R.layout.fragment_user_progress) {
     private fun loadData() {
         lifecycleScope.launch {
             try {
-                val progress = NetworkModule.api.getUserProgress(CURRENT_USER_ID)
-                val user = NetworkModule.api.getUserById(CURRENT_USER_ID)
-                val userGoals = NetworkModule.api.getUserGoalsByUserId(CURRENT_USER_ID)
+                val progress = NetworkModule.api.getUserProgress()
+                val user = NetworkModule.api.getCurrentUser()
+                val userGoals = NetworkModule.api.getCurrentUserGoals()
                 val challengesApi = NetworkModule.api.getAllChallenges()
 
 

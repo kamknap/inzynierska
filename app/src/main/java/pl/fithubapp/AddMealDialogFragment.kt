@@ -347,17 +347,18 @@ class AddMealDialogFragment : DialogFragment() {
     }
 
     private fun addFoodToMeal(foodId: String, quantity: Double, food: FoodDto) {
-        val userId = arguments?.getString("userId")
         val date = arguments?.getString("date")
         val mealType = arguments?.getString("mealType")
 
-        if(userId.isNullOrEmpty() || date.isNullOrEmpty() || mealType.isNullOrEmpty()){
-            Toast.makeText(requireContext(), "Bład danych użytkownika", Toast.LENGTH_SHORT).show()
+        if(date.isNullOrEmpty() || mealType.isNullOrEmpty()){
+            Toast.makeText(requireContext(), "Błąd danych", Toast.LENGTH_SHORT).show()
             return
         }
 
         lifecycleScope.launch {
             try {
+                val user = NetworkModule.api.getCurrentUser()
+                
                 // sprawdzanie czy produkt istnieje w lokalnej bazie
                 var actualFoodId = foodId
                 val existingProduct = try{
@@ -373,7 +374,7 @@ class AddMealDialogFragment : DialogFragment() {
                             barcode = food.barcode,
                             nutritionPer100g = food.nutritionPer100g,
                             category = food.category,
-                            addedBy = userId
+                            addedBy = user.id
                         )
                         val createdFood = NetworkModule.api.createFood(createFoodDto)
                         actualFoodId = createdFood.id
@@ -397,16 +398,15 @@ class AddMealDialogFragment : DialogFragment() {
                     val addMealData = AddMealDto(meal = meal)
 
                     NetworkModule.api.addMeal(
-                        userId = userId,
                         date = date,
                         addMealDto = addMealData
                     )
 
-                    ChallengeManager.checkChallengeProgress(userId, ChallengeType.MEAL_COUNT, 1.0)
+                    ChallengeManager.checkChallengeProgress(ChallengeType.MEAL_COUNT, 1.0)
 
                     try {
                         Log.d("AddMealDialog", "Posiłek dodany, przyznaję punkty...")
-                        val leveledUp = PointsManager.addPoints(userId, PointsManager.ActionType.MEAL)
+                        val leveledUp = PointsManager.addPoints(PointsManager.ActionType.MEAL)
 
                         if (leveledUp) {
                             (activity as? UserMainActivity)?.showLevelUpDialog()
@@ -546,31 +546,27 @@ class AddMealDialogFragment : DialogFragment() {
                     return@setOnClickListener
                 }
 
-                val userId = arguments?.getString("userId")
-                if (userId.isNullOrEmpty()) {
-                    Toast.makeText(requireContext(), "Błąd: Brak ID użytkownika", Toast.LENGTH_SHORT).show()
-                    return@setOnClickListener
-                }
-
-                val newFood = CreateFoodDto(
-                    name = name,
-                    brand = etBrand.text.toString().ifEmpty { null },
-                    barcode = etBarcode.text.toString().ifEmpty { null },
-                    nutritionPer100g = NutritionData(
-                        calories = calories,
-                        protein = etProtein.text.toString().toDoubleOrNull() ?: 0.0,
-                        carbs = etCarbs.text.toString().toDoubleOrNull() ?: 0.0,
-                        fat = etFat.text.toString().toDoubleOrNull() ?: 0.0,
-                        fiber = 0.0,
-                        sugar = 0.0,
-                        sodium = 0.0
-                    ),
-                    category = "User",
-                    addedBy = userId
-                )
-
                 lifecycleScope.launch {
                     try {
+                        val user = NetworkModule.api.getCurrentUser()
+                        
+                        val newFood = CreateFoodDto(
+                            name = name,
+                            brand = etBrand.text.toString().ifEmpty { null },
+                            barcode = etBarcode.text.toString().ifEmpty { null },
+                            nutritionPer100g = NutritionData(
+                                calories = calories,
+                                protein = etProtein.text.toString().toDoubleOrNull() ?: 0.0,
+                                carbs = etCarbs.text.toString().toDoubleOrNull() ?: 0.0,
+                                fat = etFat.text.toString().toDoubleOrNull() ?: 0.0,
+                                fiber = 0.0,
+                                sugar = 0.0,
+                                sodium = 0.0
+                            ),
+                            category = "User",
+                            addedBy = user.id
+                        )
+                        
                         val checkFoodExist = NetworkModule.api.getFoods(name)
                         if (checkFoodExist.foods.isNotEmpty()) {
                             etName.error = "Produkt o tej nazwie już istnieje"

@@ -22,28 +22,47 @@
         android:theme="@style/Theme.Fithub">
 
 
+        <!-- SplashActivity - Entry Point aplikacji -->
         <activity
-            android:name=".MainActivity"
-            android:exported="true">
+            android:name=".SplashActivity"
+            android:exported="true"
+            android:theme="@style/Theme.AppCompat.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
 
+        <!-- LoginActivity - Logowanie/Rejestracja -->
         <activity
-            android:name=".MuscleModel"
-            android:exported="false">
+            android:name=".LoginActivity"
+            android:exported="false"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
         </activity>
 
+        <!-- OnboardingActivity - Proces onboardingu -->
         <activity
             android:name=".OnboardingActivity"
             android:exported="false">
         </activity>
 
+        <!-- UserMainActivity - Główna aplikacja -->
         <activity
             android:name=".UserMainActivity"
+            android:exported="false">
+        </activity>
+
+        <!-- MainActivity - Do testów developerskich (opcjonalne) -->
+        <activity
+            android:name=".MainActivity"
+            android:exported="true"
+            android:label="Dev Menu">
+            <!-- Usuń LAUNCHER intent-filter - nie jest już entry pointem -->
+        </activity>
+
+        <!-- MuscleModel - Moduł wyświetlania mięśni -->
+        <activity
+            android:name=".MuscleModel"
             android:exported="false">
         </activity>
 

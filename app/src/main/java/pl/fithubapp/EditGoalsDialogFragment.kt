@@ -124,7 +124,7 @@ class EditGoalsDialogFragment : DialogFragment() {
 
                 Toast.makeText(context, "Cele zaktualizowane", Toast.LENGTH_SHORT).show()
 
-                (parentFragment as? UserProfileFragment)?.loadDataForUser(userId)
+                (parentFragment as? UserProfileFragment)?.loadDataForUser()
 
                 dismiss()
 

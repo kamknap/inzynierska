@@ -53,6 +53,10 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
     private lateinit var btnRangeWeek: Button
     private var fullHistoryList: List<UserWeightHistoryDto> = emptyList()
     private var currentRange: DateRange = DateRange.THREE_MONTHS
+    
+    private val currentUserId: String
+        get() = AuthManager.currentUserId ?: ""
+    
     enum class DateRange {
         ALL, YEAR, SIX_MONTHS, THREE_MONTHS, MONTH, WEEK
     }
@@ -74,13 +78,12 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
         btnRangeWeek = view.findViewById(R.id.btnRangeWeek)
 
 
-        val userId = "68cbc06e6cdfa7faa8561f82"
-        getCurrentWeight(userId)
-        updateProgressStats(userId)
-        fillHistory(userId)
+        getCurrentWeight()
+        updateProgressStats()
+        fillHistory()
 
         btnAddWeight.setOnClickListener {
-            showAddWeightDialog(userId)
+            showAddWeightDialog()
         }
 
         btnRangeAll.setOnClickListener {
@@ -122,11 +125,11 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
         highlightSelectedButton(btnRangeThreeMonths)
     }
 
-    private fun getCurrentWeight(userId: String){
+    private fun getCurrentWeight(){
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val user = NetworkModule.api.getUserById(userId)
-                val userGoals = NetworkModule.api.getUserGoalsByUserId(userId)
+                val user = NetworkModule.api.getCurrentUser()
+                val userGoals = NetworkModule.api.getCurrentUserGoals()
 
                 if (userGoals.isEmpty()) {
                     return@launch
@@ -155,11 +158,11 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
         }
     }
 
-    private fun updateProgressStats(userId: String){
+    private fun updateProgressStats(){
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val user = NetworkModule.api.getUserById(userId)
-                val userGoals = NetworkModule.api.getUserGoalsByUserId(userId)
+                val user = NetworkModule.api.getCurrentUser()
+                val userGoals = NetworkModule.api.getCurrentUserGoals()
 
                 if (userGoals.isEmpty()) {
                     userProgress.text = "Brak aktywnego celu"
@@ -191,7 +194,7 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
         }
     }
 
-    private fun showAddWeightDialog(userId: String) {
+    private fun showAddWeightDialog() {
         val dialogLayout = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
             setPadding(48, 24, 48, 24)
@@ -279,7 +282,7 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
                     return@setPositiveButton
                 }
 
-                addWeight(userId, weight)
+                addWeight(weight)
             }
             .setNegativeButton("Anuluj", null)
             .create()
@@ -296,15 +299,15 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
         dialog.show()
     }
 
-    private fun addWeight(userId: String, weight: Double){
+    private fun addWeight(weight: Double){
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val currentUser = NetworkModule.api.getUserById(userId)
+                val currentUser = NetworkModule.api.getCurrentUser()
 
                 val oldWeight = currentUser.profile.weightKg
                 val diff = oldWeight - weight
                 if (diff > 0){
-                    ChallengeManager.checkChallengeProgress(userId, ChallengeType.WEIGHT_LOSS, diff)
+                    ChallengeManager.checkChallengeProgress(ChallengeType.WEIGHT_LOSS, diff)
                 }
 
                 val updateUserDto = UpdateUserDto(
@@ -315,31 +318,11 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
                         weightKg = weight
                     )
                 )
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                NetworkModule.api.updateUser(userId, updateUserDto)
-=======
                 NetworkModule.api.updateUser(updateUserDto)
->>>>>>> Stashed changes
-=======
-                NetworkModule.api.updateUser(updateUserDto)
->>>>>>> Stashed changes
-=======
-                NetworkModule.api.updateUser(updateUserDto)
->>>>>>> Stashed changes
-=======
-                NetworkModule.api.updateUser(updateUserDto)
->>>>>>> Stashed changes
-=======
-                NetworkModule.api.updateUser(updateUserDto)
->>>>>>> Stashed changes
 
                 try {
                     Log.d("AddWeight", "Waga dodana, przyznaję punkty...")
-                    val leveledUp = PointsManager.addPoints(userId, PointsManager.ActionType.WEIGHT)
+                    val leveledUp = PointsManager.addPoints(PointsManager.ActionType.WEIGHT)
 
                     if (leveledUp) {
                         (activity as? UserMainActivity)?.showLevelUpDialog()
@@ -353,9 +336,9 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
                     Toast.LENGTH_SHORT
                 ).show()
 
-                getCurrentWeight(userId)
-                updateProgressStats(userId)
-                fillHistory(userId)
+                getCurrentWeight()
+                updateProgressStats()
+                fillHistory()
             }
             catch (e: Exception){
                 Log.e("UserWeightFragment", "Błąd dodawania pomiaru", e)
@@ -368,10 +351,10 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
         }
     }
 
-    private fun fillHistory(userId: String){
+    private fun fillHistory(){
         viewLifecycleOwner.lifecycleScope.launch {
             try {
-                val userHistoryList = NetworkModule.api.getUserWeightHistory(userId)
+                val userHistoryList = NetworkModule.api.getUserWeightHistory()
 
                 fullHistoryList = userHistoryList
 
@@ -397,7 +380,7 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
         if (::weightHistoryAdapter.isInitialized) {
             weightHistoryAdapter = WeightHistoryAdapter(referenceWeight, currentGoalType)
             rvWeightHistory.adapter = weightHistoryAdapter
-            fillHistory("68cbc06e6cdfa7faa8561f82")
+            fillHistory()
         }
     }
 

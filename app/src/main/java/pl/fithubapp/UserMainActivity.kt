@@ -1,9 +1,11 @@
 package pl.fithubapp
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Build
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.widget.Button
 import android.widget.TextView
@@ -54,32 +56,44 @@ class UserMainActivity : AppCompatActivity() {
             showChallengeCompleteDialog(challengeName, badgeName, points)
         }
 
-        // Ustawienie ID użytkownika (docelowo powinno być pobierane z sesji/preferencji)
-        val currentUserId = "68cbc06e6cdfa7faa8561f82"
+        // Pobierz ID zalogowanego użytkownika z Firebase
+        val currentUserId = AuthManager.currentUserId
+        if (currentUserId == null) {
+            // Użytkownik nie jest zalogowany - przekieruj do logowania
+            startActivity(Intent(this, SplashActivity::class.java))
+            finish()
+            return
+        }
 
         lifecycleScope.launch {
             try {
-                val result = PointsManager.checkDailyLogin(currentUserId)
-                if(result.isNewLogin){
-                    if (result.streakBonus){
-                        showStreakDialog(result.currentStreak, result.pointsAdded)
+                // Próbuj sprawdzić daily login (może fail dla nowych użytkowników bez UserProgress)
+                try {
+                    val result = PointsManager.checkDailyLogin()
+                    if(result.isNewLogin){
+                        if (result.streakBonus){
+                            showStreakDialog(result.currentStreak, result.pointsAdded)
+                        }
+                        else{
+                            Snackbar.make(
+                                bottomNavigation,
+                                "Witaj ponownie! Zdobyto +${result.pointsAdded} pkt.",
+                                Snackbar.LENGTH_LONG
+                            ).setAnchorView(bottomNavigation).show()
+                        }
+                        ChallengeManager.checkChallengeProgress(ChallengeType.STREAK)
                     }
-                    else{
-                        Snackbar.make(
-                            bottomNavigation,
-                            "Witaj ponownie! Zdobyto +${result.pointsAdded} pkt.",
-                            Snackbar.LENGTH_LONG
-                        ).setAnchorView(bottomNavigation).show()
-                    }
-                    ChallengeManager.checkChallengeProgress(currentUserId, ChallengeType.STREAK)
-                }
 
-                if (result.levelUp) {
-                    showLevelUpDialog()
+                    if (result.levelUp) {
+                        showLevelUpDialog()
+                    }
+                } catch (e: Exception) {
+                    // Nowy użytkownik może nie mieć UserProgress - to OK
+                    Log.d("UserMainActivity", "Pomijam checkDailyLogin dla nowego użytkownika: ${e.message}")
                 }
 
                 // 3. Konfiguracja powiadomień z zabezpieczeniem przed nullem w bazie
-                val user = NetworkModule.api.getUserById(currentUserId)
+                val user = NetworkModule.api.getCurrentUser()
 
                 // Używamy bezpiecznego wywołania ?. bo settings może być null
                 val notifSettings = user.settings?.notifications

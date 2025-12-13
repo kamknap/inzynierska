@@ -2,9 +2,9 @@ package pl.fithubapp
 
 import android.content.ActivityNotFoundException
 import android.content.Intent
-import android.net.Uri
 import android.os.Bundle
 import android.util.Log
+import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import android.view.View
 import android.widget.Button
@@ -29,9 +29,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private lateinit var btnEditGoals: Button
     private lateinit var btnConnectSmartwatch: Button
     private lateinit var btnContactAuthor: Button
-
-
-    private var currenUserId = "68cbc06e6cdfa7faa8561f82"
+    private lateinit var btnLogout: Button
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -47,9 +45,12 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         btnEditGoals = view.findViewById(R.id.btnEditGoals)
         btnConnectSmartwatch = view.findViewById(R.id.btnConnectSmartwatch)
         btnContactAuthor= view.findViewById(R.id.btnContactAuthor)
+        btnLogout = view.findViewById(R.id.btnLogout)
 
-        setupButtonListeners(btnEditProfile, btnEditGoals, btnConnectSmartwatch, btnContactAuthor)
-        loadDataForUser(currenUserId)
+        setupButtonListeners(btnEditProfile, btnEditGoals, btnConnectSmartwatch, btnContactAuthor, btnLogout)
+        
+        // Pobierz dane zalogowanego użytkownika
+        loadDataForUser()
 
     }
 
@@ -57,7 +58,8 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         btnEditProfile: Button,
         btnEditGoals: Button,
         btnConnectSmartwatch: Button,
-        btnContactAuthor: Button
+        btnContactAuthor: Button,
+        btnLogout: Button
     ) {
         btnEditProfile.setOnClickListener {
             showEditProfileDialog()
@@ -84,12 +86,38 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 Toast.makeText(context, "Nie znaleziono aplikacji pocztowej", Toast.LENGTH_SHORT).show()
             }
         }
+
+        btnLogout.setOnClickListener {
+            showLogoutDialog()
+        }
+    }
+
+    private fun showLogoutDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Wylogowanie")
+            .setMessage("Czy na pewno chcesz się wylogować?")
+            .setPositiveButton("Tak") { _, _ ->
+                performLogout()
+            }
+            .setNegativeButton("Nie", null)
+            .show()
+    }
+
+    private fun performLogout() {
+        AuthManager.logout()
+        Toast.makeText(context, "Zostałeś wylogowany", Toast.LENGTH_SHORT).show()
+        
+        // Przekieruj do SplashActivity, które przekieruje do LoginActivity
+        val intent = Intent(requireContext(), SplashActivity::class.java)
+        intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+        startActivity(intent)
+        requireActivity().finish()
     }
 
     private fun showEditProfileDialog() {
         lifecycleScope.launch {
             try {
-                val user = NetworkModule.api.getUserById(currenUserId)
+                val user = NetworkModule.api.getCurrentUser()
 
                 val dialog = EditProfileDialogFragment().apply {
                     arguments = Bundle().apply {
@@ -113,8 +141,8 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private fun showEditGoalsDialog() {
         lifecycleScope.launch {
             try {
-                val user = NetworkModule.api.getUserById(currenUserId)
-                val userGoals = NetworkModule.api.getUserGoalsByUserId(currenUserId)
+                val user = NetworkModule.api.getCurrentUser()
+                val userGoals = NetworkModule.api.getCurrentUserGoals()
                 val activeGoal = userGoals.find { it.status == "active" }
 
                 val currentActivityLevel = user.settings?.activityLevel ?: 1
@@ -143,14 +171,14 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
     override fun onResume() {
         super.onResume()
-        loadDataForUser(currenUserId)
+        loadDataForUser()
     }
 
-    fun loadDataForUser(userId: String){
+    fun loadDataForUser(){
         lifecycleScope.launch {
             try {
-                val user = NetworkModule.api.getUserById(userId)
-                val userGoals = NetworkModule.api.getUserGoalsByUserId(userId)
+                val user = NetworkModule.api.getCurrentUser()
+                val userGoals = NetworkModule.api.getCurrentUserGoals()
                 val calculator = UserCalculator()
 
                 tvUserName.text = user.username

@@ -2,12 +2,38 @@ package pl.fithubapp
 
 import android.os.Build
 import android.util.Log
+import com.google.android.gms.tasks.Tasks
+import com.google.firebase.auth.FirebaseAuth
 import com.google.gson.GsonBuilder
+import okhttp3.Interceptor
 import okhttp3.OkHttpClient
+import okhttp3.Response
 import okhttp3.logging.HttpLoggingInterceptor
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import java.util.concurrent.TimeUnit
+
+class AuthInterceptor : Interceptor {
+    override fun intercept(chain: Interceptor.Chain): Response {
+        val user = FirebaseAuth.getInstance().currentUser
+        val token = if (user != null) {
+            val task = user.getIdToken(false)
+            try {
+                Tasks.await(task).token
+            } catch (e: Exception) {
+                null
+            }
+        } else {
+            null
+        }
+
+        val requestBuilder = chain.request().newBuilder()
+        if (token != null) {
+            requestBuilder.addHeader("Authorization", "Bearer $token")
+        }
+        return chain.proceed(requestBuilder.build())
+    }
+}
 
 object NetworkModule {
 
@@ -47,6 +73,10 @@ object NetworkModule {
 
     private val client = OkHttpClient.Builder()
         .addInterceptor(loggingInterceptor)
+        .addInterceptor(AuthInterceptor())
+        .connectTimeout(120, TimeUnit.SECONDS)
+        .readTimeout(120, TimeUnit.SECONDS)
+        .writeTimeout(120, TimeUnit.SECONDS)
         .build()
 
     val api: ApiService by lazy {
@@ -88,6 +118,5 @@ object NetworkModule {
             .build()
             .create(OpenFoodFactsService::class.java)
     }
-
 
 }

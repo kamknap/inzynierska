@@ -36,10 +36,15 @@ object AuthManager {
      * Rejestruje nowego użytkownika z email i hasłem
      * @return FirebaseUser w przypadku sukcesu, null w przypadku błędu
      */
-    suspend fun registerWithEmail(email: String, password: String): FirebaseUser {
-        return auth.createUserWithEmailAndPassword(email, password)
-            .await()
-            .user ?: throw IllegalStateException("User creation returned null")
+    suspend fun registerWithEmail(email: String, password: String): Result<FirebaseUser> {
+        return try {
+            val result = auth.createUserWithEmailAndPassword(email, password).await()
+            result.user?.let { 
+                Result.success(it)
+            } ?: Result.failure(Exception("User creation returned null"))
+        } catch (e: Exception) {
+            Result.failure(e)
+        }
     }
 
     /**
