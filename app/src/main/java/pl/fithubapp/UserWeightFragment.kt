@@ -317,7 +317,11 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
                 )
 <<<<<<< Updated upstream
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                 NetworkModule.api.updateUser(userId, updateUserDto)
+=======
+                NetworkModule.api.updateUser(updateUserDto)
+>>>>>>> Stashed changes
 =======
                 NetworkModule.api.updateUser(updateUserDto)
 >>>>>>> Stashed changes
