@@ -21,8 +21,8 @@ import androidx.lifecycle.lifecycleScope
 import pl.fithubapp.data.FoodDto
 import pl.fithubapp.data.MealWithFoodsDto
 import pl.fithubapp.data.PointsManager
-import pl.fithubapp.data.UpdateFoodQuantityDto
 import kotlinx.coroutines.launch
+import pl.fithubapp.data.UpdateFoodQuantityDto
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -263,7 +263,6 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
             try {
                 val updateDto = UpdateFoodQuantityDto(quantity = newQuantity)
                 NetworkModule.api.updateFoodQuantity(
-                    userId = currentUserId,
                     date = dateStr,
                     itemId = itemId,
                     request = updateDto
@@ -373,12 +372,12 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
     }
 
 
-    private fun loadAllMealsForUser(userId: String, date: String) {
+    private fun loadAllMealsForUser(date: String) {
         val loadIdAtStart = currentLoadId
 
         lifecycleScope.launch {
             try {
-                val dailyNutrition = NetworkModule.api.getDailyNutrition(userId, date)
+                val dailyNutrition = NetworkModule.api.getDailyNutrition(date)
 
                 if (loadIdAtStart != currentLoadId) return@launch
 
@@ -533,7 +532,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
 
         val formattedDate = date.toString()
 
-        loadAllMealsForUser(currentUserId, formattedDate)
+        loadAllMealsForUser(formattedDate)
     }
 
     private fun clearAllMacrosAndUi() {
@@ -578,7 +577,6 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         lifecycleScope.launch {
             try {
                 NetworkModule.api.deleteFoodByItemId(
-                    userId = currentUserId,
                     date = dateStr,
                     itemId = itemId
                 )
@@ -590,7 +588,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                         TrainingDeleteItemType.NONE -> PointsManager.ActionType.MEAL
                     }
 
-                    PointsManager.removePoints(currentUserId, actionType)
+                    PointsManager.removePoints(actionType)
                     Log.d("UserDiary", "Odjęto punkty za: $actionType")
 
                 } catch (e: Exception) {

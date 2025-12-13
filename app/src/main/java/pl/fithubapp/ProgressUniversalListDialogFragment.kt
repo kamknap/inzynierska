@@ -163,12 +163,12 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
 
                 NetworkModule.api.deletePhoto(photo.id)
 
-                val userProgress = NetworkModule.api.getUserProgress(currentUserId)
+                val userProgress = NetworkModule.api.getUserProgress()
 
                 val updatedPhotosList = userProgress.photos.filter { it.photoId != photo.id }
 
                 val updatedProgress = userProgress.copy(photos = updatedPhotosList)
-                NetworkModule.api.updateUserProgress(currentUserId, updatedProgress)
+                NetworkModule.api.updateUserProgress(updatedProgress)
 
                 Toast.makeText(context, "Zdjęcie usunięte", Toast.LENGTH_SHORT).show()
                 loadData()
@@ -222,7 +222,7 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
             try {
                 Toast.makeText(context, "Wysyłanie zdjęcia...", Toast.LENGTH_SHORT).show()
 
-                val user = NetworkModule.api.getUserById(currentUserId)
+                val user = NetworkModule.api.getCurrentUser()
                 val currentWeight = user.profile.weightKg
 
                 val newPhotoDto = PhotoDto(
@@ -234,7 +234,7 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                 Log.d("PhotoUpload", "Utworzono zdjęcie ID: ${createdPhoto.id}")
 
                 if (createdPhoto.id != null) {
-                    val userProgress = NetworkModule.api.getUserProgress(currentUserId)
+                    val userProgress = NetworkModule.api.getUserProgress()
 
                     val newPhotoRef = PhotoReference(
                         photoId = createdPhoto.id,
@@ -245,7 +245,7 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                     updatedList.add(newPhotoRef)
 
                     val updatedProgress = userProgress.copy(photos = updatedList)
-                    NetworkModule.api.updateUserProgress(currentUserId, updatedProgress)
+                    NetworkModule.api.updateUserProgress(updatedProgress)
 
                     Toast.makeText(context, "Zdjęcie zapisane pomyślnie!", Toast.LENGTH_SHORT).show()
                     loadData()
@@ -261,7 +261,7 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
     private fun loadData() {
         lifecycleScope.launch {
             try {
-                val userProgress = NetworkModule.api.getUserProgress(currentUserId)
+                val userProgress = NetworkModule.api.getUserProgress()
 
                 when (mode) {
                     DisplayMode.BADGES -> {
@@ -308,7 +308,7 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
     private fun handleChallengeAction(challengeId: String, action: String) {
         lifecycleScope.launch {
             try {
-                val userProgress = NetworkModule.api.getUserProgress(currentUserId)
+                val userProgress = NetworkModule.api.getUserProgress()
 
                 when (action) {
                     "START" -> {
@@ -338,7 +338,7 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                             activeChallenges = newActiveChallenge
                         )
 
-                        NetworkModule.api.updateUserProgress(currentUserId, updatedProgress)
+                        NetworkModule.api.updateUserProgress(updatedProgress)
 
                         Toast.makeText(
                             context,
@@ -354,7 +354,7 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
                             activeChallenges = null
                         )
 
-                        NetworkModule.api.updateUserProgress(currentUserId, updatedProgress)
+                        NetworkModule.api.updateUserProgress(updatedProgress)
 
                         Toast.makeText(
                             context,

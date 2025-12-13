@@ -7,9 +7,9 @@ object ChallengeManager {
 
     var onChallengeCompleted: ((String, String, Int) -> Unit)? = null
 
-    suspend fun checkChallengeProgress(userId: String, action: ChallengeType, value: Double = 1.0) {
+    suspend fun checkChallengeProgress(action: ChallengeType, value: Double = 1.0) {
         try {
-            val userProgress = NetworkModule.api.getUserProgress(userId)
+            val userProgress = NetworkModule.api.getUserProgress()
             val activeChallenge = userProgress.activeChallenges ?: return
 
             val allChallenges = NetworkModule.api.getAllChallenges()
@@ -46,11 +46,11 @@ object ChallengeManager {
             val updatedActiveChallenge = activeChallenge.copy(counter = newCounter)
             val progressToUpdate = userProgress.copy(activeChallenges = updatedActiveChallenge)
 
-            NetworkModule.api.updateUserProgress(userId, progressToUpdate)
+            NetworkModule.api.updateUserProgress(progressToUpdate)
             Log.d("ChallengeManager", "Zaktualizowano postęp wyzwania: $newCounter / ${activeChallenge.totalToFinish}")
 
             if (isCompleted) {
-                completeChallenge(userId, challengeDef, userProgress)
+                completeChallenge(challengeDef, userProgress)
             }
 
         } catch (e: Exception) {
@@ -59,14 +59,13 @@ object ChallengeManager {
     }
 
     private suspend fun completeChallenge(
-        userId: String,
         challengeDto: ChallengeDto,
         currentProgress: UserProgressDto
     ) {
-        PointsManager.addPoints(userId, PointsManager.ActionType.CHALLENGE, customPoints = challengeDto.pointsForComplete)
+        PointsManager.addPoints(PointsManager.ActionType.CHALLENGE, customPoints = challengeDto.pointsForComplete)
 
         // 2. WAŻNE: Pobierz ZAKTUALIZOWANY postęp z API, bo PointsManager właśnie zmienił level i punkty!
-        val refreshedProgress = NetworkModule.api.getUserProgress(userId)
+        val refreshedProgress = NetworkModule.api.getUserProgress()
 
         // 3. Teraz operuj na świeżych danych (refreshedProgress zamiast currentProgress)
         // Znajdź odznakę...
@@ -94,7 +93,7 @@ object ChallengeManager {
             activeChallenges = null, // Usuń aktywne wyzwanie
         )
 
-        NetworkModule.api.updateUserProgress(userId, finalProgress)
+        NetworkModule.api.updateUserProgress(finalProgress)
 
         onChallengeCompleted?.invoke(
             challengeDto.name,

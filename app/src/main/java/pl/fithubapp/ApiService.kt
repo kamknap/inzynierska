@@ -8,8 +8,8 @@ interface ApiService {
     @GET("/api/users")
     suspend fun getUsers(): List<NewUserDto>
 
-    @GET("/api/users/{id}")
-    suspend fun getUserById(@Path("id") id: String): NewUserDto
+    @GET("/api/users/me")
+    suspend fun getCurrentUser(): NewUserDto
 
     @POST("/api/users")
     suspend fun createUser(@Body user: CreateUserDto): NewUserDto
@@ -17,8 +17,8 @@ interface ApiService {
     @POST("/api/user-goals")
     suspend fun createUserGoal(@Body userGoal: CreateUserGoalDto): UserGoalDto
 
-    @GET("/api/user-goals/user/{userId}")
-    suspend fun getUserGoalsByUserId(@Path("userId") userId: String): List<UserGoalDto>
+    @GET("/api/user-goals/me")
+    suspend fun getCurrentUserGoals(): List<UserGoalDto>
 
     @PUT("/api/users/{id}")
     suspend fun updateUser(
@@ -54,15 +54,13 @@ interface ApiService {
     suspend fun deleteFood(@Path("id") id: String)
 
     // Nutrition endpoints
-    @GET("/api/nutrition/{userId}/{date}")
+    @GET("/api/nutrition/me/{date}")
     suspend fun getDailyNutrition(
-        @Path("userId") userId: String,
-        @Path("date") date: String // format "2025-09-30"
+        @Path("date") date: String
     ): DailyNutritionWithFoodsDto
 
-    @POST("/api/nutrition/{userId}/{date}/meal")
+    @POST("/api/nutrition/me/{date}/meal")
     suspend fun addMeal(
-        @Path("userId") userId: String,
         @Path("date") date: String,
         @Body addMealDto: AddMealDto
     ): DailyNutritionWithFoodsDto
@@ -82,24 +80,22 @@ interface ApiService {
         @Path("foodIndex") foodIndex: Int
     ): DailyNutritionWithFoodsDto
 
-    @DELETE("/api/nutrition/{userId}/{date}/food/{itemId}")
+    @DELETE("/api/nutrition/me/{date}/food/{itemId}")
     suspend fun deleteFoodByItemId(
-        @Path("userId") userId: String,
         @Path("date") date: String,
         @Path("itemId") itemId: String
     ): DailyNutritionWithFoodsDto
 
-    @PUT("/api/nutrition/{userId}/{date}/food/{itemId}")
+    @PUT("/api/nutrition/me/{date}/food/{itemId}")
     suspend fun updateFoodQuantity(
-        @Path("userId") userId: String,
         @Path("date") date: String,
         @Path("itemId") itemId: String,
         @Body request: UpdateFoodQuantityDto
     ): DailyNutritionWithFoodsDto
 
     // Weight History endpoints
-    @GET("/api/weight-history/{userId}")
-    suspend fun getUserWeightHistory(@Path("userId") userId: String): List<UserWeightHistoryDto>
+    @GET("/api/weight-history/me")
+    suspend fun getUserWeightHistory(): List<UserWeightHistoryDto>
 
     @POST("/api/weight-history")
     suspend fun createWeightMeasurement(@Body measurement: CreateWeightMeasurementDto): UserWeightHistoryDto
@@ -112,8 +108,8 @@ interface ApiService {
     suspend fun getExercisesByMuscleId(@Query("muscleId") name: String): List<ExerciseDto>
 
     // User Exercise Plans endpoints
-    @GET("/api/user-exercise-plans")
-    suspend fun getUserExercisePlans(@Query("user_id") userId: String): List<UserExercisePlanDto>
+    @GET("/api/user-exercise-plans/me")
+    suspend fun getUserExercisePlans(): List<UserExercisePlanDto>
 
     @GET("/api/user-exercise-plans/{id}")
     suspend fun getUserExercisePlanById(@Path("id") id: String): UserExercisePlanDto
@@ -143,20 +139,17 @@ interface ApiService {
     ): UserExercisePlanDto
 
     // User Progress endpoints
-    @GET("/api/user-progress/{userId}")
-    suspend fun getUserProgress(@Path("userId") userId: String): UserProgressDto
+    @GET("/api/user-progress/me")
+    suspend fun getUserProgress(): UserProgressDto
 
     @POST("/api/user-progress")
     suspend fun createUserProgress(@Body progress: UserProgressDto): UserProgressDto
 
-    @PUT("/api/user-progress/{userId}")
-    suspend fun updateUserProgress(
-        @Path("userId") userId: String,
-        @Body progress: UserProgressDto
-    ): UserProgressDto
+    @PUT("/api/user-progress/me")
+    suspend fun updateUserProgress(@Body progress: UserProgressDto): UserProgressDto
 
-    @DELETE("/api/user-progress/{userId}")
-    suspend fun deleteUserProgress(@Path("userId") userId: String): Unit
+    @DELETE("/api/user-progress/me")
+    suspend fun deleteUserProgress(): Unit
 
     // Photos endpoints
     @GET("/api/photos")

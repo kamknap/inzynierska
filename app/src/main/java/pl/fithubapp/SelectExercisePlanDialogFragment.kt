@@ -55,7 +55,7 @@ class SelectExercisePlanDialogFragment : DialogFragment() {
     private fun loadPlans() {
         lifecycleScope.launch {
             try {
-                val plans = NetworkModule.api.getUserExercisePlans(userId!!)
+                val plans = NetworkModule.api.getUserExercisePlans()
 
                 plansContainer?.removeAllViews()
 
@@ -132,7 +132,7 @@ class SelectExercisePlanDialogFragment : DialogFragment() {
 
                     // Jeśli usunięto aktualnie wybrany plan, wybierz inny
                     if (planId == currentPlanId) {
-                        val remainingPlans = NetworkModule.api.getUserExercisePlans(userId!!)
+                        val remainingPlans = NetworkModule.api.getUserExercisePlans()
                         if (remainingPlans.isNotEmpty()) {
                             // Automatycznie wybierz pierwszy dostępny plan
                             onPlanSelectedListener?.onPlanSelected(remainingPlans[0].id, remainingPlans[0].planName)

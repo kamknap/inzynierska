@@ -31,18 +31,22 @@ class ReminderWorker(
     }
 
     private suspend fun shouldSendNotification(userId: String, type: String): Boolean {
+        // TODO: Backend needs separate endpoints for background workers (not /me)
+        // For now, always show notifications
         return try {
+            // Temporarily disabled API checks until backend supports worker endpoints
+            /*
             val today = LocalDate.now().toString()
 
             when (type) {
                 "WEIGHT" -> {
-                    val history = NetworkModule.api.getUserWeightHistory(userId)
+                    val history = NetworkModule.api.getUserWeightHistory()
                     if (history.isEmpty()) return true
                     val lastDate = history.first().measuredAt.substring(0, 10)
                     return lastDate != today
                 }
                 "MEAL" -> {
-                    val nutrition = NetworkModule.api.getDailyNutrition(userId, today)
+                    val nutrition = NetworkModule.api.getDailyNutrition(today)
                     return nutrition.meals.isEmpty()
                 }
                 "WORKOUT" -> {
@@ -50,9 +54,11 @@ class ReminderWorker(
                 }
                 else -> false
             }
+            */
+            true // Always show notification for now
         } catch (e: Exception) {
             Log.e("ReminderWorker", "Błąd sprawdzania API: ${e.message}")
-            false
+            true // Show notification on error
         }
     }
 

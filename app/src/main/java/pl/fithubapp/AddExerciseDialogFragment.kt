@@ -117,13 +117,12 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
     }
 
     private fun saveExercise(exercise: ExerciseDto, duration: Double){
-        val userId = arguments?.getString("userId") ?: return
         val date = arguments?.getString("date") ?: return
 
         lifecycleScope.launch {
             try {
 
-                val user = NetworkModule.api.getUserById(userId)
+                val user = NetworkModule.api.getCurrentUser()
                 val userWeight = user.profile.weightKg
                 val mets = exercise.mets ?: run{
                     Log.d("brak mets", "Brak danych mets w bazie")
@@ -158,7 +157,7 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
                         sodium = 0.0
                     ),
                     category = "Exercise",
-                    addedBy = userId
+                    addedBy = user.id
                 )
 
                 val createdExerciseFood = NetworkModule.api.createFood(exerciseAsFood)
@@ -176,16 +175,15 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
                 val payload = AddMealDto(meal = mealDto)
 
                 NetworkModule.api.addMeal(
-                    userId = userId,
                     date = date,
                     addMealDto = payload
                 )
 
                 try {
                     Log.d("AddMealDialog", "Posiłek dodany, przyznaję punkty...")
-                    val leveledUp = PointsManager.addPoints(userId, PointsManager.ActionType.TRAINING)
+                    val leveledUp = PointsManager.addPoints(PointsManager.ActionType.TRAINING)
 
-                    ChallengeManager.checkChallengeProgress(userId, ChallengeType.TRAINING_COUNT, 1.0)
+                    ChallengeManager.checkChallengeProgress(ChallengeType.TRAINING_COUNT, 1.0)
 
                     if (leveledUp) {
                         (activity as? UserMainActivity)?.showLevelUpDialog()

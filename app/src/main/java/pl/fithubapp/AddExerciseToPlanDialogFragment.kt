@@ -204,12 +204,11 @@ class AddExerciseToPlanDialogFragment : SearchDialogFragment<ExerciseDto>() {
     }
 
     private fun addExerciseToPlan(exercise: ExerciseDto) {
-        val userId = arguments?.getString("userId") ?: return
         val planName = arguments?.getString("planName") ?: "Plan Treningowy 1"
 
         lifecycleScope.launch {
             try {
-                val userExercisePlans = NetworkModule.api.getUserExercisePlans(userId)
+                val userExercisePlans = NetworkModule.api.getUserExercisePlans()
 
                 Log.d("AddExerciseToPlan", "Pobrano ${userExercisePlans.size} planów")
 

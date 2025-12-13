@@ -110,7 +110,7 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
     private fun loadExercisesForCurrentPlan() {
         lifecycleScope.launch {
             try {
-                var plans = NetworkModule.api.getUserExercisePlans(currentUserId)
+                var plans = NetworkModule.api.getUserExercisePlans()
                 Log.d("UserTraining", "Pobrano ${plans.size} planów")
 
                 if (plans.isEmpty()) {
@@ -238,7 +238,7 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
     private fun addTrainingSummaryToDiary(minutes: Double){
         lifecycleScope.launch {
             try {
-                val user = NetworkModule.api.getUserById(currentUserId)
+                val user = NetworkModule.api.getCurrentUser()
                 val weight = user.profile.weightKg
 
                 val averageMets = 5.0
@@ -257,7 +257,7 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
                         protein = 0.0, fat = 0.0, carbs = 0.0, fiber = 0.0, sugar = 0.0, sodium = 0.0
                     ),
                     category = "Exercise",
-                    addedBy = currentUserId
+                    addedBy = user.id
                 )
 
                 val createdFood = NetworkModule.api.createFood(trainingFood)
@@ -273,15 +273,14 @@ class UserTrainingFragment : Fragment(R.layout.fragment_user_training) {
                 )
 
                 NetworkModule.api.addMeal(
-                    userId = currentUserId,
                     date = dateStr,
                     addMealDto = AddMealDto(meal = mealDto)
                 )
 
                 try {
                     Log.d("AddWeight", "Waga dodana, przyznaję punkty...")
-                    val leveledUp = PointsManager.addPoints(currentUserId, PointsManager.ActionType.TRAINING_FULL)
-                    ChallengeManager.checkChallengeProgress(currentUserId, ChallengeType.TRAINING_PLAN_COUNT, 1.0)
+                    val leveledUp = PointsManager.addPoints(PointsManager.ActionType.TRAINING_FULL)
+                    ChallengeManager.checkChallengeProgress(ChallengeType.TRAINING_PLAN_COUNT, 1.0)
 
                     if (leveledUp) {
                         (activity as? UserMainActivity)?.showLevelUpDialog()

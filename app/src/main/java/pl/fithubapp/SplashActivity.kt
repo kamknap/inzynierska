@@ -35,7 +35,7 @@ class SplashActivity : AppCompatActivity() {
         lifecycleScope.launch {
             try {
                 // Pobieramy usera z API
-                val userDto = NetworkModule.api.getUserById(userId)
+                val userDto = NetworkModule.api.getCurrentUser()
                 
                 // Sprawdzamy czy użytkownik ma ukończony onboarding
                 // Warunek: ma wypełnione dane podstawowe (waga, wzrost)

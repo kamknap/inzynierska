@@ -69,7 +69,7 @@ class UserMainActivity : AppCompatActivity() {
             try {
                 // Próbuj sprawdzić daily login (może fail dla nowych użytkowników bez UserProgress)
                 try {
-                    val result = PointsManager.checkDailyLogin(currentUserId)
+                    val result = PointsManager.checkDailyLogin()
                     if(result.isNewLogin){
                         if (result.streakBonus){
                             showStreakDialog(result.currentStreak, result.pointsAdded)
@@ -81,7 +81,7 @@ class UserMainActivity : AppCompatActivity() {
                                 Snackbar.LENGTH_LONG
                             ).setAnchorView(bottomNavigation).show()
                         }
-                        ChallengeManager.checkChallengeProgress(currentUserId, ChallengeType.STREAK)
+                        ChallengeManager.checkChallengeProgress(ChallengeType.STREAK)
                     }
 
                     if (result.levelUp) {
@@ -93,7 +93,7 @@ class UserMainActivity : AppCompatActivity() {
                 }
 
                 // 3. Konfiguracja powiadomień z zabezpieczeniem przed nullem w bazie
-                val user = NetworkModule.api.getUserById(currentUserId)
+                val user = NetworkModule.api.getCurrentUser()
 
                 // Używamy bezpiecznego wywołania ?. bo settings może być null
                 val notifSettings = user.settings?.notifications

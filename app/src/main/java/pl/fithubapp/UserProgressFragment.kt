@@ -84,9 +84,9 @@ class UserProgressFragment : Fragment(R.layout.fragment_user_progress) {
     private fun loadData() {
         lifecycleScope.launch {
             try {
-                val progress = NetworkModule.api.getUserProgress(currentUserId)
-                val user = NetworkModule.api.getUserById(currentUserId)
-                val userGoals = NetworkModule.api.getUserGoalsByUserId(currentUserId)
+                val progress = NetworkModule.api.getUserProgress()
+                val user = NetworkModule.api.getCurrentUser()
+                val userGoals = NetworkModule.api.getCurrentUserGoals()
                 val challengesApi = NetworkModule.api.getAllChallenges()
 
 
