@@ -6,12 +6,15 @@ import retrofit2.http.*
 
 interface ApiService {
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     @GET("/api/users")
     suspend fun getUsers(): List<NewUserDto>
 
     @GET("/api/users/{id}")
     suspend fun getUserById(@Path("id") id: String): NewUserDto
 =======
+=======
+>>>>>>> Stashed changes
     @GET("/api/users/me")
     suspend fun getCurrentUser(): NewUserDto
 >>>>>>> Stashed changes
@@ -70,6 +73,7 @@ interface ApiService {
     ): DailyNutritionWithFoodsDto
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     @DELETE("/api/nutrition/{userId}/{date}/meal/{mealIndex}")
     suspend fun deleteMeal(
         @Path("userId") userId: String,
@@ -87,6 +91,8 @@ interface ApiService {
 
     @DELETE("/api/nutrition/{userId}/{date}/food/{itemId}")
 =======
+=======
+>>>>>>> Stashed changes
     @DELETE("/api/nutrition/me/{date}/food/{itemId}")
 >>>>>>> Stashed changes
     suspend fun deleteFoodByItemId(
@@ -150,6 +156,7 @@ interface ApiService {
     suspend fun getUserProgress(@Path("userId") userId: String): UserProgressDto
 
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
     @POST("/api/user-progress")
     suspend fun createUserProgress(@Body progress: UserProgressDto): UserProgressDto
 
@@ -162,6 +169,11 @@ interface ApiService {
     @DELETE("/api/user-progress/{userId}")
     suspend fun deleteUserProgress(@Path("userId") userId: String): Unit
 
+=======
+    @PUT("/api/user-progress/me")
+    suspend fun updateUserProgress(@Body progress: UserProgressDto): UserProgressDto
+
+>>>>>>> Stashed changes
 =======
     @PUT("/api/user-progress/me")
     suspend fun updateUserProgress(@Body progress: UserProgressDto): UserProgressDto
