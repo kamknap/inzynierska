@@ -31,6 +31,7 @@ import kotlinx.coroutines.launch
 class UserMainActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigation: BottomNavigationView
+    private var isNavigating = false // Flaga zapobiegająca wielokrotnej nawigacji
 
     // 1. Launcher do zapytania o uprawnienia powiadomień
     private val requestPermissionLauncher = registerForActivityResult(
@@ -148,6 +149,11 @@ class UserMainActivity : AppCompatActivity() {
 
     private fun setupBottomNavigation() {
         bottomNavigation.setOnItemSelectedListener { item ->
+            // Zapobiegaj wielokrotnej nawigacji
+            if (isNavigating) {
+                return@setOnItemSelectedListener false
+            }
+            
             when (item.itemId) {
                 R.id.nav_diary -> {
                     loadFragment(UserDiaryFragment())
@@ -175,9 +181,24 @@ class UserMainActivity : AppCompatActivity() {
     }
 
     private fun loadFragment(fragment: Fragment) {
+        // Sprawdź czy już trwa transakcja
+        if (isNavigating) return
+        
+        // Sprawdź czy fragment tego samego typu już jest załadowany
+        val currentFragment = supportFragmentManager.findFragmentById(R.id.main_container)
+        if (currentFragment != null && currentFragment::class == fragment::class) {
+            return // Ten sam fragment już jest wyświetlany
+        }
+        
+        isNavigating = true
+        
         supportFragmentManager.commit {
             setReorderingAllowed(true)
             replace(R.id.main_container, fragment)
+            runOnCommit {
+                // Odblokuj nawigację po zakończeniu transakcji
+                isNavigating = false
+            }
         }
     }
 
