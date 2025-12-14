@@ -32,6 +32,8 @@ class UserMainActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigation: BottomNavigationView
     private var isNavigating = false // Flaga zapobiegająca wielokrotnej nawigacji
+    private var lastNavTime: Long = 0 // Czas ostatniego kliknięcia
+    private val NAV_DEBOUNCE_TIME = 300L // Czas blokady w ms (300ms jest optymalne)
     private var activeDialogs = mutableListOf<AlertDialog>() // Lista aktywnych dialogów
 
     // 1. Launcher do zapytania o uprawnienia powiadomień
@@ -157,145 +159,174 @@ class UserMainActivity : AppCompatActivity() {
 
     private fun setupBottomNavigation() {
         bottomNavigation.setOnItemSelectedListener { item ->
-            // Zapobiegaj wielokrotnej nawigacji lub nawigacji podczas wyświetlania dialogów
-            if (isNavigating || activeDialogs.isNotEmpty()) {
+            val currentTime = System.currentTimeMillis()
+
+            // ZABEZPIECZENIE 1: Sprawdź czas i flagę nawigacji
+            if (currentTime - lastNavTime < NAV_DEBOUNCE_TIME || isNavigating) {
                 return@setOnItemSelectedListener false
             }
             
-            when (item.itemId) {
-                R.id.nav_diary -> {
-                    loadFragment(UserDiaryFragment())
-                    true
-                }
-                R.id.nav_training -> {
-                    loadFragment(UserTrainingFragment())
-                    true
-                }
-                R.id.nav_weight -> {
-                    loadFragment(UserWeightFragment())
-                    true
-                }
-                R.id.nav_stats -> {
-                    loadFragment(UserProgressFragment())
-                    true
-                }
-                R.id.nav_profile -> {
-                    loadFragment(UserProfileFragment())
-                    true
-                }
-                else -> false
+            lastNavTime = currentTime // Aktualizuj czas
+
+            // Pobierz aktualny fragment, aby nie ładować tego samego
+            val currentFragment = supportFragmentManager.findFragmentById(R.id.main_container)
+
+            // ZABEZPIECZENIE 2: Nie przeładowuj, jeśli już tam jesteśmy
+            // (To zapobiega miganiu ekranu przy klikaniu w aktywną ikonę)
+            val selectedFragment = when (item.itemId) {
+                R.id.nav_diary -> UserDiaryFragment()
+                R.id.nav_training -> UserTrainingFragment()
+                R.id.nav_weight -> UserWeightFragment()
+                R.id.nav_stats -> UserProgressFragment()
+                R.id.nav_profile -> UserProfileFragment()
+                else -> null
             }
+
+            if (selectedFragment != null) {
+                // Sprawdzamy po klasie, czy to ten sam fragment
+                if (currentFragment != null && currentFragment::class == selectedFragment::class) {
+                    return@setOnItemSelectedListener true
+                }
+                
+                // Jeśli przeszliśmy wszystkie testy -> ładujemy
+                loadFragment(selectedFragment)
+                return@setOnItemSelectedListener true
+            }
+
+            false
         }
     }
 
     private fun loadFragment(fragment: Fragment) {
-        // Sprawdź czy już trwa transakcja
-        if (isNavigating) return
+        isNavigating = true // Blokujemy natychmiast
         
-        // Sprawdź czy fragment tego samego typu już jest załadowany
-        val currentFragment = supportFragmentManager.findFragmentById(R.id.main_container)
-        if (currentFragment != null && currentFragment::class == fragment::class) {
-            return // Ten sam fragment już jest wyświetlany
-        }
-        
-        isNavigating = true
-        
-        supportFragmentManager.commit {
-            setReorderingAllowed(true)
-            replace(R.id.main_container, fragment)
-            runOnCommit {
-                // Odblokuj nawigację po zakończeniu transakcji
-                isNavigating = false
+        try {
+            supportFragmentManager.commit {
+                setReorderingAllowed(true)
+                // Używamy animacji, żeby ukryć moment ładowania (opcjonalne)
+                setCustomAnimations(
+                    android.R.anim.fade_in, 
+                    android.R.anim.fade_out
+                )
+                replace(R.id.main_container, fragment)
+                runOnCommit {
+                    isNavigating = false // Odblokowujemy po zakończeniu
+                }
             }
+        } catch (e: Exception) {
+            // W razie błędu (np. activity destroyed) odblokuj flagę
+            isNavigating = false
+            e.printStackTrace()
         }
     }
 
     private fun showStreakDialog(days: Int, points: Int){
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.login_streak_dialog, null)
-        val tvDays = dialogView.findViewById<TextView>(R.id.tvStreakDays)
-        val tvPoints = dialogView.findViewById<TextView>(R.id.tvStreakPoints)
-        val btnClose = dialogView.findViewById<Button>(R.id.btnCloseDialog)
+        // ZABEZPIECZENIE: Nie pokazuj dialogu, jeśli aktywność umiera
+        if (isFinishing || isDestroyed) return
 
-        tvDays.text = "$days dni z rzędu!"
-        tvPoints.text = "Zdobyto +$points pkt"
+        try {
+            val dialogView = LayoutInflater.from(this).inflate(R.layout.login_streak_dialog, null)
+            val tvDays = dialogView.findViewById<TextView>(R.id.tvStreakDays)
+            val tvPoints = dialogView.findViewById<TextView>(R.id.tvStreakPoints)
+            val btnClose = dialogView.findViewById<Button>(R.id.btnCloseDialog)
 
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setCancelable(false)
-            .create()
+            tvDays.text = "$days dni z rzędu!"
+            tvPoints.text = "Zdobyto +$points pkt"
 
-        // Dodaj dialog do listy aktywnych
-        activeDialogs.add(dialog)
-        
-        dialog.setOnDismissListener {
-            // Usuń dialog z listy po zamknięciu
-            activeDialogs.remove(dialog)
+            val dialog = AlertDialog.Builder(this)
+                .setView(dialogView)
+                .setCancelable(false)
+                .create()
+
+            // Dodaj dialog do listy aktywnych
+            activeDialogs.add(dialog)
+            
+            dialog.setOnDismissListener {
+                // Usuń dialog z listy po zamknięciu
+                activeDialogs.remove(dialog)
+            }
+
+            btnClose.setOnClickListener {
+                dialog.dismiss()
+            }
+
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+            dialog.show()
+        } catch (e: Exception) {
+            Log.e("UserMainActivity", "Błąd wyświetlania dialogu streak: ${e.message}")
         }
-
-        btnClose.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-        dialog.show()
     }
 
     fun showLevelUpDialog() {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.level_up_dialog, null)
-        val btnOk = dialogView.findViewById<Button>(R.id.btnOkLevel)
+        // ZABEZPIECZENIE: Nie pokazuj dialogu, jeśli aktywność umiera
+        if (isFinishing || isDestroyed) return
 
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .create()
+        try {
+            val dialogView = LayoutInflater.from(this).inflate(R.layout.level_up_dialog, null)
+            val btnOk = dialogView.findViewById<Button>(R.id.btnOkLevel)
 
-        // Dodaj dialog do listy aktywnych
-        activeDialogs.add(dialog)
-        
-        dialog.setOnDismissListener {
-            // Usuń dialog z listy po zamknięciu
-            activeDialogs.remove(dialog)
+            val dialog = AlertDialog.Builder(this)
+                .setView(dialogView)
+                .create()
+
+            // Dodaj dialog do listy aktywnych
+            activeDialogs.add(dialog)
+            
+            dialog.setOnDismissListener {
+                // Usuń dialog z listy po zamknięciu
+                activeDialogs.remove(dialog)
+            }
+
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+            btnOk.setOnClickListener {
+                dialog.dismiss()
+            }
+
+            dialog.show()
+        } catch (e: Exception) {
+            Log.e("UserMainActivity", "Błąd wyświetlania dialogu level up: ${e.message}")
         }
-
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-
-        btnOk.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        dialog.show()
     }
 
     fun showChallengeCompleteDialog(challengeName: String, badgeName: String, points: Int) {
-        val dialogView = LayoutInflater.from(this).inflate(R.layout.challenge_complete_dialog, null)
+        // ZABEZPIECZENIE: Nie pokazuj dialogu, jeśli aktywność umiera
+        if (isFinishing || isDestroyed) return
 
-        val tvChallengeName = dialogView.findViewById<TextView>(R.id.tvChallengeName)
-        val tvBadgeName = dialogView.findViewById<TextView>(R.id.tvBadgeName)
-        val tvPoints = dialogView.findViewById<TextView>(R.id.tvPoints)
-        val btnOk = dialogView.findViewById<Button>(R.id.btnOk)
+        try {
+            val dialogView = LayoutInflater.from(this).inflate(R.layout.challenge_complete_dialog, null)
 
-        tvChallengeName.text = "Ukończono: $challengeName"
-        tvBadgeName.text = "Zdobyto odznakę: $badgeName"
-        tvPoints.text = "+$points pkt"
+            val tvChallengeName = dialogView.findViewById<TextView>(R.id.tvChallengeName)
+            val tvBadgeName = dialogView.findViewById<TextView>(R.id.tvBadgeName)
+            val tvPoints = dialogView.findViewById<TextView>(R.id.tvPoints)
+            val btnOk = dialogView.findViewById<Button>(R.id.btnOk)
 
-        val dialog = AlertDialog.Builder(this)
-            .setView(dialogView)
-            .setCancelable(false)
-            .create()
+            tvChallengeName.text = "Ukończono: $challengeName"
+            tvBadgeName.text = "Zdobyto odznakę: $badgeName"
+            tvPoints.text = "+$points pkt"
 
-        // Dodaj dialog do listy aktywnych
-        activeDialogs.add(dialog)
-        
-        dialog.setOnDismissListener {
-            // Usuń dialog z listy po zamknięciu
-            activeDialogs.remove(dialog)
+            val dialog = AlertDialog.Builder(this)
+                .setView(dialogView)
+                .setCancelable(false)
+                .create()
+
+            // Dodaj dialog do listy aktywnych
+            activeDialogs.add(dialog)
+            
+            dialog.setOnDismissListener {
+                // Usuń dialog z listy po zamknięciu
+                activeDialogs.remove(dialog)
+            }
+
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+            btnOk.setOnClickListener {
+                dialog.dismiss()
+            }
+
+            dialog.show()
+        } catch (e: Exception) {
+            Log.e("UserMainActivity", "Błąd wyświetlania dialogu challenge: ${e.message}")
         }
-
-        dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
-
-        btnOk.setOnClickListener {
-            dialog.dismiss()
-        }
-
-        dialog.show()
     }
 }

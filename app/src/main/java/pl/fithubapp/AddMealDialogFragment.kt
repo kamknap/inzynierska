@@ -53,10 +53,8 @@ class AddMealDialogFragment : DialogFragment() {
         if(result.contents != null){
             searchByBarcode(result.contents)
         }
-        else{
-            Toast.makeText(requireContext(), "Nie znaleziono kodu kreskowego", Toast.LENGTH_SHORT).show()
-        }
-
+        // Jeśli result.contents == null, użytkownik po prostu cofnął się ze skanera
+        // Nie pokazujemy żadnego toast-a w tym przypadku
     }
 
 
