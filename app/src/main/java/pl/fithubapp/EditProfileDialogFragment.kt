@@ -65,7 +65,7 @@ class EditProfileDialogFragment : DialogFragment() {
 
         setupClickListeners()
 
-        alertDialog = AlertDialog.Builder(requireContext())
+        alertDialog = AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
             .setTitle("Edytuj profil")
             .setView(view)
             .setPositiveButton("Zapisz", null) // Ustawione na null - obsługa niżej
@@ -213,7 +213,7 @@ class EditProfileDialogFragment : DialogFragment() {
         val currentValue = etSex.text.toString()
         val currentIndex = options.indexOf(currentValue).takeIf { it >= 0 } ?: 0
 
-        AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
             .setTitle("Płeć")
             .setSingleChoiceItems(options, currentIndex) { dialog, which ->
                 etSex.setText(options[which])
@@ -227,8 +227,18 @@ class EditProfileDialogFragment : DialogFragment() {
             minValue = min
             maxValue = max
             value = current
+            // Ustaw czarny kolor tekstu dla NumberPicker
+            try {
+                val selectorWheelPaintField = NumberPicker::class.java.getDeclaredField("mSelectorWheelPaint")
+                selectorWheelPaintField.isAccessible = true
+                val paint = selectorWheelPaintField.get(this) as? android.graphics.Paint
+                paint?.color = android.graphics.Color.parseColor("#212121") // text_primary color
+                paint?.textSize = 60f // zwiększ rozmiar czcionki dla lepszej widoczności
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
-        AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
             .setTitle(title)
             .setView(picker)
             .setPositiveButton("OK") { _, _ -> onSelected(picker.value) }

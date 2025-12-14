@@ -2,7 +2,8 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="@dimen/spacing_normal"
+    android:background="@color/background_secondary">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -15,9 +16,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Spersonalizuj aplikację"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp" />
+            style="@style/TextAppearance.Fithub.Headline2"
+            android:textColor="@color/purple_primary"
+            android:layout_marginBottom="@dimen/spacing_large" />
 
         <!-- 1. Cel główny (suwak 3-pozycyjny) -->
         <TextView
@@ -25,8 +26,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Cel główny"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            style="@style/TextAppearance.Fithub.Headline3"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="@dimen/spacing_small" />
 
         <!-- W UI pokażemy 3 etykiety pod suwakiem: Schudnąć | Utrzymać | Przytyć -->
         <SeekBar
@@ -35,30 +37,38 @@
             android:layout_height="wrap_content"
             android:max="2"
             android:progress="1"
-            android:layout_marginBottom="4dp" />
+            android:progressTint="@color/purple_primary"
+            android:thumbTint="@color/purple_primary"
+            android:layout_marginBottom="@dimen/spacing_tiny" />
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="horizontal"
             android:weightSum="3"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="@dimen/spacing_normal">
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Schudnąć"
+                style="@style/TextAppearance.Fithub.Caption"
+                android:textColor="@color/text_secondary"
                 android:textAlignment="viewStart"/>
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Utrzymać wagę"
+                style="@style/TextAppearance.Fithub.Caption"
+                android:textColor="@color/text_secondary"
                 android:textAlignment="center"/>
             <TextView
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
                 android:text="Przytyć"
+                style="@style/TextAppearance.Fithub.Caption"
+                android:textColor="@color/text_secondary"
                 android:textAlignment="viewEnd"/>
         </LinearLayout>
 
@@ -69,19 +79,23 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Waga docelowa"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            style="@style/TextAppearance.Fithub.Headline3"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="@dimen/spacing_small"
+            android:layout_marginTop="@dimen/spacing_normal" />
 
         <!-- Pole dla docelowej wagi -->
         <TextView
             android:id="@+id/tvTargetWeight"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="8dp"
+            android:layout_marginBottom="@dimen/spacing_medium"
             android:hint="Docelowa waga (kg)"
+            android:textColor="@color/text_primary"
+            android:textColorHint="@color/text_tertiary"
+            android:padding="@dimen/spacing_medium"
+            android:background="@color/white"
             android:inputType="numberDecimal" />
-
-
 
         <!-- 4. Poziom aktywności fizycznej (1–5) -->
         <TextView
@@ -89,14 +103,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Poziom aktywności fizycznej"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            style="@style/TextAppearance.Fithub.Headline3"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="@dimen/spacing_small"
+            android:layout_marginTop="@dimen/spacing_normal" />
 
         <Spinner
             android:id="@+id/spActivityLevel"
+            style="@style/Widget.Fithub.Spinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="@dimen/spacing_normal" />
 
 
 
@@ -106,15 +123,17 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Planowana częstotliwość wykonywania treningów"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            style="@style/TextAppearance.Fithub.Headline3"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="@dimen/spacing_small"
+            android:layout_marginTop="@dimen/spacing_normal" />
 
         <Spinner
             android:id="@+id/spTrainingFrequency"
+            style="@style/Widget.Fithub.Spinner"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp" />
-        <!-- np. entries: ["0 dni/tydz.", "1", ..., "7"] -->
+            android:layout_marginBottom="@dimen/spacing_normal" />
 
         <!-- 7. Powiadomienia -->
         <TextView
@@ -122,38 +141,50 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Powiadomienia"
-            android:textStyle="bold"
-            android:layout_marginBottom="8dp" />
+            style="@style/TextAppearance.Fithub.Headline3"
+            android:textColor="@color/text_primary"
+            android:layout_marginBottom="@dimen/spacing_small"
+            android:layout_marginTop="@dimen/spacing_normal" />
 
         <CheckBox
             android:id="@+id/cbNotifyMeals"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Przypomnienia o posiłkach"
-            android:layout_marginBottom="4dp" />
+            style="@style/TextAppearance.Fithub.Body1"
+            android:textColor="@color/text_primary"
+            android:buttonTint="@color/green_success"
+            android:layout_marginBottom="@dimen/spacing_small" />
 
         <CheckBox
             android:id="@+id/cbNotifyTraining"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Przypomnienia o treningach"
-            android:layout_marginBottom="4dp" />
+            style="@style/TextAppearance.Fithub.Body1"
+            android:textColor="@color/text_primary"
+            android:buttonTint="@color/blue_info"
+            android:layout_marginBottom="@dimen/spacing_small" />
 
         <CheckBox
             android:id="@+id/cbNotifyWeighIn"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Przypomnienia o ważeniu (1×/tydz.)"
-            android:layout_marginBottom="16dp" />
+            style="@style/TextAppearance.Fithub.Body1"
+            android:textColor="@color/text_primary"
+            android:buttonTint="@color/purple_primary"
+            android:layout_marginBottom="@dimen/spacing_normal" />
 
         <!-- Przycisk zatwierdzający -->
         <Button
             android:id="@+id/btnConfirmGoals"
+            style="@style/Widget.Fithub.Button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Zapisz i przejdź dalej"
-            android:layout_marginTop="8dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginTop="@dimen/spacing_large"
+            android:layout_marginBottom="@dimen/spacing_normal" />
 
     </LinearLayout>
 </ScrollView>

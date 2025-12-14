@@ -81,23 +81,21 @@ class LoginActivity : AppCompatActivity() {
     }
 
     private fun updateUIMode() {
-        val tvPasswordConfirmLabel = findViewById<TextView>(R.id.tvPasswordConfirmLabel)
+        val tilPasswordConfirm = findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.tilPasswordConfirm)
         
         if (isLoginMode) {
             // Tryb logowania
             etPasswordConfirm.visibility = View.GONE
-            tvPasswordConfirmLabel.visibility = View.GONE
+            tilPasswordConfirm.visibility = View.GONE
             btnLogin.text = "Zaloguj się"
             btnRegister.text = "Nie masz konta? Zarejestruj się"
-            tvToggleMode.text = "Przejdź do rejestracji"
             tvForgotPassword.visibility = View.VISIBLE
         } else {
             // Tryb rejestracji
             etPasswordConfirm.visibility = View.VISIBLE
-            tvPasswordConfirmLabel.visibility = View.VISIBLE
+            tilPasswordConfirm.visibility = View.VISIBLE
             btnLogin.text = "Masz już konto? Zaloguj się"
             btnRegister.text = "Zarejestruj się"
-            tvToggleMode.text = "Przejdź do logowania"
             tvForgotPassword.visibility = View.GONE
         }
     }

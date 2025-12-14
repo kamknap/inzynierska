@@ -44,7 +44,7 @@ class EditGoalsDialogFragment : DialogFragment() {
 
         etTargetWeight.setOnClickListener { showWeightPicker() }
 
-        alertDialog = AlertDialog.Builder(requireContext())
+        alertDialog = AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
             .setTitle("Edytuj cele")
             .setView(view)
             .setPositiveButton("Zapisz", null)
@@ -64,14 +64,14 @@ class EditGoalsDialogFragment : DialogFragment() {
     private fun setupSpinners() {
         // Typ celu
         val goalTypes = arrayOf("Schudnąć", "Utrzymać", "Przytyć")
-        spGoalType.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, goalTypes).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spGoalType.adapter = ArrayAdapter(requireContext(), R.layout.spinner_item, goalTypes).apply {
+            setDropDownViewResource(R.layout.spinner_dropdown_item)
         }
 
         // Częstotliwość treningów
         val frequencies = (0..7).map { "$it dni/tydz." }
-        spTrainingFrequency.adapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, frequencies).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spTrainingFrequency.adapter = ArrayAdapter(requireContext(), R.layout.spinner_item, frequencies).apply {
+            setDropDownViewResource(R.layout.spinner_dropdown_item)
         }
     }
 
@@ -143,8 +143,18 @@ class EditGoalsDialogFragment : DialogFragment() {
             minValue = 30
             maxValue = 200
             value = etTargetWeight.text.toString().toIntOrNull() ?: 70
+            // Ustaw czarny kolor tekstu dla NumberPicker
+            try {
+                val selectorWheelPaintField = NumberPicker::class.java.getDeclaredField("mSelectorWheelPaint")
+                selectorWheelPaintField.isAccessible = true
+                val paint = selectorWheelPaintField.get(this) as? android.graphics.Paint
+                paint?.color = android.graphics.Color.parseColor("#212121") // text_primary color
+                paint?.textSize = 60f // zwiększ rozmiar czcionki dla lepszej widoczności
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
         }
-        AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
             .setTitle("Waga docelowa")
             .setView(picker)
             .setPositiveButton("OK") { _, _ ->

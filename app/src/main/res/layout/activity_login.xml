@@ -6,13 +6,13 @@
     android:layout_height="match_parent"
     android:fillViewport="true"
     android:fitsSystemWindows="true"
-    android:background="@android:color/white">
+    android:background="@color/background_secondary">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="24dp"
+        android:padding="@dimen/spacing_large"
         android:gravity="center_horizontal">
 
         <!-- Logo/Tytuł -->
@@ -20,80 +20,86 @@
             android:id="@+id/tvTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="FitHub"
-            android:textSize="36sp"
-            android:textStyle="bold"
-            android:textColor="@color/purple_700"
-            android:layout_marginTop="48dp" />
+            android:text="FitHubApp"
+            style="@style/TextAppearance.Fithub.Headline1"
+            android:textColor="@color/purple_primary"
+            android:textSize="42sp"
+            android:layout_marginTop="@dimen/spacing_xxlarge" />
 
         <TextView
             android:id="@+id/tvSubtitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Zaloguj się lub utwórz konto"
-            android:textSize="16sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="8dp" />
+            style="@style/TextAppearance.Fithub.Body1"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="@dimen/spacing_small" />
 
         <!-- Email Input -->
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilEmail"
+            style="@style/Widget.Fithub.TextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Adres email"
-            android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="48dp" />
+            android:layout_marginTop="@dimen/spacing_xxlarge"
+            android:hint="Adres email"
+            app:startIconDrawable="@android:drawable/ic_dialog_email"
+            app:startIconTint="@color/purple_primary">
 
-        <EditText
-            android:id="@+id/etEmail"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textEmailAddress"
-            android:maxLines="1"
-            android:padding="12dp"
-            android:background="@android:drawable/edit_text"
-            android:hint="email@example.com" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etEmail"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textEmailAddress"
+                android:maxLines="1"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_tertiary" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Password Input -->
-        <TextView
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilPassword"
+            style="@style/Widget.Fithub.TextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Hasło"
-            android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="16dp" />
+            android:layout_marginTop="@dimen/spacing_normal"
+            android:hint="Hasło"
+            app:startIconDrawable="@android:drawable/ic_lock_lock"
+            app:startIconTint="@color/purple_primary"
+            app:endIconMode="password_toggle">
 
-        <EditText
-            android:id="@+id/etPassword"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPassword"
-            android:maxLines="1"
-            android:padding="12dp"
-            android:background="@android:drawable/edit_text"
-            android:hint="••••••••" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etPassword"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:maxLines="1"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_tertiary" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Password Confirm Input (dla rejestracji) -->
-        <TextView
-            android:id="@+id/tvPasswordConfirmLabel"
+        <com.google.android.material.textfield.TextInputLayout
+            android:id="@+id/tilPasswordConfirm"
+            style="@style/Widget.Fithub.TextInputLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Potwierdź hasło"
-            android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginTop="16dp"
-            android:visibility="gone" />
+            android:layout_marginTop="@dimen/spacing_normal"
+            android:hint="Potwierdź hasło"
+            android:visibility="gone"
+            app:startIconDrawable="@android:drawable/ic_lock_lock"
+            app:startIconTint="@color/purple_primary"
+            app:endIconMode="password_toggle">
 
-        <EditText
-            android:id="@+id/etPasswordConfirm"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:inputType="textPassword"
-            android:maxLines="1"
-            android:padding="12dp"
-            android:background="@android:drawable/edit_text"
-            android:hint="••••••••"
-            android:visibility="gone" />
+            <com.google.android.material.textfield.TextInputEditText
+                android:id="@+id/etPasswordConfirm"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:inputType="textPassword"
+                android:maxLines="1"
+                android:textColor="@color/text_primary"
+                android:textColorHint="@color/text_tertiary" />
+        </com.google.android.material.textfield.TextInputLayout>
 
         <!-- Forgot Password -->
         <TextView
@@ -101,30 +107,32 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Nie pamiętam hasła"
-            android:textColor="@color/purple_700"
-            android:padding="8dp"
+            style="@style/TextAppearance.Fithub.Body2"
+            android:textColor="@color/purple_primary"
+            android:padding="@dimen/spacing_small"
             android:layout_gravity="end"
-            android:layout_marginTop="8dp" />
+            android:layout_marginTop="@dimen/spacing_small"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless" />
 
         <!-- Login Button -->
         <Button
             android:id="@+id/btnLogin"
+            style="@style/Widget.Fithub.Button"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Zaloguj się"
-            android:textSize="16sp"
-            android:padding="12dp"
-            android:layout_marginTop="24dp" />
+            android:layout_marginTop="@dimen/spacing_large" />
 
         <!-- Register Button -->
         <Button
             android:id="@+id/btnRegister"
+            style="@style/Widget.Fithub.Button.Success"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Zarejestruj się"
-            android:textSize="16sp"
-            android:padding="12dp"
-            android:layout_marginTop="12dp" />
+            android:layout_marginTop="@dimen/spacing_medium" />
 
         <!-- Toggle Mode Text -->
         <TextView
@@ -132,17 +140,22 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Przejdź do rejestracji"
-            android:textColor="@color/purple_700"
-            android:padding="16dp"
-            android:layout_marginTop="16dp" />
+            style="@style/TextAppearance.Fithub.Body1"
+            android:textColor="@color/purple_primary"
+            android:padding="@dimen/spacing_normal"
+            android:layout_marginTop="@dimen/spacing_normal"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackgroundBorderless" />
 
         <!-- Progress Bar -->
         <ProgressBar
             android:id="@+id/progressBar"
+            style="@style/Widget.Fithub.ProgressBar.Circular"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:visibility="gone"
-            android:layout_marginTop="24dp" />
+            android:layout_marginTop="@dimen/spacing_large" />
 
     </LinearLayout>
 

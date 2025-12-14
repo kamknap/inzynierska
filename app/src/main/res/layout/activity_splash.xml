@@ -4,7 +4,7 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:fitsSystemWindows="true"
-    android:background="@color/purple_700"
+    android:background="@color/purple_primary"
     android:gravity="center">
 
     <LinearLayout
@@ -20,25 +20,34 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="FitHub"
-            android:textSize="48sp"
-            android:textColor="@android:color/white"
-            android:textStyle="bold" />
+            android:textSize="56sp"
+            android:textColor="@color/white"
+            android:textStyle="bold"
+            android:letterSpacing="0.05" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Twój asystent fitness"
+            style="@style/TextAppearance.Fithub.Body1"
+            android:textColor="@color/purple_primary_lighter"
+            android:layout_marginTop="@dimen/spacing_small" />
 
         <!-- Progress indicator -->
         <ProgressBar
             android:id="@+id/progressBar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:indeterminateTint="@android:color/white"
-            android:layout_marginTop="32dp" />
+            android:indeterminateTint="@color/white"
+            android:layout_marginTop="@dimen/spacing_xlarge" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Ładowanie..."
-            android:textColor="@android:color/white"
-            android:textSize="16sp"
-            android:layout_marginTop="16dp" />
+            style="@style/TextAppearance.Fithub.Body2"
+            android:textColor="@color/white"
+            android:layout_marginTop="@dimen/spacing_normal" />
 
     </LinearLayout>
 

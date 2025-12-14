@@ -26,7 +26,7 @@
         <activity
             android:name=".SplashActivity"
             android:exported="true"
-            android:theme="@style/Theme.AppCompat.NoActionBar">
+            android:theme="@style/Theme.Fithub.Splash">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
@@ -37,13 +37,14 @@
         <activity
             android:name=".LoginActivity"
             android:exported="false"
-            android:theme="@style/Theme.AppCompat.Light.NoActionBar">
+            android:theme="@style/Theme.Fithub">
         </activity>
 
         <!-- OnboardingActivity - Proces onboardingu -->
         <activity
             android:name=".OnboardingActivity"
-            android:exported="false">
+            android:exported="false"
+            android:theme="@style/Theme.Fithub">
         </activity>
 
         <!-- UserMainActivity - Główna aplikacja -->
