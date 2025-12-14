@@ -32,6 +32,7 @@ class UserMainActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigation: BottomNavigationView
     private var isNavigating = false // Flaga zapobiegająca wielokrotnej nawigacji
+    private var activeDialogs = mutableListOf<AlertDialog>() // Lista aktywnych dialogów
 
     // 1. Launcher do zapytania o uprawnienia powiadomień
     private val requestPermissionLauncher = registerForActivityResult(
@@ -144,13 +145,20 @@ class UserMainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
+        // Zamknij wszystkie aktywne dialogi przed zniszczeniem Activity
+        activeDialogs.forEach { dialog ->
+            if (dialog.isShowing) {
+                dialog.dismiss()
+            }
+        }
+        activeDialogs.clear()
         ChallengeManager.onChallengeCompleted = null
     }
 
     private fun setupBottomNavigation() {
         bottomNavigation.setOnItemSelectedListener { item ->
-            // Zapobiegaj wielokrotnej nawigacji
-            if (isNavigating) {
+            // Zapobiegaj wielokrotnej nawigacji lub nawigacji podczas wyświetlania dialogów
+            if (isNavigating || activeDialogs.isNotEmpty()) {
                 return@setOnItemSelectedListener false
             }
             
@@ -216,6 +224,14 @@ class UserMainActivity : AppCompatActivity() {
             .setCancelable(false)
             .create()
 
+        // Dodaj dialog do listy aktywnych
+        activeDialogs.add(dialog)
+        
+        dialog.setOnDismissListener {
+            // Usuń dialog z listy po zamknięciu
+            activeDialogs.remove(dialog)
+        }
+
         btnClose.setOnClickListener {
             dialog.dismiss()
         }
@@ -231,6 +247,14 @@ class UserMainActivity : AppCompatActivity() {
         val dialog = AlertDialog.Builder(this)
             .setView(dialogView)
             .create()
+
+        // Dodaj dialog do listy aktywnych
+        activeDialogs.add(dialog)
+        
+        dialog.setOnDismissListener {
+            // Usuń dialog z listy po zamknięciu
+            activeDialogs.remove(dialog)
+        }
 
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 
@@ -257,6 +281,14 @@ class UserMainActivity : AppCompatActivity() {
             .setView(dialogView)
             .setCancelable(false)
             .create()
+
+        // Dodaj dialog do listy aktywnych
+        activeDialogs.add(dialog)
+        
+        dialog.setOnDismissListener {
+            // Usuń dialog z listy po zamknięciu
+            activeDialogs.remove(dialog)
+        }
 
         dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
 

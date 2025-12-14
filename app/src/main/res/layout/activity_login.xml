@@ -134,20 +134,6 @@
             android:text="Zarejestruj się"
             android:layout_marginTop="@dimen/spacing_medium" />
 
-        <!-- Toggle Mode Text -->
-        <TextView
-            android:id="@+id/tvToggleMode"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Przejdź do rejestracji"
-            style="@style/TextAppearance.Fithub.Body1"
-            android:textColor="@color/purple_primary"
-            android:padding="@dimen/spacing_normal"
-            android:layout_marginTop="@dimen/spacing_normal"
-            android:clickable="true"
-            android:focusable="true"
-            android:background="?attr/selectableItemBackgroundBorderless" />
-
         <!-- Progress Bar -->
         <ProgressBar
             android:id="@+id/progressBar"

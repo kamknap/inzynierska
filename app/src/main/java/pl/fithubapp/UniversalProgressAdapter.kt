@@ -67,11 +67,11 @@ class UniversalProgressAdapter(
             desc.text = item.dto.desc
 
             val iconResId = when (item.dto.type) {
-                ChallengeType.STREAK -> android.R.drawable.ic_menu_my_calendar
-                ChallengeType.MEAL_COUNT -> android.R.drawable.ic_menu_camera
-                ChallengeType.WEIGHT_LOSS -> android.R.drawable.ic_menu_sort_by_size
-                ChallengeType.TRAINING_COUNT -> android.R.drawable.ic_menu_compass
-                ChallengeType.TRAINING_PLAN_COUNT -> android.R.drawable.ic_menu_agenda
+                ChallengeType.STREAK -> R.drawable.ic_fire
+                ChallengeType.MEAL_COUNT -> R.drawable.ic_food
+                ChallengeType.WEIGHT_LOSS -> R.drawable.ic_weight
+                ChallengeType.TRAINING_COUNT -> R.drawable.ic_training
+                ChallengeType.TRAINING_PLAN_COUNT -> R.drawable.ic_plan
             }
 
             icon.setImageResource(iconResId)

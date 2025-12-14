@@ -23,7 +23,6 @@ class LoginActivity : AppCompatActivity() {
     private lateinit var etPasswordConfirm: EditText
     private lateinit var btnLogin: Button
     private lateinit var btnRegister: Button
-    private lateinit var tvToggleMode: TextView
     private lateinit var tvForgotPassword: TextView
     private lateinit var progressBar: ProgressBar
 
@@ -44,7 +43,6 @@ class LoginActivity : AppCompatActivity() {
         etPasswordConfirm = findViewById(R.id.etPasswordConfirm)
         btnLogin = findViewById(R.id.btnLogin)
         btnRegister = findViewById(R.id.btnRegister)
-        tvToggleMode = findViewById(R.id.tvToggleMode)
         tvForgotPassword = findViewById(R.id.tvForgotPassword)
         progressBar = findViewById(R.id.progressBar)
     }
@@ -64,10 +62,6 @@ class LoginActivity : AppCompatActivity() {
             } else {
                 performRegistration()
             }
-        }
-
-        tvToggleMode.setOnClickListener {
-            toggleMode()
         }
 
         tvForgotPassword.setOnClickListener {
