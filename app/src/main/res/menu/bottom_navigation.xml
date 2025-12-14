@@ -3,22 +3,26 @@
 
     <item
         android:id="@+id/nav_diary"
-        android:icon="@drawable/diary_icon"
+        android:icon="@drawable/ic_diary"
         android:title="Dziennik" />
 
     <item
         android:id="@+id/nav_training"
+        android:icon="@drawable/ic_training"
         android:title="Trening" />
 
     <item
         android:id="@+id/nav_weight"
+        android:icon="@drawable/ic_weight"
         android:title="Waga" />
 
     <item
         android:id="@+id/nav_stats"
+        android:icon="@drawable/ic_progress"
         android:title="Statystyki" />
 
     <item
         android:id="@+id/nav_profile"
+        android:icon="@drawable/ic_settings"
         android:title="Profil" />
 </menu>

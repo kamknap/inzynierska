@@ -1,152 +1,204 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:padding="16dp">
+    android:padding="@dimen/spacing_normal"
+    android:background="@color/background_secondary">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical">
 
-    <TextView
-        android:id="@+id/textView"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Waga"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp"/>
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cvCurrentWeight"
+        <!-- Nagłówek -->
+        <TextView
+            android:id="@+id/tvTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
+            android:text="Monitorowanie wagi"
+            style="@style/TextAppearance.Fithub.Headline2"
+            android:textColor="@color/purple_primary"
+            android:layout_marginBottom="@dimen/spacing_normal" />
+
+        <!-- Karta: Obecna waga -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvCurrentWeight"
+            style="@style/Widget.Fithub.CardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_normal">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Aktualna waga i cel"
+                    style="@style/TextAppearance.Fithub.Caption"
+                    android:textColor="@color/text_tertiary"
+                    android:layout_marginBottom="@dimen/spacing_tiny" />
 
                 <TextView
                     android:id="@+id/tvCurrentWeight"
-                    android:layout_width="0dp"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
                     android:text="Obecna waga: "
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    style="@style/TextAppearance.Fithub.Body1"
+                    android:textColor="@color/text_primary" />
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- Karta: Dodaj pomiar -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cvAddWeight"
+            style="@style/Widget.Fithub.CardView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="@dimen/spacing_normal">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:layout_marginBottom="8dp">
+                android:gravity="center_vertical">
 
-                <TextView
-                    android:id="@+id/tvAddWeight"
+                <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
-                    android:text="Dodaj nowy pomiar"
-                    android:textSize="18sp"
-                    android:textStyle="bold" />
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Dodaj nowy pomiar"
+                        style="@style/TextAppearance.Fithub.Body1"
+                        android:textStyle="bold"
+                        android:textColor="@color/text_primary" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Regularnie śledź swoją wagę"
+                        style="@style/TextAppearance.Fithub.Caption"
+                        android:textColor="@color/text_tertiary"
+                        android:layout_marginTop="@dimen/spacing_tiny" />
+
+                </LinearLayout>
 
                 <ImageButton
                     android:id="@+id/btnAddWeight"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:src="@android:drawable/ic_input_add"
-                    android:scaleType="centerInside"
-                    />
+                    android:layout_width="@dimen/icon_size_xlarge"
+                    android:layout_height="@dimen/icon_size_xlarge"
+                    android:background="@drawable/bg_button_add_meal"
+                    android:src="@drawable/ic_add_white"
+                    android:contentDescription="Dodaj pomiar wagi"
+                    android:scaleType="center"
+                    android:padding="@dimen/spacing_medium"
+                    android:layout_marginStart="@dimen/spacing_small" />
+
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- Karta: Postęp -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cvProgress"
+            style="@style/Widget.Fithub.CardView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="@dimen/spacing_normal">
 
-            <TextView
-                android:id="@+id/tvProgress"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:text="Progress"
-                android:textSize="18sp"
-                android:textStyle="bold" />
-        </androidx.cardview.widget.CardView>
-
-        <androidx.cardview.widget.CardView
-            android:id="@+id/cvRange"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
-
-            <!-- Główny kontener z orientacją pionową -->
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="8dp">
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Postęp w osiąganiu celu"
+                    style="@style/TextAppearance.Fithub.Caption"
+                    android:textColor="@color/text_tertiary"
+                    android:layout_marginBottom="@dimen/spacing_tiny" />
+
+                <TextView
+                    android:id="@+id/tvProgress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Progress"
+                    style="@style/TextAppearance.Fithub.Body1"
+                    android:textColor="@color/green_success" />
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+
+        <!-- Karta: Zakres wykresu -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvRange"
+            style="@style/Widget.Fithub.CardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_normal">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Zakres czasowy wykresu"
+                    style="@style/TextAppearance.Fithub.Body1"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="@dimen/spacing_small" />
 
                 <!-- Pierwszy rząd przycisków -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="8dp">
+                    android:layout_marginBottom="@dimen/spacing_small">
 
                     <Button
                         android:id="@+id/btnRangeAll"
-                        style="?android:attr/buttonBarButtonStyle"
+                        style="@style/Widget.Fithub.Button.Outlined"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Od początku"
-                        android:textSize="13sp"
-                        android:padding="8dp"
-                        />
+                        android:text="Wszystko"
+                        android:textSize="10sp"
+                        android:layout_marginEnd="@dimen/spacing_tiny" />
 
                     <Button
                         android:id="@+id/btnRangeYear"
-                        style="?android:attr/buttonBarButtonStyle"
+                        style="@style/Widget.Fithub.Button.Outlined"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Os. rok"
-                        android:textSize="13sp"
-                        android:padding="8dp"
-                        />
+                        android:text="Rok"
+                        android:textSize="12sp"
+                        android:layout_marginStart="@dimen/spacing_tiny"
+                        android:layout_marginEnd="@dimen/spacing_tiny" />
 
                     <Button
                         android:id="@+id/btnRangeSixMonths"
-                        style="?android:attr/buttonBarButtonStyle"
+                        style="@style/Widget.Fithub.Button.Outlined"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="6 mies."
-                        android:textSize="13sp"
-                        android:padding="8dp"
-                        />
+                        android:textSize="12sp"
+                        android:layout_marginStart="@dimen/spacing_tiny" />
                 </LinearLayout>
 
-<!--                 Drugi rząd przycisków -->
+                <!-- Drugi rząd przycisków -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
@@ -154,94 +206,98 @@
 
                     <Button
                         android:id="@+id/btnRangeThreeMonths"
-                        style="?android:attr/buttonBarButtonStyle"
+                        style="@style/Widget.Fithub.Button.Outlined"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="3 mies."
-                        android:textSize="13sp"
-                        android:padding="8dp" />
+                        android:textSize="12sp"
+                        android:layout_marginEnd="@dimen/spacing_tiny" />
 
                     <Button
                         android:id="@+id/btnRangeMonth"
-                        style="?android:attr/buttonBarButtonStyle"
+                        style="@style/Widget.Fithub.Button.Outlined"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Miesiąc"
-                        android:textSize="13sp"
-                        android:padding="8dp" />
+                        android:textSize="12sp"
+                        android:layout_marginStart="@dimen/spacing_tiny"
+                        android:layout_marginEnd="@dimen/spacing_tiny" />
 
                     <Button
                         android:id="@+id/btnRangeWeek"
-                        style="?android:attr/buttonBarButtonStyle"
+                        style="@style/Widget.Fithub.Button.Outlined"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Tydzień"
-                        android:textSize="13sp"
-                        android:padding="8dp" />
+                        android:textSize="12sp"
+                        android:layout_marginStart="@dimen/spacing_tiny" />
                 </LinearLayout>
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- Karta: Wykres -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cvGraph"
+            style="@style/Widget.Fithub.CardView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="@dimen/spacing_normal">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/tvGraph"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textSize="18sp"
+                    android:text="Wykres zmian wagi"
+                    style="@style/TextAppearance.Fithub.Body1"
                     android:textStyle="bold"
-                    android:text="Wykres zmian wagi w czasie"
-                    android:layout_marginBottom="8dp"/>
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="@dimen/spacing_small" />
 
                 <pl.fithubapp.WeightChartView
                     android:id="@+id/weightChartView"
                     android:layout_width="match_parent"
                     android:layout_height="300dp"
-                    android:background="#FFFFFF"/>
+                    android:background="@color/white" />
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>
 
+        <!-- Karta: Historia -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cvHistory"
+            style="@style/Widget.Fithub.CardView"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="16dp">
+            android:layout_marginBottom="@dimen/spacing_normal">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical"
-                android:padding="16dp">
+                android:orientation="vertical">
 
                 <TextView
-                    android:id="@+id/tvHistoryTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Historia zmian wagi"
-                    android:textSize="18sp"
+                    android:text="Historia pomiarów"
+                    style="@style/TextAppearance.Fithub.Body1"
                     android:textStyle="bold"
-                    android:layout_marginBottom="8dp" />
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="@dimen/spacing_small" />
 
                 <androidx.recyclerview.widget.RecyclerView
                     android:id="@+id/rvWeightHistory"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:nestedScrollingEnabled="false" />
+                    android:nestedScrollingEnabled="false"
+                    android:overScrollMode="never" />
 
             </LinearLayout>
         </androidx.cardview.widget.CardView>

@@ -4,17 +4,13 @@ import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.text.Editable
-import android.text.InputType
 import android.text.TextWatcher
 import android.util.Log
-import android.view.Gravity
 import androidx.fragment.app.Fragment
 import android.view.View
 import android.view.inputmethod.InputMethodManager
 import android.widget.Button
-import android.widget.EditText
 import android.widget.ImageButton
-import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.lifecycle.lifecycleScope
@@ -195,85 +191,41 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
     }
 
     private fun showAddWeightDialog() {
-        val dialogLayout = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(48, 24, 48, 24)
-        }
+        val view = layoutInflater.inflate(R.layout.dialog_add_weight, null)
+        
+        val etWeight = view.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etWeight)
+        val tvDate = view.findViewById<TextView>(R.id.tvDate)
 
-        val inputLayout = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-        }
+        // Ustaw aktualną datę
+        val currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
+        tvDate.text = currentDate
 
-        val etWeight = EditText(requireContext()).apply {
-            hint = "Waga"
-            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-            setText("")
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+        // Walidacja do 1 kropki i jednej cyfry po kropce
+        etWeight.addTextChangedListener(object : TextWatcher {
+            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
 
-            // walidacja do 1 kropki i jednej cyfry po kropce
-            addTextChangedListener(object : TextWatcher {
-                override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
+            override fun afterTextChanged(s: Editable?) {
+                val text = s.toString()
 
-                override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {}
+                if (text.contains(".")) {
+                    val parts = text.split(".")
 
-                override fun afterTextChanged(s: Editable?) {
-                    val text = s.toString()
+                    if (parts.size > 2) {
+                        s?.delete(text.length - 1, text.length)
+                        return
+                    }
 
-                    if (text.contains(".")) {
-                        val parts = text.split(".")
-
-                        if (parts.size > 2) {
-                            s?.delete(text.length - 1, text.length)
-                            return
-                        }
-
-                        if (parts.size == 2 && parts[1].length > 1) {
-                            s?.delete(text.length - 1, text.length)
-                            return
-                        }
+                    if (parts.size == 2 && parts[1].length > 1) {
+                        s?.delete(text.length - 1, text.length)
+                        return
                     }
                 }
-            })
-        }
+            }
+        })
 
-        val unitTextView = TextView(requireContext()).apply {
-            text = " kg"
-            textSize = 18F
-            setPadding(8, 0, 0, 0)
-        }
-
-        inputLayout.addView(etWeight)
-        inputLayout.addView(unitTextView)
-
-        val dateLayout = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-            setPadding(0, 16, 0, 0)
-        }
-
-        val tvDateLabel = TextView(requireContext()).apply {
-            text = "Data pomiaru: "
-            textSize = 16F
-        }
-
-        val currentDate = LocalDate.now().format(DateTimeFormatter.ofPattern("dd.MM.yyyy"))
-        val etDate = TextView(requireContext()).apply {
-            text = currentDate
-            textSize = 16F
-            setPadding(8, 0, 0, 0)
-            setTextColor(resources.getColor(android.R.color.holo_blue_dark, null))
-        }
-
-        dateLayout.addView(tvDateLabel)
-        dateLayout.addView(etDate)
-
-        dialogLayout.addView(inputLayout)
-        dialogLayout.addView(dateLayout)
-
-        val dialog = AlertDialog.Builder(requireContext())
-            .setTitle("Dodaj pomiar wagi")
-            .setView(dialogLayout)
+        val dialog = AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
+            .setView(view)
             .setPositiveButton("Dodaj") { _, _ ->
                 val weight = etWeight.text.toString().toDoubleOrNull()
 
@@ -409,12 +361,14 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
             btnRangeMonth,
             btnRangeWeek
         ).forEach { button ->
+            // Przywróć styl Outlined dla niewybranych
             button.setBackgroundColor(resources.getColor(android.R.color.transparent, null))
-            button.setTextColor(resources.getColor(android.R.color.black, null))
+            button.setTextColor(resources.getColor(R.color.purple_primary, null))
         }
 
-        selectedButton.setBackgroundColor(resources.getColor(android.R.color.holo_blue_light, null))
-        selectedButton.setTextColor(resources.getColor(android.R.color.white, null))
+        // Zastosuj styl filled dla wybranego
+        selectedButton.setBackgroundColor(resources.getColor(R.color.purple_primary, null))
+        selectedButton.setTextColor(resources.getColor(R.color.white, null))
     }
     private fun updateChartRange() {
         val filteredData = filterDataByRange(fullHistoryList, currentRange)

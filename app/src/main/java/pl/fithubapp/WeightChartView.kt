@@ -3,6 +3,8 @@ package pl.fithubapp
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Color
+import android.graphics.LinearGradient
+import android.graphics.Shader
 import android.util.AttributeSet
 import android.view.View
 import pl.fithubapp.data.UserWeightHistoryDto
@@ -28,31 +30,42 @@ class WeightChartView @JvmOverloads constructor(
     )
 
     private val axisPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.DKGRAY
-        strokeWidth = dp(2f)
+        color = context.getColor(R.color.divider)
+        strokeWidth = dp(1.5f)
     }
 
     private val linePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#3F51B5")
+        color = context.getColor(R.color.purple_primary)
         strokeWidth = dp(3f)
         style = Paint.Style.STROKE
     }
 
     private val pointPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
-        color = Color.parseColor("#FF5722")
+        color = context.getColor(R.color.green_success)
+        style = Paint.Style.FILL
+    }
+
+    private val pointStrokePaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
+        color = context.getColor(R.color.white)
+        strokeWidth = dp(2f)
+        style = Paint.Style.STROKE
+    }
+
+    private val gradientPaint = Paint(Paint.ANTI_ALIAS_FLAG).apply {
         style = Paint.Style.FILL
     }
 
     private val labelPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
         textSize = sp(11f)
-        color = Color.DKGRAY
+        color = context.getColor(R.color.text_secondary)
         textAlign = Paint.Align.CENTER
     }
 
     private val weightPaint = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-        textSize = sp(11f)
-        color = Color.BLACK
+        textSize = sp(12f)
+        color = context.getColor(R.color.text_primary)
         textAlign = Paint.Align.CENTER
+        isFakeBoldText = true
     }
 
     // Marginesy
@@ -106,6 +119,33 @@ class WeightChartView @JvmOverloads constructor(
         canvas.drawLine(leftPadding, topPadding, leftPadding, bottomY, axisPaint)
         canvas.drawLine(leftPadding, bottomY, width - rightPadding, bottomY, axisPaint)
 
+        // Gradient pod linią
+        val gradientPath = Path()
+        parsedData.forEachIndexed { index, point ->
+            val x = leftPadding + (index.toFloat() / (parsedData.size - 1).coerceAtLeast(1)) * chartWidth
+            val y = topPadding + (1f - (point.weight - minWeight) / weightRange) * chartHeight
+            if (index == 0) {
+                gradientPath.moveTo(x, y)
+            } else {
+                gradientPath.lineTo(x, y)
+            }
+        }
+        // Zamknij ścieżkę do dołu
+        val lastX = leftPadding + chartWidth
+        gradientPath.lineTo(lastX, bottomY)
+        gradientPath.lineTo(leftPadding, bottomY)
+        gradientPath.close()
+
+        // Ustaw gradient
+        gradientPaint.shader = LinearGradient(
+            0f, topPadding,
+            0f, bottomY,
+            context.getColor(R.color.purple_primary_very_light),
+            Color.TRANSPARENT,
+            Shader.TileMode.CLAMP
+        )
+        canvas.drawPath(gradientPath, gradientPaint)
+
         // Linia wykresu
         val path = Path()
         parsedData.forEachIndexed { index, point ->
@@ -127,9 +167,11 @@ class WeightChartView @JvmOverloads constructor(
             val x = leftPadding + (index.toFloat() / (parsedData.size - 1).coerceAtLeast(1)) * chartWidth
             val y = topPadding + (1f - (point.weight - minWeight) / weightRange) * chartHeight
 
+            // Punkt z białym obramowaniem
+            canvas.drawCircle(x, y, dp(6f), pointStrokePaint)
             canvas.drawCircle(x, y, dp(5f), pointPaint)
 
-            canvas.drawText("${point.weight}", x, y - dp(8f), weightPaint)
+            canvas.drawText("${point.weight}", x, y - dp(12f), weightPaint)
 
             if (index == 0 || index == parsedData.size - 1 || (index > 0 && index % step == 0)) {
                 canvas.drawText(point.date.format(dateFormatter), x, bottomY + dp(20f), labelPaint)
