@@ -3,14 +3,16 @@ package pl.fithubapp
 import android.app.AlertDialog
 import android.app.Dialog
 import android.os.Bundle
-import android.widget.EditText
+import android.view.LayoutInflater
+import android.view.View
+import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
-import android.widget.Button
-import android.view.Gravity
 import androidx.fragment.app.DialogFragment
 import androidx.lifecycle.lifecycleScope
+import com.google.android.material.button.MaterialButton
+import com.google.android.material.textfield.TextInputEditText
 import pl.fithubapp.data.CreateUserExercisePlanDto
 import kotlinx.coroutines.launch
 
@@ -29,26 +31,25 @@ class SelectExercisePlanDialogFragment : DialogFragment() {
         userId = arguments?.getString("userId") ?: return super.onCreateDialog(savedInstanceState)
         currentPlanId = arguments?.getString("currentPlanId")
 
-        val mainLayout = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(32, 32, 32, 32)
+        val view = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_select_exercise_plan, null)
+
+        plansContainer = view.findViewById(R.id.llPlansContainer)
+        val btnNewPlan = view.findViewById<MaterialButton>(R.id.btnNewPlan)
+        val btnCancel = view.findViewById<MaterialButton>(R.id.btnCancel)
+
+        btnNewPlan.setOnClickListener {
+            showCreatePlanDialog(userId!!)
         }
 
-        plansContainer = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
+        btnCancel.setOnClickListener {
+            dismiss()
         }
-
-        mainLayout.addView(plansContainer)
 
         loadPlans()
 
-        return AlertDialog.Builder(requireContext())
-            .setTitle("Wybierz plan treningowy")
-            .setView(mainLayout)
-            .setPositiveButton("Nowy plan") { _, _ ->
-                showCreatePlanDialog(userId!!)
-            }
-            .setNegativeButton("Anuluj", null)
+        return AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
+            .setView(view)
             .create()
     }
 
@@ -60,44 +61,50 @@ class SelectExercisePlanDialogFragment : DialogFragment() {
                 plansContainer?.removeAllViews()
 
                 plans.forEach { plan ->
-                    val planItemLayout = LinearLayout(requireContext()).apply {
-                        orientation = LinearLayout.HORIZONTAL
-                        setPadding(16, 16, 16, 16)
-                        gravity = Gravity.CENTER_VERTICAL
+                    val planItemView = LayoutInflater.from(requireContext())
+                        .inflate(R.layout.item_exercise_plan, plansContainer, false)
+
+                    val tvPlanName = planItemView.findViewById<TextView>(R.id.tvPlanName)
+                    val tvPlanInfo = planItemView.findViewById<TextView>(R.id.tvPlanInfo)
+                    val btnDeletePlan = planItemView.findViewById<ImageButton>(R.id.btnDeletePlan)
+                    val llPlanClickArea = planItemView.findViewById<LinearLayout>(R.id.llPlanClickArea)
+
+                    tvPlanName.text = plan.planName
+                    
+                    val exerciseCount = plan.planExercises?.size ?: 0
+                    tvPlanInfo.text = when (exerciseCount) {
+                        0 -> "Brak ćwiczeń"
+                        1 -> "1 ćwiczenie"
+                        in 2..4 -> "$exerciseCount ćwiczenia"
+                        else -> "$exerciseCount ćwiczeń"
                     }
 
-                    val planView = TextView(requireContext()).apply {
-                        text = plan.planName
-                        textSize = 18f
-                        setPadding(8, 8, 8, 8)
-                        layoutParams = LinearLayout.LayoutParams(
-                            0,
-                            LinearLayout.LayoutParams.WRAP_CONTENT,
-                            1f
-                        )
-                        setOnClickListener {
-                            onPlanSelectedListener?.onPlanSelected(plan.id, plan.planName)
-                            dismiss()
+                    // Podświetl aktualnie wybrany plan
+                    if (plan.id == currentPlanId) {
+                        (planItemView as? androidx.cardview.widget.CardView)?.apply {
+                            setCardBackgroundColor(resources.getColor(R.color.blue_info_very_light, null))
                         }
                     }
 
-                    val deleteButton = Button(requireContext()).apply {
-                        text = "Usuń"
-                        textSize = 14f
-                        setPadding(16, 8, 16, 8)
-                        setOnClickListener {
-                            showDeleteConfirmationDialog(plan.id, plan.planName)
-                        }
+                    // Ustaw listener na obszar klikalny (nie na przycisk delete)
+                    llPlanClickArea.setOnClickListener {
+                        onPlanSelectedListener?.onPlanSelected(plan.id, plan.planName)
+                        dismiss()
                     }
 
-                    planItemLayout.addView(planView)
-                    planItemLayout.addView(deleteButton)
-                    plansContainer?.addView(planItemLayout)
+                    btnDeletePlan.setOnClickListener {
+                        showDeleteConfirmationDialog(plan.id, plan.planName)
+                    }
+
+                    plansContainer?.addView(planItemView)
                 }
 
                 if (plans.isEmpty()) {
-                    val emptyView = TextView(requireContext()).apply {
+                    val emptyView = LayoutInflater.from(requireContext())
+                        .inflate(android.R.layout.simple_list_item_1, plansContainer, false)
+                    emptyView.findViewById<TextView>(android.R.id.text1).apply {
                         text = "Brak planów treningowych"
+                        textAlignment = View.TEXT_ALIGNMENT_CENTER
                         setPadding(24, 24, 24, 24)
                     }
                     plansContainer?.addView(emptyView)
@@ -112,7 +119,7 @@ class SelectExercisePlanDialogFragment : DialogFragment() {
     }
 
     private fun showDeleteConfirmationDialog(planId: String, planName: String) {
-        AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
             .setTitle("Usuwanie planu")
             .setMessage("Czy na pewno chcesz usunąć plan \"$planName\"?")
             .setPositiveButton("Usuń") { _, _ ->
@@ -153,15 +160,15 @@ class SelectExercisePlanDialogFragment : DialogFragment() {
     }
 
     private fun showCreatePlanDialog(userId: String) {
-        val input = EditText(requireContext()).apply {
-            hint = "Nazwa planu"
-        }
+        val view = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_create_exercise_plan, null)
 
-        val createDialog = AlertDialog.Builder(requireContext())
-            .setTitle("Nowy plan treningowy")
-            .setView(input)
+        val etPlanName = view.findViewById<TextInputEditText>(R.id.etPlanName)
+
+        val createDialog = AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
+            .setView(view)
             .setPositiveButton("Utwórz") { _, _ ->
-                val planName = input.text.toString().trim()
+                val planName = etPlanName.text.toString().trim()
                 if (planName.isNotEmpty()) {
                     createPlan(userId, planName)
                 } else {

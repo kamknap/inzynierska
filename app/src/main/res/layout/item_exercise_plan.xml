@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Element listy - pojedynczy plan treningowy -->
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    style="@style/Widget.Fithub.CardView.Outlined"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="@dimen/spacing_small"
+    app:cardElevation="0dp"
+    app:contentPadding="@dimen/spacing_medium">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center_vertical">
+
+        <LinearLayout
+            android:id="@+id/llPlanClickArea"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:clickable="true"
+            android:focusable="true"
+            android:background="?attr/selectableItemBackground">
+
+            <TextView
+                android:id="@+id/tvPlanName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Plan treningowy"
+                style="@style/TextAppearance.Fithub.Body1"
+                android:textStyle="bold"
+                android:textColor="@color/blue_info" />
+
+            <TextView
+                android:id="@+id/tvPlanInfo"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="0 ćwiczeń"
+                style="@style/TextAppearance.Fithub.Caption"
+                android:textColor="@color/text_tertiary"
+                android:layout_marginTop="@dimen/spacing_tiny" />
+
+        </LinearLayout>
+
+        <ImageButton
+            android:id="@+id/btnDeletePlan"
+            android:layout_width="@dimen/icon_size_large"
+            android:layout_height="@dimen/icon_size_large"
+            android:background="@drawable/bg_button_delete"
+            android:src="@drawable/ic_delete_red"
+            android:contentDescription="Usuń plan"
+            android:scaleType="center"
+            android:padding="@dimen/spacing_tiny"
+            android:layout_marginStart="@dimen/spacing_small" />
+
+    </LinearLayout>
+
+</androidx.cardview.widget.CardView>

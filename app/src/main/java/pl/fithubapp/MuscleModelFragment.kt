@@ -105,7 +105,7 @@ class MuscleModelFragment : Fragment() {
         @JavascriptInterface
         fun onPathClicked(id: String) {
             activity?.runOnUiThread {
-                Toast.makeText(requireContext(), "Kliknięto w: $id", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(requireContext(), "Kliknięto w: $id", Toast.LENGTH_SHORT).show()
                 (parentFragment as? UserTrainingFragment)?.onMuscleClicked(id)
                 openAddExerciseToPlanDialog(id)
             }

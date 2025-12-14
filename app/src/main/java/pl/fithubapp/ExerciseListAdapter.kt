@@ -104,7 +104,11 @@ class ExerciseListAdapter(
         private fun toggleExpanded() {
             isExpanded = !isExpanded
             llExpandedDetails.visibility = if (isExpanded) View.VISIBLE else View.GONE
-            btnExpandExercise.rotation = if (isExpanded) 180f else 0f
+            
+            // Zmiana ikony strzałki
+            btnExpandExercise.setImageResource(
+                if (isExpanded) R.drawable.ic_expand_less else R.drawable.ic_expand_more
+            )
 
             if (isExpanded && currentVideoUrl != null) {
                 playVideo(currentVideoUrl!!)

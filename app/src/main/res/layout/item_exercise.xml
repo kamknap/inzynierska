@@ -1,99 +1,118 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
+    style="@style/Widget.Fithub.CardView.Outlined"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="vertical"
-    android:padding="12dp"
-    android:background="?attr/selectableItemBackground">
+    android:layout_marginBottom="@dimen/spacing_small"
+    app:cardElevation="0dp"
+    app:contentPadding="@dimen/spacing_medium">
 
-    <!-- Główna linia z nazwą i przyciskami -->
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center_vertical">
+        android:orientation="vertical">
 
-        <TextView
-            android:id="@+id/tvExerciseName"
-            android:layout_width="0dp"
+        <!-- Główna linia z nazwą i przyciskami -->
+        <LinearLayout
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:text="Nazwa ćwiczenia"
-            android:textSize="16sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/holo_blue_bright"
-             />
+            android:orientation="horizontal"
+            android:gravity="center_vertical">
 
-        <ImageButton
-            android:id="@+id/btnExpandExercise"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/arrow_down_float"
-            android:contentDescription="Rozwiń szczegóły"
-            android:scaleType="centerInside"
-            android:layout_marginStart="8dp" />
+            <TextView
+                android:id="@+id/tvExerciseName"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:text="Nazwa ćwiczenia"
+                style="@style/TextAppearance.Fithub.Body1"
+                android:textStyle="bold"
+                android:textColor="@color/blue_info" />
 
-        <ImageButton
-            android:id="@+id/btnDeleteExercise"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_delete"
-            android:contentDescription="Usuń ćwiczenie"
-            android:scaleType="centerInside"
-            android:layout_marginStart="8dp" />
+            <ImageButton
+                android:id="@+id/btnExpandExercise"
+                android:layout_width="@dimen/icon_size_large"
+                android:layout_height="@dimen/icon_size_large"
+                android:background="?attr/selectableItemBackgroundBorderless"
+                android:src="@drawable/ic_expand_more"
+                android:contentDescription="Rozwiń szczegóły"
+                android:scaleType="centerInside"
+                android:layout_marginStart="@dimen/spacing_small" />
+
+            <ImageButton
+                android:id="@+id/btnDeleteExercise"
+                android:layout_width="@dimen/icon_size_large"
+                android:layout_height="@dimen/icon_size_large"
+                android:background="@drawable/bg_button_delete"
+                android:src="@drawable/ic_delete_red"
+                android:contentDescription="Usuń ćwiczenie"
+                android:scaleType="center"
+                android:padding="@dimen/spacing_tiny"
+                android:layout_marginStart="@dimen/spacing_small" />
+
+        </LinearLayout>
+
+        <!-- Rozszerzalna sekcja ze szczegółami -->
+        <LinearLayout
+            android:id="@+id/llExpandedDetails"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone"
+            android:layout_marginTop="@dimen/spacing_medium"
+            android:padding="@dimen/spacing_medium"
+            android:background="@color/blue_info_very_light"
+            tools:ignore="WebViewLayout">
+
+            <!-- Opis ćwiczenia -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Opis"
+                style="@style/TextAppearance.Fithub.Caption"
+                android:textStyle="bold"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="@dimen/spacing_tiny" />
+
+            <TextView
+                android:id="@+id/tvExerciseDescription"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Opis ćwiczenia..."
+                style="@style/TextAppearance.Fithub.Body2"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="@dimen/spacing_normal" />
+
+            <!-- Instrukcje -->
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Instrukcja wykonania"
+                style="@style/TextAppearance.Fithub.Caption"
+                android:textStyle="bold"
+                android:textColor="@color/text_secondary"
+                android:layout_marginBottom="@dimen/spacing_tiny" />
+
+            <TextView
+                android:id="@+id/tvExerciseInstructions"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="1. Krok pierwszy\n2. Krok drugi..."
+                style="@style/TextAppearance.Fithub.Body2"
+                android:textColor="@color/text_primary"
+                android:layout_marginBottom="@dimen/spacing_normal" />
+
+            <!-- Video player -->
+            <WebView
+                android:id="@+id/webViewYoutube"
+                android:layout_width="match_parent"
+                android:layout_height="200dp"
+                android:visibility="gone" />
+
+        </LinearLayout>
 
     </LinearLayout>
 
-    <!-- Rozszerzalna sekcja ze szczegółami -->
-    <LinearLayout
-        android:id="@+id/llExpandedDetails"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:visibility="gone"
-        android:layout_marginTop="8dp"
-        android:padding="8dp"
-        android:background="#F5F5F5"
-        tools:ignore="WebViewLayout">
-
-        <!-- Opis ćwiczenia -->
-        <TextView
-            android:id="@+id/tvExerciseDescription"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Opis ćwiczenia..."
-            android:textSize="14sp"
-            android:textColor="@android:color/holo_blue_bright"
-            android:layout_marginBottom="8dp" />
-
-        <!-- Instrukcje -->
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Instrukcja:"
-            android:textStyle="bold"
-            android:textSize="14sp"
-            android:textColor="@android:color/holo_blue_bright"
-            android:layout_marginBottom="4dp" />
-
-        <TextView
-            android:id="@+id/tvExerciseInstructions"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="1. Krok pierwszy\n2. Krok drugi..."
-            android:textSize="13sp"
-            android:textColor="@android:color/holo_blue_bright"
-            android:layout_marginBottom="8dp" />
-
-        <WebView
-            android:id="@+id/webViewYoutube"
-            android:layout_width="match_parent"
-            android:layout_height="200dp"
-            android:visibility="gone" />
-
-    </LinearLayout>
-
-</LinearLayout>
+</androidx.cardview.widget.CardView>

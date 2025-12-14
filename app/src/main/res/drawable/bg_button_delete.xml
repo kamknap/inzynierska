@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- Tło dla przycisku delete - ripple effect -->
+<!-- Tło dla przycisku delete - ripple effect bez tła -->
 <ripple xmlns:android="http://schemas.android.com/apk/res/android"
     android:color="@color/error_light">
-    <item>
+    <item android:id="@android:id/mask">
         <shape android:shape="oval">
             <solid android:color="@color/error_light" />
         </shape>

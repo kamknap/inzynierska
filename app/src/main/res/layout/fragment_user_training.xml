@@ -1,63 +1,169 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="16dp">
-
-    <TextView
-        android:id="@+id/tvExercisePlanName"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Plan Treningowy 1"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginBottom="16dp" />
+    android:padding="@dimen/spacing_normal"
+    android:background="@color/background_secondary">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:layout_marginBottom="16dp">
+        android:orientation="vertical">
 
-        <Button
-            android:id="@+id/btnShowMuscleModel"
-            android:layout_width="0dp"
+        <!-- Nagłówek -->
+        <TextView
+            android:id="@+id/tvTitle"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginEnd="8dp"
-            android:text="Wybierz na podstawie modelu" />
+            android:text="Plan treningowy"
+            style="@style/TextAppearance.Fithub.Headline2"
+            android:textColor="@color/purple_primary"
+            android:layout_marginBottom="@dimen/spacing_normal" />
 
-        <Button
-            android:id="@+id/btnSearchExercise"
-            android:layout_width="0dp"
+        <!-- Karta: Aktualny plan treningowy -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvCurrentPlan"
+            style="@style/Widget.Fithub.CardView"
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:layout_marginStart="8dp"
-            android:text="Wyszukaj ćwiczenie" />
+            android:layout_marginBottom="@dimen/spacing_normal">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Aktualny plan"
+                    style="@style/TextAppearance.Fithub.Caption"
+                    android:textColor="@color/text_tertiary"
+                    android:layout_marginBottom="@dimen/spacing_tiny" />
+
+                <TextView
+                    android:id="@+id/tvExercisePlanName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Plan Treningowy 1"
+                    style="@style/TextAppearance.Fithub.Headline3"
+                    android:textColor="@color/blue_info"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:background="?attr/selectableItemBackground" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Kliknij, aby zmienić plan"
+                    style="@style/TextAppearance.Fithub.Caption"
+                    android:textColor="@color/text_tertiary"
+                    android:layout_marginTop="@dimen/spacing_tiny" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Karta: Akcje -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvActions"
+            style="@style/Widget.Fithub.CardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/spacing_normal">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Dodaj ćwiczenie"
+                    style="@style/TextAppearance.Fithub.Body1"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="@dimen/spacing_normal" />
+
+                <!-- Przyciski dodawania ćwiczeń -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:layout_marginBottom="@dimen/spacing_small">
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnShowMuscleModel"
+                        style="@style/Widget.Fithub.Button.Outlined"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginEnd="@dimen/spacing_small"
+                        android:text="Model 3D"
+                        app:icon="@drawable/ic_fitness"
+                        app:iconTint="@color/purple_primary"
+                        android:textSize="14sp" />
+
+                    <com.google.android.material.button.MaterialButton
+                        android:id="@+id/btnSearchExercise"
+                        style="@style/Widget.Fithub.Button.Info"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:layout_marginStart="@dimen/spacing_small"
+                        android:text="Wyszukaj"
+                        app:icon="@drawable/ic_search"
+                        android:textSize="14sp" />
+
+                </LinearLayout>
+
+                <!-- Przycisk zakończenia treningu -->
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/btnSaveToDiary"
+                    style="@style/Widget.Fithub.Button.Success"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Zapisz wykonany trening w dzienniku"
+                    android:textSize="14sp" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
+        <!-- Karta: Lista ćwiczeń -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvExerciseList"
+            style="@style/Widget.Fithub.CardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Ćwiczenia w planie"
+                    style="@style/TextAppearance.Fithub.Body1"
+                    android:textStyle="bold"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="@dimen/spacing_small" />
+
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/rvUserExercises"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:nestedScrollingEnabled="false"
+                    android:overScrollMode="never" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
     </LinearLayout>
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:padding="12dp"
-        android:background="?attr/selectableItemBackground"
-        android:layout_marginBottom="16dp">
-
-        <Button
-            android:id="@+id/btnSaveToDiary"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Zapisz plan w dzienniku kalorii" />
-    </LinearLayout>
-
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/rvUserExercises"
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:layout_marginTop="16dp" />
-
-
-</LinearLayout>
+</ScrollView>
