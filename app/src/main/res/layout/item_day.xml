@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="60dp"
-    android:layout_height="60dp"
+    android:layout_width="64dp"
+    android:layout_height="64dp"
     android:orientation="vertical"
     android:gravity="center"
-    android:layout_margin="4dp"
-    android:background="@drawable/day_selector"
+    android:layout_margin="@dimen/spacing_tiny"
+    android:background="@drawable/bg_day_selector"
     android:clickable="true"
     android:focusable="true">
 
@@ -14,7 +14,8 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="P"
-        android:textSize="12sp"
+        style="@style/TextAppearance.Fithub.Caption"
+        android:textColor="@color/text_day_selector"
         android:textStyle="bold" />
 
     <TextView
@@ -22,9 +23,9 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="15"
-        android:textSize="18sp"
+        style="@style/TextAppearance.Fithub.Body1"
+        android:textColor="@color/text_day_selector"
         android:textStyle="bold"
-        android:layout_marginTop="4dp" />
-
+        android:layout_marginTop="@dimen/spacing_tiny" />
 
 </LinearLayout>

@@ -44,9 +44,12 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
 
     override fun createResultView(item: ExerciseDto): View {
         val view = LayoutInflater.from(requireContext())
-            .inflate(android.R.layout.simple_list_item_2, llSearchResults, false)
+            .inflate(R.layout.item_exercise_search_result, llSearchResults, false)
 
-        view.findViewById<TextView>(android.R.id.text1).text = item.name ?: "Bez nazwy"
+        val tvExerciseName = view.findViewById<TextView>(R.id.tvExerciseName)
+        val tvExerciseInfo = view.findViewById<TextView>(R.id.tvExerciseInfo)
+        
+        tvExerciseName.text = item.name ?: "Bez nazwy"
 
         val muscleInfo = item.muscleIds
             ?.takeIf { it.isNotEmpty() }
@@ -66,7 +69,7 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
             }
         }
 
-        view.findViewById<TextView>(android.R.id.text2).text = finalText
+        tvExerciseInfo.text = finalText
 
         return view
     }
@@ -76,21 +79,15 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
     }
 
     private fun showSetDetailsDialog(exercise: ExerciseDto) {
-        val dialogLayout = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(48, 24, 48, 24)
-        }
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_duration_input, null)
+        
+        val tilDuration = dialogView.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.tilDuration)
+        val etDuration = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etDuration)
 
-        val etDuration = EditText(requireContext()).apply {
-            hint = "Czas trwania (min)"
-            inputType = InputType.TYPE_CLASS_NUMBER
-        }
-
-        dialogLayout.addView(etDuration)
-
-        val dialog = AlertDialog.Builder(requireContext())
+        val dialog = AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
             .setTitle("Szczegóły: ${exercise.name ?: "Ćwiczenie"}")
-            .setView(dialogLayout)
+            .setView(dialogView)
             .setPositiveButton("Dodaj", null)
             .setNegativeButton("Anuluj", null)
             .create()
@@ -102,7 +99,7 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
                 val duration = durationText.toDoubleOrNull()
 
                 if (duration == null || duration <= 0) {
-                    etDuration.error = "Podaj poprawną liczbę minut"
+                    tilDuration.error = "Podaj poprawną liczbę minut"
                     Toast.makeText(requireContext(), "Podaj czas trwania (np. 30)", Toast.LENGTH_SHORT).show()
                 } else {
                     saveExercise(exercise, duration)

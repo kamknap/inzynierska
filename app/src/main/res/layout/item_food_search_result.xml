@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Item dla wyników wyszukiwania produktów spożywczych -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="@dimen/spacing_normal"
+    android:gravity="center_vertical"
+    android:background="?attr/selectableItemBackground">
+
+
+    <!-- Informacje o produkcie -->
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvFoodName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nazwa produktu"
+            style="@style/TextAppearance.Fithub.Body1"
+            android:textColor="@color/text_primary"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/tvFoodNutrition"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="250 kcal/100g"
+            style="@style/TextAppearance.Fithub.Body2"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="@dimen/spacing_tiny" />
+
+    </LinearLayout>
+
+</LinearLayout>

@@ -4,6 +4,8 @@ import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.text.InputType
+import android.text.SpannableString
+import android.text.style.RelativeSizeSpan
 import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -518,11 +520,45 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         }
 
         when (mealType.lowercase()) {
-            "śniadanie" -> tvBreakfast.text = "Śniadanie (${breakfastCalories.roundToInt()} kcal, ${breakfastProtein.roundToInt()} P, ${breakfastFat.roundToInt()} F, ${breakfastCarbs.roundToInt()} C)"
-            "obiad" -> tvLunch.text = "Obiad (${lunchCalories.roundToInt()} kcal, ${lunchProtein.roundToInt()} P, ${lunchFat.roundToInt()} F, ${lunchCarbs.roundToInt()} C)"
-            "kolacja" -> tvDinner.text = "Kolacja (${dinnerCalories.roundToInt()} kcal, ${dinnerProtein.roundToInt()} P, ${dinnerFat.roundToInt()} F, ${dinnerCarbs.roundToInt()} C)"
-            "trening" -> tvTraining.text = "Trening (${abs(trainingCalories).roundToInt()} kcal spalono)"
+            "śniadanie" -> tvBreakfast.text = formatMealTitle(
+                "Śniadanie",
+                "${breakfastCalories.roundToInt()} kcal, ${breakfastProtein.roundToInt()} P, ${breakfastFat.roundToInt()} F, ${breakfastCarbs.roundToInt()} C"
+            )
+            "obiad" -> tvLunch.text = formatMealTitle(
+                "Obiad",
+                "${lunchCalories.roundToInt()} kcal, ${lunchProtein.roundToInt()} P, ${lunchFat.roundToInt()} F, ${lunchCarbs.roundToInt()} C"
+            )
+            "kolacja" -> tvDinner.text = formatMealTitle(
+                "Kolacja",
+                "${dinnerCalories.roundToInt()} kcal, ${dinnerProtein.roundToInt()} P, ${dinnerFat.roundToInt()} F, ${dinnerCarbs.roundToInt()} C"
+            )
+            "trening" -> tvTraining.text = formatMealTitle(
+                "Trening",
+                "${abs(trainingCalories).roundToInt()} kcal spalono"
+            )
         }
+    }
+    
+    /**
+     * Formatuje tytuł posiłku z mniejszą czcionką dla makrosów w nawiasie
+     */
+    private fun formatMealTitle(title: String, macros: String): SpannableString {
+        val fullText = "$title ($macros)"
+        val spannable = SpannableString(fullText)
+        
+        // Znajdź pozycję nawiasu
+        val startIndex = title.length
+        val endIndex = fullText.length
+        
+        // Zmniejsz czcionkę dla tekstu w nawiasie (80% oryginalnego rozmiaru)
+        spannable.setSpan(
+            RelativeSizeSpan(0.8f),
+            startIndex,
+            endIndex,
+            SpannableString.SPAN_EXCLUSIVE_EXCLUSIVE
+        )
+        
+        return spannable
     }
 
 

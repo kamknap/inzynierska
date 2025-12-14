@@ -29,32 +29,20 @@ abstract class SearchDialogFragment<T> : DialogFragment() {
     open fun shouldShowSearchField(): Boolean = true
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val mainLayout = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(32, 32, 32, 32)
-        }
+        val mainLayout = android.view.LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_search, null) as LinearLayout
 
-        val etSearch = EditText(requireContext()).apply {
-            hint = getSearchHint()
-            setSingleLine(true)
+        val etSearch = mainLayout.findViewById<android.widget.EditText>(R.id.etSearch)
+        llSearchResults = mainLayout.findViewById(R.id.llSearchResults)
+        val tilSearch = mainLayout.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.tilSearch)
+        
+        // Ustaw hint
+        tilSearch.hint = getSearchHint()
+        
+        // Ukryj pole wyszukiwania jeśli niepotrzebne
+        if (!shouldShowSearchField()) {
+            tilSearch.visibility = View.GONE
         }
-
-        val scrollView = ScrollView(requireContext()).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                400
-            )
-        }
-
-        llSearchResults = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-        }
-
-        scrollView.addView(llSearchResults)
-        if (shouldShowSearchField()) {
-            mainLayout.addView(etSearch)
-        }
-        mainLayout.addView(scrollView)
 
         etSearch.doAfterTextChanged { text ->
             val query = text.toString().trim()
@@ -77,7 +65,7 @@ abstract class SearchDialogFragment<T> : DialogFragment() {
 
         onDialogCreated()
 
-        return AlertDialog.Builder(requireContext())
+        return AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
             .setTitle(getTitle())
             .setView(mainLayout)
             .setNegativeButton("Zamknij", null)

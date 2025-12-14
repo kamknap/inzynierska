@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Item dla wyników wyszukiwania ćwiczeń -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="horizontal"
+    android:padding="@dimen/spacing_normal"
+    android:gravity="center_vertical"
+    android:background="?attr/selectableItemBackground">
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvExerciseName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Nazwa ćwiczenia"
+            style="@style/TextAppearance.Fithub.Body1"
+            android:textColor="@color/text_primary"
+            android:maxLines="2"
+            android:ellipsize="end" />
+
+        <TextView
+            android:id="@+id/tvExerciseInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Mięśnie: Nogi • METS: 5.0"
+            style="@style/TextAppearance.Fithub.Body2"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="@dimen/spacing_tiny" />
+
+    </LinearLayout>
+
+</LinearLayout>

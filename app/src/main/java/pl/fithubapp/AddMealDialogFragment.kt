@@ -5,9 +5,11 @@ import android.app.Dialog
 import android.content.Context
 import android.graphics.Typeface
 import android.os.Bundle
+import android.view.ContextThemeWrapper
 import android.text.InputType
 import android.util.Log
 import android.view.Gravity
+import android.view.LayoutInflater
 import android.view.View
 import android.widget.Button
 import android.widget.EditText
@@ -61,17 +63,33 @@ class AddMealDialogFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val mealType = arguments?.getString("mealType") ?: "Posiłek"
 
-        val mainLayout = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(32, 32, 32, 32)
-        }
-        val etSearch = EditText(requireContext()).apply {
-            hint = "Wyszukaj produkt.."
-            setSingleLine(true)
-        }
+        val mainLayout = android.view.LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_search, null) as LinearLayout
 
+        val etSearch = mainLayout.findViewById<EditText>(R.id.etSearch)
+        val llSearchResults = mainLayout.findViewById<LinearLayout>(R.id.llSearchResults)
+        val llActionButtons = mainLayout.findViewById<LinearLayout>(R.id.llActionButtons)
+        val tilSearch = mainLayout.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.tilSearch)
+        
+        // Ustaw hint dla wyszukiwania
+        tilSearch.hint = "Wyszukaj produkt..."
+
+        // Przycisk skanera kodów kreskowych
         val btnScanner = Button(requireContext()).apply {
             text = "Zeskanuj kod kreskowy"
+            setTextColor(resources.getColor(R.color.white, null))
+            background = resources.getDrawable(R.drawable.bg_button_rounded, null)
+            isAllCaps = false
+            setPadding(
+                resources.getDimensionPixelSize(R.dimen.spacing_large),
+                resources.getDimensionPixelSize(R.dimen.spacing_medium),
+                resources.getDimensionPixelSize(R.dimen.spacing_large),
+                resources.getDimensionPixelSize(R.dimen.spacing_medium)
+            )
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
             setOnClickListener{
                 Toast.makeText(requireContext(), "Uruchamiam skaner..", Toast.LENGTH_SHORT).show()
                 val options = ScanOptions().apply {
@@ -84,30 +102,26 @@ class AddMealDialogFragment : DialogFragment() {
             }
         }
 
-        val btnAddOwnProduct = Button(requireContext()).apply {
+        // Przycisk dodawania własnego produktu
+        val btnAddOwnProduct = Button(
+            ContextThemeWrapper(requireContext(), R.style.Widget_Fithub_Button_Outlined),
+            null,
+            0
+        ).apply {
             text = "Dodaj produkt ręcznie"
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                topMargin = resources.getDimensionPixelSize(R.dimen.spacing_small)
+            }
             setOnClickListener {
                 showAddOwnProductDialog()
             }
         }
 
-        val scrollView = ScrollView(requireContext()).apply {
-            layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                400
-            )
-        }
-
-        val llSearchResults = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-        }
-
-        scrollView.addView(llSearchResults)
-
-        mainLayout.addView(btnScanner)
-        mainLayout.addView(btnAddOwnProduct)
-        mainLayout.addView(etSearch)
-        mainLayout.addView(scrollView)
+        llActionButtons.addView(btnScanner)
+        llActionButtons.addView(btnAddOwnProduct)
 
         etSearch.doAfterTextChanged { text ->
             val query = text.toString().trim()
@@ -123,10 +137,10 @@ class AddMealDialogFragment : DialogFragment() {
                 llSearchResults.removeAllViews()    }
         }
 
-        return AlertDialog.Builder(requireContext())
+        return AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
             .setTitle("Dodaj $mealType")
             .setView(mainLayout)
-            .setNegativeButton("Gotowe") { _, _ ->
+            .setNegativeButton("Zamknij") { _, _ ->
             }
             .create()
     }
@@ -177,46 +191,24 @@ class AddMealDialogFragment : DialogFragment() {
                 }
 
                 foodList.forEach { food ->
-                    val foodView = LinearLayout(requireContext()).apply {
-                        orientation = LinearLayout.HORIZONTAL
-                        setPadding(16, 16, 16, 16)
-                        setBackgroundResource(android.R.drawable.list_selector_background)
-                        isClickable = true
-                        setOnClickListener {
-                            showQuantityDialog(food.name, food.id, food)
-                        }
+                    val foodView = android.view.LayoutInflater.from(requireContext())
+                        .inflate(R.layout.item_food_search_result, container, false)
+
+                    val tvFoodName = foodView.findViewById<TextView>(R.id.tvFoodName)
+                    val tvFoodNutrition = foodView.findViewById<TextView>(R.id.tvFoodNutrition)
+
+                    tvFoodName.text = food.name
+                    
+                    val caloriesText = if (food.nutritionPer100g.calories == 0.0) {
+                        "Brak danych"
+                    } else {
+                        "${food.nutritionPer100g.calories.toInt()} kcal/100g"
                     }
+                    tvFoodNutrition.text = caloriesText
 
-                    val foodInfo = LinearLayout(requireContext()).apply {
-                        orientation = LinearLayout.VERTICAL
-                        layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
+                    foodView.setOnClickListener {
+                        showQuantityDialog(food.name, food.id, food)
                     }
-
-                    val tvName = TextView(requireContext()).apply {
-                        text = food.name
-                        textSize = 16f
-                        setTypeface(null, Typeface.BOLD)
-                    }
-
-                    val tvNutrition = TextView(requireContext()).apply {
-                        val caloriesText = if (food.nutritionPer100g.calories == 0.0) {
-                            "Brak danych"
-                        } else {
-                            "${food.nutritionPer100g.calories} kcal/100g"
-                        }
-                        text = caloriesText
-                        textSize = 12f
-                        setTextColor(resources.getColor(android.R.color.darker_gray, null))
-
-                        //wymuszenie widocznosci
-                        visibility = View.VISIBLE
-                    }
-
-
-
-                    foodInfo.addView(tvName)
-                    foodInfo.addView(tvNutrition)
-                    foodView.addView(foodInfo)
 
                     container.addView(foodView)
                 }
@@ -267,38 +259,18 @@ class AddMealDialogFragment : DialogFragment() {
     }
 
     private fun showQuantityDialog(foodName: String, foodId: String, food: FoodDto) {
-
-        val dialogLayout = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.VERTICAL
-            setPadding(48,24,48,24)
-        }
-
-        val inputLayout = LinearLayout(requireContext()).apply {
-            orientation = LinearLayout.HORIZONTAL
-            gravity = Gravity.CENTER_VERTICAL
-        }
-
-        val etQuantity = EditText(requireContext()).apply {
-            hint = "Ilość"
-            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL
-            setText("100")
-            layoutParams = LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1f)
-        }
-
-        val unitTextView = TextView(requireContext()).apply {
-            text = "g"
-            textSize = 18F
-        }
-
-        inputLayout.addView(etQuantity)
-        inputLayout.addView(unitTextView)
-
-        val tvNutritionInfo = TextView(requireContext()).apply {
-            textSize = 14f
-            setPadding(0, 24, 0, 0) // Odstęp od góry
-            setTextColor(resources.getColor(android.R.color.darker_gray, null))
-        }
-
+        val dialogView = LayoutInflater.from(requireContext())
+            .inflate(R.layout.dialog_quantity_input, null)
+        
+        val tilQuantity = dialogView.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.tilQuantity)
+        val etQuantity = dialogView.findViewById<com.google.android.material.textfield.TextInputEditText>(R.id.etQuantity)
+        val tvProtein = dialogView.findViewById<TextView>(R.id.tvProtein)
+        val tvCarbs = dialogView.findViewById<TextView>(R.id.tvCarbs)
+        val tvFat = dialogView.findViewById<TextView>(R.id.tvFat)
+        val tvCalories = dialogView.findViewById<TextView>(R.id.tvCalories)
+        
+        etQuantity.setText("100")
+        
         val updateNutritionInfo = {
             val quantity = etQuantity.text.toString().toDoubleOrNull() ?: 0.0
             val factor = quantity / 100.0
@@ -308,10 +280,10 @@ class AddMealDialogFragment : DialogFragment() {
             val carbs = food.nutritionPer100g.carbs * factor
             val fat = food.nutritionPer100g.fat * factor
 
-            tvNutritionInfo.text = String.format(
-                "Kalorie: %.1f kcal\nBiałko: %.1f g\nWęglowodany: %.1f g\nTłuszcze: %.1f g",
-                calories, protein, carbs, fat
-            )
+            tvProtein.text = "Białko: %.1f g".format(protein)
+            tvCarbs.text = "Węglowodany: %.1f g".format(carbs)
+            tvFat.text = "Tłuszcze: %.1f g".format(fat)
+            tvCalories.text = "%.0f kcal".format(calories)
         }
 
         etQuantity.doAfterTextChanged {
@@ -320,12 +292,9 @@ class AddMealDialogFragment : DialogFragment() {
 
         updateNutritionInfo()
 
-        dialogLayout.addView(inputLayout)
-        dialogLayout.addView(tvNutritionInfo)
-
-        val dialog = AlertDialog.Builder(requireContext())
+        val dialog = AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
             .setTitle("Dodaj $foodName")
-            .setView(dialogLayout)
+            .setView(dialogView)
             .setPositiveButton("Dodaj") { _, _ ->
                 val quantity = etQuantity.text.toString().toDoubleOrNull() ?: 100.0
                 addFoodToMeal(foodId, quantity, food)
@@ -450,7 +419,7 @@ class AddMealDialogFragment : DialogFragment() {
                 if (offProduct.status == 1 && offProduct.product != null) {
                     val mappedFood = mapOpenFoodFactsToFood(offProduct.product)
                     if (mappedFood.name == "Nieznany produkt"){
-                        AlertDialog.Builder(requireContext())
+                        AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
                             .setTitle("Błąd")
                             .setMessage("Nie znaleziono produktu dla kodu kreskowego: $barcode. Spróbuj ponownie lub dodaj produkt przy pomocy ręcznego dodawania")
                             .setPositiveButton("OK") { dialog, _ ->
@@ -462,7 +431,7 @@ class AddMealDialogFragment : DialogFragment() {
                         showQuantityDialog(mappedFood.name, mappedFood.id, mappedFood)
                     }
                 } else {
-                    AlertDialog.Builder(requireContext())
+                    AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
                         .setTitle("Błąd")
                         .setMessage("Nie znaleziono produktu dla kodu kreskowego: $barcode")
                         .setPositiveButton("OK") { dialog, _ ->
@@ -518,7 +487,7 @@ class AddMealDialogFragment : DialogFragment() {
         layout.addView(etCarbs)
         layout.addView(etFat)
 
-        val dialog = AlertDialog.Builder(requireContext())
+        val dialog = AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
             .setTitle("Dodaj własny produkt")
             .setView(dialogView)
             .setPositiveButton("Dodaj", null)
