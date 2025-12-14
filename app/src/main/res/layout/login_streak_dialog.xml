@@ -1,50 +1,53 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="24dp"
+    android:padding="@dimen/spacing_large"
     android:gravity="center_horizontal"
-    android:background="@android:drawable/dialog_holo_light_frame">
+    android:background="@color/background_secondary">
 
-    <TextView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="🔥"
-        android:textSize="48sp" />
+    <ImageView
+        android:layout_width="64dp"
+        android:layout_height="64dp"
+        android:src="@drawable/ic_fire"
+        android:contentDescription="Fire icon" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="STREAK PODTRZYMANY!"
-        android:textSize="20sp"
-        android:textStyle="bold"
-        android:layout_marginTop="16dp"
-        android:textColor="@android:color/black"/>
+        android:textAppearance="@style/TextAppearance.Fithub.Headline2"
+        android:layout_marginTop="@dimen/spacing_normal"
+        android:textColor="@color/text_primary"/>
 
     <TextView
         android:id="@+id/tvStreakDays"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="5 dni z rzędu"
-        android:textSize="18sp"
-        android:layout_marginTop="8dp"
-        android:textColor="@android:color/holo_orange_dark"/>
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:textColor="@color/blue_info"/>
 
     <TextView
         android:id="@+id/tvStreakPoints"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="+15 pkt"
-        android:textSize="16sp"
-        android:layout_marginTop="8dp"
-        android:textColor="@android:color/darker_gray"/>
+        android:textAppearance="@style/TextAppearance.Fithub.Body1"
+        android:layout_marginTop="@dimen/spacing_small"
+        android:textColor="@color/green_success"
+        android:textStyle="bold"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnCloseDialog"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Super!"
-        android:layout_marginTop="24dp"
-        android:backgroundTint="@android:color/holo_orange_light"/>
+        android:textSize="16sp"
+        android:layout_marginTop="@dimen/spacing_large"
+        style="@style/Widget.Fithub.Button"/>
 </LinearLayout>

@@ -1,82 +1,72 @@
 <?xml version="1.0" encoding="utf-8"?>
-<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_margin="24dp"
-    app:cardCornerRadius="16dp"
-    app:cardElevation="8dp">
+    android:orientation="vertical"
+    android:padding="@dimen/spacing_large"
+    android:gravity="center"
+    android:background="@color/background_secondary">
 
-    <LinearLayout
-        android:layout_width="match_parent"
+    <!-- Emoji/Ikona -->
+    <TextView
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="24dp"
-        android:gravity="center">
+        android:text="🎉"
+        android:textSize="64sp"
+        android:layout_marginBottom="@dimen/spacing_normal"/>
 
-        <!-- Emoji/Ikona -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="🎉"
-            android:textSize="64sp"
-            android:layout_marginBottom="16dp"/>
+    <!-- Tytuł -->
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Gratulacje!"
+        android:textAppearance="@style/TextAppearance.Fithub.Headline1"
+        android:textColor="@color/text_primary"
+        android:layout_marginBottom="@dimen/spacing_small"/>
 
-        <!-- Tytuł -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Gratulacje!"
-            android:textSize="24sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/black"
-            android:layout_marginBottom="8dp"/>
+    <!-- Nazwa wyzwania -->
+    <TextView
+        android:id="@+id/tvChallengeName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Ukończono: 7 dni z rzędu"
+        android:textAppearance="@style/TextAppearance.Fithub.Body1"
+        android:textColor="@color/text_secondary"
+        android:layout_marginBottom="@dimen/spacing_small"
+        android:gravity="center"/>
 
-        <!-- Nazwa wyzwania -->
-        <TextView
-            android:id="@+id/tvChallengeName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Ukończono: 7 dni z rzędu"
-            android:textSize="16sp"
-            android:textColor="@android:color/darker_gray"
-            android:layout_marginBottom="8dp"
-            android:gravity="center"/>
+    <!-- Nazwa odznaki -->
+    <TextView
+        android:id="@+id/tvBadgeName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Zdobyto odznakę: Wytrwały"
+        android:textAppearance="@style/TextAppearance.Fithub.Body2"
+        android:textColor="@color/purple_primary"
+        android:textStyle="bold"
+        android:layout_marginBottom="@dimen/spacing_normal"
+        android:gravity="center"/>
 
-        <!-- Nazwa odznaki -->
-        <TextView
-            android:id="@+id/tvBadgeName"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Zdobyto odznakę: Wytrwały"
-            android:textSize="14sp"
-            android:textColor="@android:color/holo_orange_dark"
-            android:textStyle="bold"
-            android:layout_marginBottom="16dp"
-            android:gravity="center"/>
+    <!-- Punkty -->
+    <TextView
+        android:id="@+id/tvPoints"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="+50 pkt"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:textColor="@color/green_success"
+        android:layout_marginBottom="@dimen/spacing_large"/>
 
-        <!-- Punkty -->
-        <TextView
-            android:id="@+id/tvPoints"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="+50 pkt"
-            android:textSize="28sp"
-            android:textStyle="bold"
-            android:textColor="@android:color/holo_green_dark"
-            android:layout_marginBottom="24dp"/>
+    <!-- Przycisk OK -->
+    <com.google.android.material.button.MaterialButton
+        android:id="@+id/btnOk"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="OK"
+        android:textSize="16sp"
+        android:minWidth="160dp"
+        style="@style/Widget.Fithub.Button"/>
 
-        <!-- Przycisk OK -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/btnOk"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="OK"
-            android:textSize="16sp"
-            android:paddingStart="48dp"
-            android:paddingEnd="48dp"
-            app:cornerRadius="8dp"/>
-
-    </LinearLayout>
-
-</androidx.cardview.widget.CardView>
+</LinearLayout>

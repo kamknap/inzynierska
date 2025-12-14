@@ -3,7 +3,7 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="16dp"
+    android:padding="@dimen/spacing_normal"
     android:gravity="center_vertical"
     android:background="?attr/selectableItemBackground">
 
@@ -13,9 +13,9 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="75.5 kg"
-        android:textSize="16sp"
+        android:textAppearance="@style/TextAppearance.Fithub.Body1"
         android:textStyle="bold"
-        android:textColor="@android:color/black" />
+        android:textColor="@color/text_primary" />
 
     <TextView
         android:id="@+id/tvHistoryWeightChange"
@@ -23,17 +23,17 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:text="0.0"
-        android:textSize="16sp"
+        android:textAppearance="@style/TextAppearance.Fithub.Body1"
         android:textStyle="bold"
-        android:textColor="@android:color/black" />
+        android:textColor="@color/text_primary" />
 
     <TextView
         android:id="@+id/tvHistoryDate"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="2025-01-15"
-        android:textSize="14sp"
-        android:textColor="@android:color/darker_gray"
-        android:layout_marginStart="16dp" />
+        android:textAppearance="@style/TextAppearance.Fithub.Body2"
+        android:textColor="@color/text_secondary"
+        android:layout_marginStart="@dimen/spacing_normal" />
 
 </LinearLayout>

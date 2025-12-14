@@ -1,38 +1,42 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical"
-    android:padding="24dp"
-    android:gravity="center_horizontal">
+    android:padding="@dimen/spacing_large"
+    android:gravity="center_horizontal"
+    android:background="@color/background_secondary">
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="🏆"
-        android:textSize="48sp" />
+        android:textSize="64sp" />
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="LEVEL UP!"
-        android:textSize="24sp"
-        android:textStyle="bold"
-        android:layout_marginTop="16dp"
-        android:textColor="@android:color/holo_blue_dark"/>
+        android:textAppearance="@style/TextAppearance.Fithub.Headline1"
+        android:layout_marginTop="@dimen/spacing_normal"
+        android:textColor="@color/purple_primary"/>
 
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="Gratulacje! Osiągnąłeś nowy poziom!"
         android:gravity="center"
-        android:textSize="16sp"
-        android:layout_marginTop="8dp"/>
+        android:textAppearance="@style/TextAppearance.Fithub.Body1"
+        android:textColor="@color/text_secondary"
+        android:layout_marginTop="@dimen/spacing_small"/>
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btnOkLevel"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Ekstra!"
-        android:layout_marginTop="24dp"/>
+        android:textSize="16sp"
+        android:layout_marginTop="@dimen/spacing_large"
+        style="@style/Widget.Fithub.Button"/>
 </LinearLayout>

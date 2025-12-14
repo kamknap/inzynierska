@@ -2,15 +2,17 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="horizontal"
-    android:padding="8dp"
-    android:gravity="center_vertical">
+    android:padding="@dimen/spacing_small"
+    android:gravity="center_vertical"
+    android:background="?attr/selectableItemBackground">
 
     <ImageView
         android:id="@+id/ivBadgeIcon"
-        android:layout_width="48dp"
-        android:layout_height="48dp"
+        android:layout_width="@dimen/icon_size_xlarge"
+        android:layout_height="@dimen/icon_size_xlarge"
         android:src="@android:drawable/ic_lock_idle_lock"
-        android:layout_marginEnd="16dp"/>
+        android:layout_marginEnd="@dimen/spacing_normal"
+        android:contentDescription="Ikona odznaki"/>
 
     <LinearLayout
         android:layout_width="0dp"
@@ -18,15 +20,20 @@
         android:layout_weight="1"
         android:orientation="vertical">
 
-        <TextView android:id="@+id/tvBadgeName"
+        <TextView 
+            android:id="@+id/tvBadgeName"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:textAppearance="@style/TextAppearance.Fithub.Body1"
             android:textStyle="bold"
-            android:textSize="16sp"/>
+            android:textColor="@color/text_primary"/>
 
-        <TextView android:id="@+id/tvBadgeDesc"
+        <TextView 
+            android:id="@+id/tvBadgeDesc"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:textSize="12sp"/>
+            android:textAppearance="@style/TextAppearance.Fithub.Caption"
+            android:textColor="@color/text_secondary"
+            android:layout_marginTop="@dimen/spacing_tiny"/>
     </LinearLayout>
 </LinearLayout>
