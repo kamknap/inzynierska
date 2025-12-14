@@ -13,7 +13,7 @@ import kotlinx.coroutines.launch
 
 class EditGoalsDialogFragment : DialogFragment() {
 
-    private lateinit var etTargetWeight: EditText
+    private lateinit var etTargetWeight: com.google.android.material.textfield.TextInputEditText
     private lateinit var spGoalType: Spinner
     private lateinit var spTrainingFrequency: Spinner
     private lateinit var alertDialog: AlertDialog

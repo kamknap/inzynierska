@@ -4,51 +4,51 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/white">
+    android:background="@color/background_secondary">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="16dp">
+        android:padding="@dimen/spacing_normal">
 
         <!-- Sekcja informacji użytkownika -->
         <androidx.cardview.widget.CardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginBottom="24dp"
-            app:cardCornerRadius="12dp"
-            app:cardElevation="4dp">
+            android:layout_marginBottom="@dimen/spacing_large"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="@dimen/card_elevation"
+            style="@style/Widget.Fithub.CardView">
 
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="20dp">
+                android:padding="@dimen/spacing_normal">
 
                 <TextView
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="Twój Profil"
-                    android:textSize="24sp"
-                    android:textStyle="bold"
-                    android:textColor="@android:color/black"
-                    android:layout_marginBottom="16dp"/>
+                    android:textAppearance="@style/TextAppearance.Fithub.Headline1"
+                    android:textColor="@color/text_primary"
+                    android:layout_marginBottom="@dimen/spacing_normal"/>
 
                 <!-- Imię -->
                 <LinearLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="@dimen/spacing_small">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Imię:"
-                        android:textSize="16sp"
-                        android:textColor="@android:color/darker_gray"/>
+                        android:textAppearance="@style/TextAppearance.Fithub.Body1"
+                        android:textColor="@color/text_secondary"/>
 
                     <TextView
                         android:id="@+id/tvUserName"
@@ -56,9 +56,9 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Jan Kowalski"
-                        android:textSize="16sp"
+                        android:textAppearance="@style/TextAppearance.Fithub.Body1"
                         android:textStyle="bold"
-                        android:textColor="@android:color/black"
+                        android:textColor="@color/text_primary"
                         android:gravity="end"/>
                 </LinearLayout>
 
@@ -67,15 +67,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="@dimen/spacing_small">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Wiek:"
-                        android:textSize="16sp"
-                        android:textColor="@android:color/darker_gray"/>
+                        android:textAppearance="@style/TextAppearance.Fithub.Body1"
+                        android:textColor="@color/text_secondary"/>
 
                     <TextView
                         android:id="@+id/tvUserAge"
@@ -83,9 +83,9 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="25 lat"
-                        android:textSize="16sp"
+                        android:textAppearance="@style/TextAppearance.Fithub.Body1"
                         android:textStyle="bold"
-                        android:textColor="@android:color/black"
+                        android:textColor="@color/text_primary"
                         android:gravity="end"/>
                 </LinearLayout>
 
@@ -94,15 +94,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="@dimen/spacing_small">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Waga:"
-                        android:textSize="16sp"
-                        android:textColor="@android:color/darker_gray"/>
+                        android:textAppearance="@style/TextAppearance.Fithub.Body1"
+                        android:textColor="@color/text_secondary"/>
 
                     <TextView
                         android:id="@+id/tvUserWeight"
@@ -110,9 +110,9 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="75 kg"
-                        android:textSize="16sp"
+                        android:textAppearance="@style/TextAppearance.Fithub.Body1"
                         android:textStyle="bold"
-                        android:textColor="@android:color/black"
+                        android:textColor="@color/text_primary"
                         android:gravity="end"/>
                 </LinearLayout>
 
@@ -121,15 +121,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="@dimen/spacing_small">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Płeć:"
-                        android:textSize="16sp"
-                        android:textColor="@android:color/darker_gray"/>
+                        android:textAppearance="@style/TextAppearance.Fithub.Body1"
+                        android:textColor="@color/text_secondary"/>
 
                     <TextView
                         android:id="@+id/tvUserSex"
@@ -137,9 +137,9 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Mężczyzna"
-                        android:textSize="16sp"
+                        android:textAppearance="@style/TextAppearance.Fithub.Body1"
                         android:textStyle="bold"
-                        android:textColor="@android:color/black"
+                        android:textColor="@color/text_primary"
                         android:gravity="end"/>
                 </LinearLayout>
 
@@ -148,15 +148,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="@dimen/spacing_small">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="BMI:"
-                        android:textSize="16sp"
-                        android:textColor="@android:color/darker_gray"/>
+                        android:textAppearance="@style/TextAppearance.Fithub.Body1"
+                        android:textColor="@color/text_secondary"/>
 
                     <TextView
                         android:id="@+id/tvUserBMI"
@@ -164,9 +164,9 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="22.5"
-                        android:textSize="16sp"
+                        android:textAppearance="@style/TextAppearance.Fithub.Body1"
                         android:textStyle="bold"
-                        android:textColor="@android:color/black"
+                        android:textColor="@color/text_primary"
                         android:gravity="end"/>
                 </LinearLayout>
 
@@ -175,15 +175,15 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal"
-                    android:layout_marginBottom="12dp">
+                    android:layout_marginBottom="@dimen/spacing_small">
 
                     <TextView
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="BMR:"
-                        android:textSize="16sp"
-                        android:textColor="@android:color/darker_gray"/>
+                        android:textAppearance="@style/TextAppearance.Fithub.Body1"
+                        android:textColor="@color/text_secondary"/>
 
                     <TextView
                         android:id="@+id/tvUserBMR"
@@ -191,9 +191,9 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="1750 kcal"
-                        android:textSize="16sp"
+                        android:textAppearance="@style/TextAppearance.Fithub.Body1"
                         android:textStyle="bold"
-                        android:textColor="@android:color/black"
+                        android:textColor="@color/text_primary"
                         android:gravity="end"/>
                 </LinearLayout>
 
@@ -208,8 +208,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="Cel:"
-                        android:textSize="16sp"
-                        android:textColor="@android:color/darker_gray"/>
+                        android:textAppearance="@style/TextAppearance.Fithub.Body1"
+                        android:textColor="@color/text_secondary"/>
 
                     <TextView
                         android:id="@+id/tvUserGoal"
@@ -217,9 +217,9 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="75 → 70 kg"
-                        android:textSize="16sp"
+                        android:textAppearance="@style/TextAppearance.Fithub.Body1"
                         android:textStyle="bold"
-                        android:textColor="@android:color/holo_blue_dark"
+                        android:textColor="@color/purple_primary"
                         android:gravity="end"/>
                 </LinearLayout>
 
@@ -232,59 +232,52 @@
             android:layout_height="wrap_content"
             android:orientation="vertical">
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEditProfile"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginBottom="12dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_medium"
                 android:text="Edytuj dane"
                 android:textSize="16sp"
-                android:textAllCaps="false"
-                android:backgroundTint="@android:color/holo_blue_light"
-                android:textColor="@android:color/white"/>
+                style="@style/Widget.Fithub.Button"/>
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnEditGoals"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginBottom="12dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_medium"
                 android:text="Edytuj cele"
                 android:textSize="16sp"
-                android:textAllCaps="false"
-                android:backgroundTint="@android:color/holo_blue_light"
-                android:textColor="@android:color/white"/>
+                style="@style/Widget.Fithub.Button"/>
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnConnectSmartwatch"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginBottom="12dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_medium"
                 android:text="Podłącz smartwatch"
                 android:textSize="16sp"
-                android:textAllCaps="false"
-                android:backgroundTint="@android:color/holo_green_light"
-                android:textColor="@android:color/white"/>
+                android:backgroundTint="@color/blue_info"
+                style="@style/Widget.Fithub.Button"/>
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnContactAuthor"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:layout_marginBottom="12dp"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_medium"
                 android:text="Skontaktuj się z autorem"
                 android:textSize="16sp"
-                android:textAllCaps="false"
-                android:backgroundTint="@android:color/darker_gray"
-                android:textColor="@android:color/white"/>
+                android:backgroundTint="@color/text_secondary"
+                style="@style/Widget.Fithub.Button"/>
 
-            <Button
+            <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnLogout"
                 android:layout_width="match_parent"
-                android:layout_height="56dp"
+                android:layout_height="wrap_content"
                 android:text="Wyloguj się"
                 android:textSize="16sp"
-                android:textAllCaps="false"
-                android:backgroundTint="@android:color/holo_red_light"
-                android:textColor="@android:color/white"/>
+                android:backgroundTint="@color/error"
+                style="@style/Widget.Fithub.Button"/>
 
         </LinearLayout>
 

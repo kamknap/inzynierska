@@ -18,11 +18,11 @@ import java.time.format.DateTimeFormatter
 
 class EditProfileDialogFragment : DialogFragment() {
 
-    private lateinit var etName: EditText
-    private lateinit var etWeight: EditText
-    private lateinit var etHeight: EditText
-    private lateinit var etBirthDate: EditText
-    private lateinit var etSex: EditText
+    private lateinit var etName: com.google.android.material.textfield.TextInputEditText
+    private lateinit var etWeight: com.google.android.material.textfield.TextInputEditText
+    private lateinit var etHeight: com.google.android.material.textfield.TextInputEditText
+    private lateinit var etBirthDate: com.google.android.material.textfield.TextInputEditText
+    private lateinit var etSex: com.google.android.material.textfield.TextInputEditText
     private lateinit var alertDialog: AlertDialog
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {

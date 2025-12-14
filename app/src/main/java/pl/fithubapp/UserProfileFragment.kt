@@ -93,7 +93,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     }
 
     private fun showLogoutDialog() {
-        AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
             .setTitle("Wylogowanie")
             .setMessage("Czy na pewno chcesz się wylogować?")
             .setPositiveButton("Tak") { _, _ ->
