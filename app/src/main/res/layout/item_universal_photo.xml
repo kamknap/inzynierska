@@ -1,60 +1,69 @@
 <?xml version="1.0" encoding="utf-8"?>
-<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:orientation="horizontal"
-    android:padding="12dp"
-    android:gravity="center_vertical"
-    android:background="?android:attr/selectableItemBackground">
-
-    <androidx.cardview.widget.CardView
-        android:layout_width="48dp"
-        android:layout_height="48dp"
-        app:cardCornerRadius="8dp"
-        app:cardElevation="0dp"
-        xmlns:app="http://schemas.android.com/apk/res-auto">
-
-        <ImageView
-            android:id="@+id/ivPhotoThumbnail"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:scaleType="centerCrop"
-            android:src="@android:drawable/ic_menu_camera"
-            android:background="#EEEEEE"
-            android:contentDescription="Miniatura zdjęcia" />
-    </androidx.cardview.widget.CardView>
+    android:layout_marginBottom="@dimen/spacing_small"
+    app:cardCornerRadius="@dimen/card_corner_radius"
+    app:cardElevation="@dimen/card_elevation"
+    style="@style/Widget.Fithub.CardView">
 
     <LinearLayout
-        android:layout_width="0dp"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:orientation="vertical"
-        android:paddingStart="16dp">
+        android:orientation="horizontal"
+        android:padding="@dimen/spacing_normal"
+        android:gravity="center_vertical"
+        android:background="?android:attr/selectableItemBackground">
 
-        <TextView
-            android:id="@+id/tvPhotoDate"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="2023-10-27"
-            android:textStyle="bold"
-            android:textSize="16sp"
-            android:textColor="@android:color/black"/>
+        <androidx.cardview.widget.CardView
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            app:cardCornerRadius="@dimen/card_corner_radius"
+            app:cardElevation="0dp">
 
-        <TextView
-            android:id="@+id/tvPhotoWeight"
-            android:layout_width="wrap_content"
+            <ImageView
+                android:id="@+id/ivPhotoThumbnail"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:scaleType="centerCrop"
+                android:src="@android:drawable/ic_menu_camera"
+                android:background="@color/purple_primary_very_light"
+                android:contentDescription="Miniatura zdjęcia" />
+        </androidx.cardview.widget.CardView>
+
+        <LinearLayout
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
-            android:text="85.5 kg"
-            android:textSize="14sp"
-            android:textColor="@android:color/darker_gray"/>
+            android:layout_weight="1"
+            android:orientation="vertical"
+            android:paddingStart="@dimen/spacing_normal"
+            android:paddingEnd="@dimen/spacing_small">
+
+            <TextView
+                android:id="@+id/tvPhotoDate"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="2023-10-27"
+                android:textAppearance="@style/TextAppearance.Fithub.Headline3"
+                android:textColor="@color/text_primary"/>
+
+            <TextView
+                android:id="@+id/tvPhotoWeight"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="85.5 kg"
+                android:textAppearance="@style/TextAppearance.Fithub.Body2"
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="@dimen/spacing_tiny"/>
+        </LinearLayout>
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_expand_more"
+            android:contentDescription="Zobacz szczegóły"/>
+
     </LinearLayout>
 
-    <ImageView
-        android:layout_width="24dp"
-        android:layout_height="24dp"
-        android:src="@android:drawable/ic_media_play"
-        android:rotation="0"
-        android:alpha="0.3"
-        android:contentDescription="Zobacz szczegóły"/>
-
-</LinearLayout>
+</androidx.cardview.widget.CardView>

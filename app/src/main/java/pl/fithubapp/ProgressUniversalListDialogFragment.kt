@@ -105,7 +105,7 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
 
         loadData()
 
-        val builder = AlertDialog.Builder(requireContext())
+        val builder = AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
             .setTitle(title)
             .setView(view)
             .setNegativeButton("Zamknij", null)
@@ -139,13 +139,13 @@ class ProgressUniversalListDialogFragment : DialogFragment() {
             Toast.makeText(context, "Nie można wczytać zdjęcia", Toast.LENGTH_SHORT).show()
         }
 
-        AlertDialog.Builder(requireContext())
+        AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
             .setTitle("Podgląd zdjęcia")
             .setMessage("Waga: ${photo.weightKg} kg\nData: ${photo.uploadedAt.take(10)}")
             .setView(imageView)
             .setPositiveButton("Zamknij", null)
             .setNegativeButton("Usuń") { _, _ ->
-                AlertDialog.Builder(requireContext())
+                AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
                     .setTitle("Potwierdzenie")
                     .setMessage("Czy na pewno chcesz usunąć to zdjęcie?")
                     .setPositiveButton("Tak") { _, _ -> deletePhoto(photo) }

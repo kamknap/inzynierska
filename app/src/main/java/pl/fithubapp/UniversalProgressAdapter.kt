@@ -88,25 +88,30 @@ class UniversalProgressAdapter(
 
         fun bind(item: UniversalItem.ChallengeItem, actionListener: (String, String) -> Unit) {
             name.text = item.dto.name
-            details.text = "${item.dto.desc}\n | Nagroda: ${item.dto.pointsForComplete} pkt"
+            details.text = "${item.dto.desc}\nNagroda: ${item.dto.pointsForComplete} pkt"
 
+            val context = itemView.context
+            
             when (item.state) {
                 ChallengeState.ACTIVE -> {
                     btnAction.text = "Anuluj"
                     btnAction.isEnabled = true
-                    btnAction.setBackgroundColor(Color.RED)
+                    btnAction.setBackgroundColor(context.getColor(R.color.error))
+                    btnAction.setTextColor(Color.WHITE)
                     btnAction.setOnClickListener { actionListener(item.dto.id ?: "", "CANCEL") }
                 }
                 ChallengeState.AVAILABLE -> {
                     btnAction.text = "Rozpocznij"
                     btnAction.isEnabled = true
-                    btnAction.setBackgroundColor(Color.parseColor("#4CAF50"))
+                    btnAction.setBackgroundColor(context.getColor(R.color.green_success))
+                    btnAction.setTextColor(Color.WHITE)
                     btnAction.setOnClickListener { actionListener(item.dto.id ?: "", "START") }
                 }
                 ChallengeState.LOCKED -> {
                     btnAction.text = "Niedostępne"
                     btnAction.isEnabled = false
-                    btnAction.setBackgroundColor(Color.GRAY)
+                    btnAction.setBackgroundColor(context.getColor(R.color.divider))
+                    btnAction.setTextColor(context.getColor(R.color.text_tertiary))
                 }
             }
         }

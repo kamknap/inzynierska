@@ -101,7 +101,17 @@ class UserProgressFragment : Fragment(R.layout.fragment_user_progress) {
                     }
                     append(" pkt")
                 }
-                tvUserStreak.text = progress.loginStreak.toString()
+                
+                // Kolorowanie streak
+                val streakText = "${progress.loginStreak} dni"
+                tvUserStreak.text = streakText
+                if (progress.loginStreak >= 7) {
+                    tvUserStreak.setTextColor(requireContext().getColor(R.color.green_success))
+                } else if (progress.loginStreak >= 3) {
+                    tvUserStreak.setTextColor(requireContext().getColor(R.color.blue_info))
+                } else {
+                    tvUserStreak.setTextColor(requireContext().getColor(R.color.text_primary))
+                }
 
                 val activeGoal = userGoals.firstOrNull { it.status == "active" } ?: userGoals.firstOrNull()
 
@@ -113,9 +123,18 @@ class UserProgressFragment : Fragment(R.layout.fragment_user_progress) {
                     )
                     tvUserWeightChangeLabel.text = result.label
                     tvUserWeightChange.text = result.value
+                    
+                    // Kolorowanie na podstawie celu
+                    val weightColor = when {
+                        result.value.startsWith("-") -> requireContext().getColor(R.color.green_success) // Schudnięto
+                        result.value.startsWith("+") -> requireContext().getColor(R.color.error) // Przybyło
+                        else -> requireContext().getColor(R.color.text_primary)
+                    }
+                    tvUserWeightChange.setTextColor(weightColor)
                 } else {
                     tvUserWeightChangeLabel.text = "Cel"
                     tvUserWeightChange.text = "Brak danych"
+                    tvUserWeightChange.setTextColor(requireContext().getColor(R.color.text_primary))
                 }
 
                 val activeChallengeProgress = progress.activeChallenges
