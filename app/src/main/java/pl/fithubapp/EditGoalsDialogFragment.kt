@@ -43,6 +43,14 @@ class EditGoalsDialogFragment : DialogFragment() {
         }
 
         etTargetWeight.setOnClickListener { showWeightPicker() }
+        
+        // Nasłuchiwanie zmian typu celu
+        spGoalType.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(parent: AdapterView<*>?, view: android.view.View?, position: Int, id: Long) {
+                updateWeightFieldForGoalType(position)
+            }
+            override fun onNothingSelected(parent: AdapterView<*>?) {}
+        }
 
         alertDialog = AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
             .setTitle("Edytuj cele")
@@ -160,26 +168,79 @@ class EditGoalsDialogFragment : DialogFragment() {
         }
     }
 
-    private fun showWeightPicker() {
-        val picker = NumberPicker(requireContext()).apply {
-            minValue = 30
-            maxValue = 200
-            value = etTargetWeight.text.toString().toIntOrNull() ?: 70
-            try {
-                val selectorWheelPaintField = NumberPicker::class.java.getDeclaredField("mSelectorWheelPaint")
-                selectorWheelPaintField.isAccessible = true
-                val paint = selectorWheelPaintField.get(this) as? android.graphics.Paint
-                paint?.color = android.graphics.Color.parseColor("#212121")
-                paint?.textSize = 60f
-            } catch (e: Exception) {
-                e.printStackTrace()
+    private fun updateWeightFieldForGoalType(goalPosition: Int) {
+        when (goalPosition) {
+            0 -> { // Schudnąć
+                etTargetWeight.isClickable = true
+                etTargetWeight.isFocusable = false
+                etTargetWeight.isEnabled = true
+            }
+            1 -> { // Utrzymać
+                arguments?.getDouble("firstWeight")?.let { currentWeight ->
+                    etTargetWeight.setText(currentWeight.toInt().toString())
+                }
+                etTargetWeight.isClickable = false
+                etTargetWeight.isEnabled = false
+            }
+            2 -> { // Przytyć
+                etTargetWeight.isClickable = true
+                etTargetWeight.isFocusable = false
+                etTargetWeight.isEnabled = true
             }
         }
-        AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
-            .setTitle("Waga docelowa")
-            .setView(picker)
+    }
+
+    private fun showWeightPicker() {
+        val goalPosition = spGoalType.selectedItemPosition
+        val currentWeight = arguments?.getDouble("firstWeight")?.toInt() ?: 70
+        val currentTargetWeight = etTargetWeight.text.toString().toIntOrNull() ?: currentWeight
+        
+        when (goalPosition) {
+            0 -> { // Schudnąć
+                showNumberPicker(
+                    title = "Waga docelowa (kg)",
+                    currentValue = currentTargetWeight,
+                    minValue = 30,
+                    maxValue = currentWeight
+                ) { value ->
+                    etTargetWeight.setText(value.toString())
+                }
+            }
+            1 -> { // Utrzymać
+                Toast.makeText(context, "Przy celu 'Utrzymać' waga jest zablokowana", Toast.LENGTH_SHORT).show()
+            }
+            2 -> { // Przytyć
+                showNumberPicker(
+                    title = "Waga docelowa (kg)",
+                    currentValue = currentTargetWeight,
+                    minValue = currentWeight,
+                    maxValue = 200
+                ) { value ->
+                    etTargetWeight.setText(value.toString())
+                }
+            }
+        }
+    }
+    
+    private fun showNumberPicker(
+        title: String,
+        currentValue: Int,
+        minValue: Int,
+        maxValue: Int,
+        onValueSelected: (Int) -> Unit
+    ) {
+        val numberPicker = NumberPicker(requireContext()).apply {
+            this.minValue = minValue
+            this.maxValue = maxValue
+            value = currentValue.coerceIn(minValue, maxValue)
+            wrapSelectorWheel = false
+        }
+        
+        AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_NumberPicker)
+            .setTitle(title)
+            .setView(numberPicker)
             .setPositiveButton("OK") { _, _ ->
-                etTargetWeight.setText(picker.value.toString())
+                onValueSelected(numberPicker.value)
             }
             .setNegativeButton("Anuluj", null)
             .show()

@@ -363,9 +363,6 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
             this.maxValue = maxValue
             value = currentValue.coerceIn(minValue, maxValue)
             wrapSelectorWheel = false
-            
-            // Ustaw kolory dla NumberPicker - wielokrotne podejścia dla kompatybilności
-            setTextColor(this)
         }
 
         AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_NumberPicker)
@@ -376,35 +373,5 @@ class GoalsFragment : Fragment(R.layout.fragment_user_goals) {
             }
             .setNegativeButton("Anuluj", null)
             .show()
-    }
-    
-    /**
-     * Pomocnicza funkcja do ustawiania kolorów NumberPicker
-     * Używa różnych metod dla maksymalnej kompatybilności
-     */
-    private fun setTextColor(numberPicker: NumberPicker) {
-        // Używamy ciemnego koloru tekstu dla jasnego tła
-        val textColor = android.graphics.Color.parseColor("#212121") // text_primary - ciemny
-        val textSize = 64f
-        
-        // Metoda 1: Próba ustawienia przez refleksję dla mSelectorWheelPaint
-        try {
-            val selectorWheelPaintField = NumberPicker::class.java.getDeclaredField("mSelectorWheelPaint")
-            selectorWheelPaintField.isAccessible = true
-            val paint = selectorWheelPaintField.get(numberPicker) as? android.graphics.Paint
-            paint?.color = textColor
-            paint?.textSize = textSize
-        } catch (e: Exception) {
-            e.printStackTrace()
-        }
-        
-        // Metoda 2: Iteruj przez dzieci NumberPicker i ustaw kolory dla EditText
-        for (i in 0 until numberPicker.childCount) {
-            val child = numberPicker.getChildAt(i)
-            if (child is android.widget.EditText) {
-                child.setTextColor(textColor)
-                child.textSize = textSize / resources.displayMetrics.scaledDensity
-            }
-        }
     }
 }

@@ -101,7 +101,7 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:layout_marginEnd="@dimen/spacing_small"
-                        android:text="Model 3D"
+                        android:text="Model 2D"
                         app:icon="@drawable/ic_fitness"
                         app:iconTint="@color/purple_primary"
                         android:textSize="14sp" />

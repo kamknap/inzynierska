@@ -27,7 +27,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private lateinit var tvUserGoal: TextView
     private lateinit var btnEditProfile: Button
     private lateinit var btnEditGoals: Button
-    private lateinit var btnConnectSmartwatch: Button
+//    private lateinit var btnConnectSmartwatch: Button
     private lateinit var btnContactAuthor: Button
     private lateinit var btnLogout: Button
 
@@ -43,13 +43,12 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         tvUserGoal = view.findViewById(R.id.tvUserGoal)
         btnEditProfile = view.findViewById(R.id.btnEditProfile)
         btnEditGoals = view.findViewById(R.id.btnEditGoals)
-        btnConnectSmartwatch = view.findViewById(R.id.btnConnectSmartwatch)
+//        btnConnectSmartwatch = view.findViewById(R.id.btnConnectSmartwatch)
         btnContactAuthor= view.findViewById(R.id.btnContactAuthor)
         btnLogout = view.findViewById(R.id.btnLogout)
 
-        setupButtonListeners(btnEditProfile, btnEditGoals, btnConnectSmartwatch, btnContactAuthor, btnLogout)
+        setupButtonListeners(btnEditProfile, btnEditGoals, btnContactAuthor, btnLogout)
         
-        // Pobierz dane zalogowanego użytkownika
         loadDataForUser()
 
     }
@@ -57,7 +56,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private fun setupButtonListeners(
         btnEditProfile: Button,
         btnEditGoals: Button,
-        btnConnectSmartwatch: Button,
+//        btnConnectSmartwatch: Button,
         btnContactAuthor: Button,
         btnLogout: Button
     ) {
@@ -69,9 +68,9 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             showEditGoalsDialog()
         }
 
-        btnConnectSmartwatch.setOnClickListener {
-            Toast.makeText(context, " wkrótce ", Toast.LENGTH_SHORT).show()
-        }
+//        btnConnectSmartwatch.setOnClickListener {
+//            Toast.makeText(context, " wkrótce ", Toast.LENGTH_SHORT).show()
+//        }
 
         btnContactAuthor.setOnClickListener {
             val recipient = "knapikkamil2002@gmail.com"

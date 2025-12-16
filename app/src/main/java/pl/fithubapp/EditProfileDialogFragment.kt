@@ -209,16 +209,25 @@ class EditProfileDialogFragment : DialogFragment() {
     }
 
     private fun showSexPicker() {
-        val options = arrayOf("Mężczyzna", "Kobieta")
+        val values = arrayOf("Mężczyzna", "Kobieta")
         val currentValue = etSex.text.toString()
-        val currentIndex = options.indexOf(currentValue).takeIf { it >= 0 } ?: 0
+        val currentIndex = values.indexOf(currentValue).takeIf { it >= 0 } ?: 0
 
-        AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
-            .setTitle("Płeć")
-            .setSingleChoiceItems(options, currentIndex) { dialog, which ->
-                etSex.setText(options[which])
-                dialog.dismiss()
+        val numberPicker = NumberPicker(requireContext()).apply {
+            minValue = 0
+            maxValue = values.size - 1
+            displayedValues = values
+            value = currentIndex
+            wrapSelectorWheel = false
+        }
+
+        AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_NumberPicker)
+            .setTitle("Wybierz płeć")
+            .setView(numberPicker)
+            .setPositiveButton("OK") { _, _ ->
+                etSex.setText(values[numberPicker.value])
             }
+            .setNegativeButton("Anuluj", null)
             .show()
     }
 
@@ -227,18 +236,9 @@ class EditProfileDialogFragment : DialogFragment() {
             minValue = min
             maxValue = max
             value = current
-            // Ustaw czarny kolor tekstu dla NumberPicker
-            try {
-                val selectorWheelPaintField = NumberPicker::class.java.getDeclaredField("mSelectorWheelPaint")
-                selectorWheelPaintField.isAccessible = true
-                val paint = selectorWheelPaintField.get(this) as? android.graphics.Paint
-                paint?.color = android.graphics.Color.parseColor("#212121") // text_primary color
-                paint?.textSize = 60f // zwiększ rozmiar czcionki dla lepszej widoczności
-            } catch (e: Exception) {
-                e.printStackTrace()
-            }
+            wrapSelectorWheel = false
         }
-        AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
+        AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_NumberPicker)
             .setTitle(title)
             .setView(picker)
             .setPositiveButton("OK") { _, _ -> onSelected(picker.value) }
