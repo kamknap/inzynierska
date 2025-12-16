@@ -106,13 +106,35 @@ class EditGoalsDialogFragment : DialogFragment() {
                     else -> "maintain"
                 }
 
+                val user = NetworkModule.api.getCurrentUser()
+                val bmr = user.computed.bmr.toInt()
+                
+                val activityLevel = user.settings?.activityLevel ?: 3
+                
+                val activityMultiplier = when(activityLevel) {
+                    1 -> 1.2   // Brak aktywności/siedzący tryb życia
+                    2 -> 1.375 // Lekka aktywność (1-3 dni/tydzień)
+                    3 -> 1.55  // Umiarkowana aktywność (3-5 dni/tydzień)
+                    4 -> 1.725 // Wysoka aktywność (6-7 dni/tydzień)
+                    5 -> 1.9   // Bardzo wysoka aktywność (2x dziennie, intensywne treningi)
+                    else -> 1.55
+                }
+                
+                val tdee = (bmr * activityMultiplier).toInt()
+                
+                val calorieTarget = when(goalTypeApi) {
+                    "lose_weight" -> tdee - 400  // deficyt 400 kcal
+                    "gain_weight" -> tdee + 300  // nadwyżka 300 kcal
+                    else -> tdee                 // utrzymanie
+                }
+
                 val updateDto = UpdateUserGoalDto(
                     type = goalTypeApi,
                     targetWeightKg = targetWeight.toDouble(),
                     plan = GoalPlanData(
                         trainingFrequencyPerWeek = spTrainingFrequency.selectedItemPosition,
                         estimatedDurationWeeks = null,
-                        calorieTarget = null
+                        calorieTarget = calorieTarget
                     )
                 )
 
@@ -143,13 +165,12 @@ class EditGoalsDialogFragment : DialogFragment() {
             minValue = 30
             maxValue = 200
             value = etTargetWeight.text.toString().toIntOrNull() ?: 70
-            // Ustaw czarny kolor tekstu dla NumberPicker
             try {
                 val selectorWheelPaintField = NumberPicker::class.java.getDeclaredField("mSelectorWheelPaint")
                 selectorWheelPaintField.isAccessible = true
                 val paint = selectorWheelPaintField.get(this) as? android.graphics.Paint
-                paint?.color = android.graphics.Color.parseColor("#212121") // text_primary color
-                paint?.textSize = 60f // zwiększ rozmiar czcionki dla lepszej widoczności
+                paint?.color = android.graphics.Color.parseColor("#212121")
+                paint?.textSize = 60f
             } catch (e: Exception) {
                 e.printStackTrace()
             }
