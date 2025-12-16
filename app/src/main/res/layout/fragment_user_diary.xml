@@ -216,6 +216,59 @@
 
         </androidx.cardview.widget.CardView>
 
+        <!-- Przekąski -->
+        <androidx.cardview.widget.CardView
+            android:id="@+id/cvSnacks"
+            style="@style/Widget.Fithub.CardView"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/card_margin">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical">
+
+                <!-- Nagłówek przekąsek -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal"
+                    android:gravity="center_vertical"
+                    android:layout_marginBottom="@dimen/spacing_small">
+
+                    <TextView
+                        android:id="@+id/tvSnacks"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="Przekąski"
+                        style="@style/TextAppearance.Fithub.Headline3"
+                        android:textColor="@color/green_success" />
+
+                    <ImageButton
+                        android:id="@+id/btnAddSnacks"
+                        android:layout_width="@dimen/icon_size_xlarge"
+                        android:layout_height="@dimen/icon_size_xlarge"
+                        android:background="@drawable/bg_button_add_meal"
+                        android:src="@drawable/ic_add_white"
+                        android:contentDescription="Dodaj przekąski"
+                        android:scaleType="center"
+                        android:padding="@dimen/spacing_medium" />
+
+                </LinearLayout>
+
+                <!-- Lista przekąsek -->
+                <LinearLayout
+                    android:id="@+id/llSnacksMeals"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+            </LinearLayout>
+
+        </androidx.cardview.widget.CardView>
+
         <!-- Trening -->
         <androidx.cardview.widget.CardView
             android:id="@+id/cvTraining"

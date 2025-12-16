@@ -34,19 +34,27 @@ import kotlin.math.roundToInt
 
 class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogFragment.OnMealAddedListener {
 
+    companion object {
+        // Mapa do przechowywania stanów sekcji między nawigacją
+        private val sectionStates = mutableMapOf<Int, Boolean>()
+    }
+
     private lateinit var llDaysContainer: LinearLayout
     private lateinit var hsvWeek: HorizontalScrollView
     private var selectedDate = LocalDate.now()
     private lateinit var btnBreakfast: ImageButton
     private lateinit var btnLunch: ImageButton
     private lateinit var btnDinner: ImageButton
+    private lateinit var btnSnacks: ImageButton
     private lateinit var llBreakfastMeals: LinearLayout
     private lateinit var llLunchMeals: LinearLayout
     private lateinit var llDinnerMeals: LinearLayout
+    private lateinit var llSnacksMeals: LinearLayout
     private lateinit var tvDailyTotal: TextView
     private lateinit var tvBreakfast: TextView
     private lateinit var tvLunch: TextView
     private lateinit var tvDinner: TextView
+    private lateinit var tvSnacks: TextView
     private lateinit var tvTraining: TextView
     private lateinit var llTraining: LinearLayout
     private lateinit var btnTraining: ImageButton
@@ -62,6 +70,10 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
     private var dinnerProtein = 0.0
     private var dinnerFat = 0.0
     private var dinnerCarbs = 0.0
+    private var snacksCalories = 0.0
+    private var snacksProtein = 0.0
+    private var snacksFat = 0.0
+    private var snacksCarbs = 0.0
     private var dailyTotalCalories = 0.0
     private var dailyTotalProtein = 0.0
     private var dailyTotalFat = 0.0
@@ -69,6 +81,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
     private var loadedBreakfast = false
     private var loadedLunch = false
     private var loadedDinner = false
+    private var loadedSnacks = false
     private var currentLoadId = 0
     private var trainingCalories = 0.0
     private val currentUserId: String
@@ -87,15 +100,18 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         llBreakfastMeals = view.findViewById(R.id.llBreakfastMeals)
         llLunchMeals = view.findViewById(R.id.llLunchMeals)
         llDinnerMeals = view.findViewById(R.id.llDinnerMeals)
+        llSnacksMeals = view.findViewById(R.id.llSnacksMeals)
         llTraining = view.findViewById(R.id.llTraining)
         tvDailyTotal = view.findViewById<TextView>(R.id.tvDailyTotal)
         tvBreakfast = view.findViewById(R.id.tvBreakfast)
         tvLunch = view.findViewById(R.id.tvLunch)
         tvDinner = view.findViewById(R.id.tvDinner)
+        tvSnacks = view.findViewById(R.id.tvSnacks)
         tvTraining = view.findViewById(R.id.tvTraining)
         btnBreakfast = view.findViewById(R.id.btnAddBreakfast)
         btnLunch = view.findViewById(R.id.btnAddLunch)
         btnDinner = view.findViewById(R.id.btnAddDinner)
+        btnSnacks = view.findViewById(R.id.btnAddSnacks)
         btnTraining = view.findViewById(R.id.btnTraining)
 
 
@@ -111,9 +127,75 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         btnDinner.setOnClickListener {
             openMealDialog("Kolacja")
         }
+        btnSnacks.setOnClickListener {
+            openMealDialog("Przekąski")
+        }
         btnTraining.setOnClickListener {
             openExerciseDialog()
         }
+
+        // Rozwijanie i zwijanie posilkow
+        tvBreakfast.setOnClickListener {
+            toggleMealSection(llBreakfastMeals)
+        }
+
+        tvLunch.setOnClickListener {
+            toggleMealSection(llLunchMeals)
+        }
+
+        tvDinner.setOnClickListener {
+            toggleMealSection(llDinnerMeals)
+        }
+
+        tvSnacks.setOnClickListener {
+            toggleMealSection(llSnacksMeals)
+        }
+
+        tvTraining.setOnClickListener {
+            toggleMealSection(llTraining)
+        }
+
+        // Przywracanie stanów sekcji po zmianie widoku
+        restoreSectionStates()
+    }
+
+    private fun toggleMealSection(container: LinearLayout) {
+        if (container.visibility == View.VISIBLE) {
+            // animacja
+            container.animate()
+                .alpha(0f)
+                .setDuration(200)
+                .withEndAction {
+                    container.visibility = View.GONE
+                    container.alpha = 1f
+                    // Zapisanie stanu
+                    sectionStates[container.id] = false
+                }
+        } else {
+            container.visibility = View.VISIBLE
+            container.alpha = 0f
+            container.animate()
+                .alpha(1f)
+                .setDuration(200)
+            sectionStates[container.id] = true
+        }
+    }
+
+    private fun restoreSectionStates() {
+        // Przywróć widoczność sekcji bez animacji przy powrocie do fragmentu
+        view?.let { v ->
+            restoreSectionState(v, R.id.llBreakfastMeals)
+            restoreSectionState(v, R.id.llLunchMeals)
+            restoreSectionState(v, R.id.llDinnerMeals)
+            restoreSectionState(v, R.id.llSnacksMeals)
+            restoreSectionState(v, R.id.llTraining)
+        }
+    }
+
+    private fun restoreSectionState(rootView: View, viewId: Int) {
+        val container = rootView.findViewById<LinearLayout>(viewId)
+        val isVisible = sectionStates[viewId] ?: true // Domyślnie widoczne
+        container?.visibility = if (isVisible) View.VISIBLE else View.GONE
     }
 
     private fun openMealDialog(mealType: String){
@@ -392,6 +474,9 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                 val dinnerMeals = dailyNutrition.meals.filter { meal ->
                     meal.name.lowercase().contains("kolacja")
                 }
+                val snacksMeals = dailyNutrition.meals.filter { meal ->
+                    meal.name.lowercase().contains("przekąski")
+                }
                 val trainingMeals = dailyNutrition.meals.filter { meal ->
                     meal.name.lowercase().contains("trening")
                 }
@@ -400,12 +485,14 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                 displayMeals(breakfastMeals, "śniadanie")
                 displayMeals(lunchMeals, "obiad")
                 displayMeals(dinnerMeals, "kolacja")
+                displayMeals(snacksMeals, "przekąski")
                 displayMeals(trainingMeals, "trening")
 
                 // flagi
                 loadedBreakfast = true
                 loadedLunch = true
                 loadedDinner = true
+                loadedSnacks = true
 
                 // aktualizacja totals
                 if (loadIdAtStart == currentLoadId) {
@@ -424,6 +511,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
             "śniadanie" -> llBreakfastMeals
             "obiad" -> llLunchMeals
             "kolacja" -> llDinnerMeals
+            "przekąski" -> llSnacksMeals
             "trening" -> llTraining
             else -> return
         }
@@ -439,6 +527,9 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
             }
             "kolacja" -> {
                 dinnerCalories = 0.0; dinnerProtein = 0.0; dinnerFat = 0.0; dinnerCarbs = 0.0
+            }
+            "przekąski" -> {
+                snacksCalories = 0.0; snacksProtein = 0.0; snacksFat = 0.0; snacksCarbs = 0.0
             }
             "trening" -> {
                 trainingCalories = 0.0
@@ -475,6 +566,13 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                         dinnerProtein += protein
                         dinnerFat += fat
                         dinnerCarbs += carbs
+                    }
+
+                    "przekąski" -> {
+                        snacksCalories += calories
+                        snacksProtein += protein
+                        snacksFat += fat
+                        snacksCarbs += carbs
                     }
 
                     "trening" -> {
@@ -532,25 +630,24 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
                 "Kolacja",
                 "${dinnerCalories.roundToInt()} kcal, ${dinnerProtein.roundToInt()} P, ${dinnerFat.roundToInt()} F, ${dinnerCarbs.roundToInt()} C"
             )
+            "przekąski" -> tvSnacks.text = formatMealTitle(
+                "Przekąski",
+                "${snacksCalories.roundToInt()} kcal, ${snacksProtein.roundToInt()} P, ${snacksFat.roundToInt()} F, ${snacksCarbs.roundToInt()} C"
+            )
             "trening" -> tvTraining.text = formatMealTitle(
                 "Trening",
                 "${abs(trainingCalories).roundToInt()} kcal spalono"
             )
         }
     }
-    
-    /**
-     * Formatuje tytuł posiłku z mniejszą czcionką dla makrosów w nawiasie
-     */
+
     private fun formatMealTitle(title: String, macros: String): SpannableString {
         val fullText = "$title ($macros)"
         val spannable = SpannableString(fullText)
         
-        // Znajdź pozycję nawiasu
         val startIndex = title.length
         val endIndex = fullText.length
         
-        // Zmniejsz czcionkę dla tekstu w nawiasie (80% oryginalnego rozmiaru)
         spannable.setSpan(
             RelativeSizeSpan(0.8f),
             startIndex,
@@ -575,6 +672,7 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         breakfastCalories = 0.0; breakfastProtein = 0.0; breakfastFat = 0.0; breakfastCarbs = 0.0
         lunchCalories     = 0.0; lunchProtein     = 0.0; lunchFat     = 0.0; lunchCarbs     = 0.0
         dinnerCalories    = 0.0; dinnerProtein    = 0.0; dinnerFat    = 0.0; dinnerCarbs    = 0.0
+        snacksCalories    = 0.0; snacksProtein    = 0.0; snacksFat    = 0.0; snacksCarbs    = 0.0
         dailyTotalCalories = 0.0; dailyTotalProtein = 0.0; dailyTotalFat = 0.0; dailyTotalCarbs = 0.0
         trainingCalories = 0.0
 
@@ -582,25 +680,28 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         loadedBreakfast = false
         loadedLunch = false
         loadedDinner = false
+        loadedSnacks = false
 
         llBreakfastMeals.removeAllViews()
         llLunchMeals.removeAllViews()
         llDinnerMeals.removeAllViews()
+        llSnacksMeals.removeAllViews()
         llTraining.removeAllViews()
 
         tvBreakfast.text = "Śniadanie"
         tvLunch.text = "Obiad"
         tvDinner.text = "Kolacja"
+        tvSnacks.text = "Przekąski"
         tvDailyTotal.text = ""
         tvTraining.text = "Trening"
     }
 
     private fun updateDailyTotals(calorieGoal: Double) {
-        if (loadedBreakfast && loadedLunch && loadedDinner) {
-            dailyTotalCalories = breakfastCalories + lunchCalories + dinnerCalories + trainingCalories
-            dailyTotalProtein  = breakfastProtein  + lunchProtein  + dinnerProtein
-            dailyTotalFat      = breakfastFat      + lunchFat      + dinnerFat
-            dailyTotalCarbs    = breakfastCarbs    + lunchCarbs    + dinnerCarbs
+        if (loadedBreakfast && loadedLunch && loadedDinner && loadedSnacks) {
+            dailyTotalCalories = breakfastCalories + lunchCalories + dinnerCalories + snacksCalories + trainingCalories
+            dailyTotalProtein  = breakfastProtein  + lunchProtein  + dinnerProtein  + snacksProtein
+            dailyTotalFat      = breakfastFat      + lunchFat      + dinnerFat      + snacksFat
+            dailyTotalCarbs    = breakfastCarbs    + lunchCarbs    + dinnerCarbs    + snacksCarbs
 
             tvDailyTotal.text = "${dailyTotalCalories.roundToInt()} / ${calorieGoal.roundToInt()} kcal, " +
                     "${dailyTotalProtein.roundToInt()} P, ${dailyTotalFat.roundToInt()} F, ${dailyTotalCarbs.roundToInt()} C"

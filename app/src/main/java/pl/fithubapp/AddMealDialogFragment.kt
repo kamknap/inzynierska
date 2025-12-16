@@ -48,6 +48,7 @@ class AddMealDialogFragment : DialogFragment() {
 
     var onMealAddedListener: OnMealAddedListener? = null
     private var searchJob: Job? = null
+    private var llLoadingIndicator: LinearLayout? = null
 
     private val barcodeLauncher = registerForActivityResult(ScanContract()){ result ->
         if(result.contents != null){
@@ -61,13 +62,14 @@ class AddMealDialogFragment : DialogFragment() {
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         val mealType = arguments?.getString("mealType") ?: "Posiłek"
 
-        val mainLayout = android.view.LayoutInflater.from(requireContext())
+        val mainLayout = LayoutInflater.from(requireContext())
             .inflate(R.layout.dialog_search, null) as LinearLayout
 
         val etSearch = mainLayout.findViewById<EditText>(R.id.etSearch)
         val llSearchResults = mainLayout.findViewById<LinearLayout>(R.id.llSearchResults)
         val llActionButtons = mainLayout.findViewById<LinearLayout>(R.id.llActionButtons)
         val tilSearch = mainLayout.findViewById<com.google.android.material.textfield.TextInputLayout>(R.id.tilSearch)
+        llLoadingIndicator = mainLayout.findViewById(R.id.llLoadingIndicator)
         
         // Ustaw hint dla wyszukiwania
         tilSearch.hint = "Wyszukaj produkt..."
@@ -126,13 +128,18 @@ class AddMealDialogFragment : DialogFragment() {
             //anulowanie poprzedniego wyszukiwania
             searchJob?.cancel()
             if (query.length >= 2) {
+                // Pokaż wskaźnik ładowania
+                showLoading(true)
+                llSearchResults.removeAllViews()
 //                opoznienie 500ms przed wyszukiwaniem
                 searchJob = lifecycleScope.launch {
                     delay(500)
                     searchFoods(query, llSearchResults)
                 }
             } else {
-                llSearchResults.removeAllViews()    }
+                showLoading(false)
+                llSearchResults.removeAllViews()
+            }
         }
 
         return AlertDialog.Builder(requireContext(), R.style.ThemeOverlay_Fithub_Dialog)
@@ -141,6 +148,10 @@ class AddMealDialogFragment : DialogFragment() {
             .setNegativeButton("Zamknij") { _, _ ->
             }
             .create()
+    }
+
+    private fun showLoading(show: Boolean) {
+        llLoadingIndicator?.visibility = if (show) View.VISIBLE else View.GONE
     }
 
     private fun searchFoods(query: String, container: LinearLayout) {
@@ -178,6 +189,8 @@ class AddMealDialogFragment : DialogFragment() {
                         "$nameKey|$brandKey|$kcalKey"
                     }
 
+                // Ukryj wskaźnik ładowania
+                showLoading(false)
                 container.removeAllViews()
 
                 if (foodList.isEmpty()) {
@@ -212,6 +225,15 @@ class AddMealDialogFragment : DialogFragment() {
                 }
             }
             catch(e: Exception) {
+                // Ukryj wskaźnik ładowania w przypadku błędu
+                showLoading(false)
+                
+                // Ignoruj CancellationException (anulowanie wyszukiwania to normalne zachowanie)
+                if (e is CancellationException) {
+                    Log.d("AddMealDialog", "Wyszukiwanie anulowane")
+                    return@launch
+                }
+                
                 Log.e("AddMealDialog", "Błąd wyszukiwania", e)
                 Toast.makeText(requireContext(), "Błąd wyszukiwania: ${e.message}", Toast.LENGTH_SHORT).show()
             }

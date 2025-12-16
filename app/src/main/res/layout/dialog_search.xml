@@ -41,17 +41,47 @@
     </com.google.android.material.textfield.TextInputLayout>
 
     <!-- Wyniki wyszukiwania -->
-    <ScrollView
+    <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="400dp"
         android:background="@color/background_secondary">
 
-        <LinearLayout
-            android:id="@+id/llSearchResults"
+        <ScrollView
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
+            android:layout_height="match_parent">
 
-    </ScrollView>
+            <LinearLayout
+                android:id="@+id/llSearchResults"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" />
+
+        </ScrollView>
+
+        <!-- Wskaźnik ładowania -->
+        <LinearLayout
+            android:id="@+id/llLoadingIndicator"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:visibility="gone">
+
+            <ProgressBar
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:indeterminateTint="@color/purple_primary" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Wyszukiwanie produktów..."
+                android:textColor="@color/text_secondary"
+                android:layout_marginTop="@dimen/spacing_normal"
+                style="@style/TextAppearance.Fithub.Body1" />
+
+        </LinearLayout>
+
+    </FrameLayout>
 
 </LinearLayout>
