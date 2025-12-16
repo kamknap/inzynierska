@@ -4,7 +4,10 @@ import android.app.AlertDialog
 import android.content.Context
 import android.os.Bundle
 import android.text.InputType
+import android.text.Spannable
 import android.text.SpannableString
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
 import android.text.style.RelativeSizeSpan
 import android.util.Log
 import android.view.Gravity
@@ -17,6 +20,7 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.content.ContextCompat
 import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.lifecycleScope
@@ -35,7 +39,7 @@ import kotlin.math.roundToInt
 class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogFragment.OnMealAddedListener {
 
     companion object {
-        // Mapa do przechowywania stanów sekcji między nawigacją
+        // Mapa do przechowywania stanów posiłków (zwinięte niezwinięte) między nawigacją
         private val sectionStates = mutableMapOf<Int, Boolean>()
     }
 
@@ -113,7 +117,6 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         btnDinner = view.findViewById(R.id.btnAddDinner)
         btnSnacks = view.findViewById(R.id.btnAddSnacks)
         btnTraining = view.findViewById(R.id.btnTraining)
-
 
         initDaysView()
 
@@ -239,9 +242,9 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         val btnDeleteMeal = mealView.findViewById<ImageButton>(R.id.btnDeleteMeal)
 
         tvMealName.text = mealName
-        tvMealProtein.text = "$protein P"
-        tvMealFat.text = "$fat F"
-        tvMealCarbs.text = "$carbs C"
+        tvMealProtein.text = "$protein B"
+        tvMealFat.text = "$fat T"
+        tvMealCarbs.text = "$carbs W"
         tvMealCalories.text = "$calories Kcal"
 
         btnDeleteMeal.setOnClickListener {
@@ -620,19 +623,19 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
         when (mealType.lowercase()) {
             "śniadanie" -> tvBreakfast.text = formatMealTitle(
                 "Śniadanie",
-                "${breakfastCalories.roundToInt()} kcal, ${breakfastProtein.roundToInt()} P, ${breakfastFat.roundToInt()} F, ${breakfastCarbs.roundToInt()} C"
+                "${breakfastCalories.roundToInt()} kcal, ${breakfastProtein.roundToInt()} B, ${breakfastFat.roundToInt()} T, ${breakfastCarbs.roundToInt()} W"
             )
             "obiad" -> tvLunch.text = formatMealTitle(
                 "Obiad",
-                "${lunchCalories.roundToInt()} kcal, ${lunchProtein.roundToInt()} P, ${lunchFat.roundToInt()} F, ${lunchCarbs.roundToInt()} C"
+                "${lunchCalories.roundToInt()} kcal, ${lunchProtein.roundToInt()} B, ${lunchFat.roundToInt()} T, ${lunchCarbs.roundToInt()} W"
             )
             "kolacja" -> tvDinner.text = formatMealTitle(
                 "Kolacja",
-                "${dinnerCalories.roundToInt()} kcal, ${dinnerProtein.roundToInt()} P, ${dinnerFat.roundToInt()} F, ${dinnerCarbs.roundToInt()} C"
+                "${dinnerCalories.roundToInt()} kcal, ${dinnerProtein.roundToInt()} B, ${dinnerFat.roundToInt()} T, ${dinnerCarbs.roundToInt()} W"
             )
             "przekąski" -> tvSnacks.text = formatMealTitle(
                 "Przekąski",
-                "${snacksCalories.roundToInt()} kcal, ${snacksProtein.roundToInt()} P, ${snacksFat.roundToInt()} F, ${snacksCarbs.roundToInt()} C"
+                "${snacksCalories.roundToInt()} kcal, ${snacksProtein.roundToInt()} B, ${snacksFat.roundToInt()} T, ${snacksCarbs.roundToInt()} W"
             )
             "trening" -> tvTraining.text = formatMealTitle(
                 "Trening",
@@ -703,8 +706,31 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
             dailyTotalFat      = breakfastFat      + lunchFat      + dinnerFat      + snacksFat
             dailyTotalCarbs    = breakfastCarbs    + lunchCarbs    + dinnerCarbs    + snacksCarbs
 
-            tvDailyTotal.text = "${dailyTotalCalories.roundToInt()} / ${calorieGoal.roundToInt()} kcal, " +
-                    "${dailyTotalProtein.roundToInt()} P, ${dailyTotalFat.roundToInt()} F, ${dailyTotalCarbs.roundToInt()} C"
+            val tertiaryColor = ContextCompat.getColor(requireContext(), R.color.text_tertiary)
+
+            val builder = SpannableStringBuilder()
+
+            builder.append("${dailyTotalCalories.roundToInt()} / ${calorieGoal.roundToInt()} ")
+            var start = builder.length
+            builder.append("kcal, ")
+            builder.setSpan(ForegroundColorSpan(tertiaryColor), start, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+            builder.append("${dailyTotalProtein.roundToInt()} ")
+            start = builder.length
+            builder.append("B, ")
+            builder.setSpan(ForegroundColorSpan(tertiaryColor), start, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+            builder.append("${dailyTotalFat.roundToInt()} ")
+            start = builder.length
+            builder.append("T, ")
+            builder.setSpan(ForegroundColorSpan(tertiaryColor), start, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+            builder.append("${dailyTotalCarbs.roundToInt()} ")
+            start = builder.length
+            builder.append("W")
+            builder.setSpan(ForegroundColorSpan(tertiaryColor), start, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+
+            tvDailyTotal.text = builder
         }
     }
 
