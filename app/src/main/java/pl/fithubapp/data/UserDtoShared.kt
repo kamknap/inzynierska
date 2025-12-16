@@ -1,7 +1,6 @@
 package pl.fithubapp.data
 
 // Wspólne klasy używane w różnych DTO użytkownika
-// Przeniesione tutaj aby uniknąć duplikacji
 
 data class AuthData(
     val provider: String,

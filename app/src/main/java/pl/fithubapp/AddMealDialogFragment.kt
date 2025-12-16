@@ -202,7 +202,7 @@ class AddMealDialogFragment : DialogFragment() {
                 }
 
                 foodList.forEach { food ->
-                    val foodView = android.view.LayoutInflater.from(requireContext())
+                    val foodView = LayoutInflater.from(requireContext())
                         .inflate(R.layout.item_food_search_result, container, false)
 
                     val tvFoodName = foodView.findViewById<TextView>(R.id.tvFoodName)
@@ -225,10 +225,9 @@ class AddMealDialogFragment : DialogFragment() {
                 }
             }
             catch(e: Exception) {
-                // Ukryj wskaźnik ładowania w przypadku błędu
                 showLoading(false)
                 
-                // Ignoruj CancellationException (anulowanie wyszukiwania to normalne zachowanie)
+                // Ignorowanie CancellationException
                 if (e is CancellationException) {
                     Log.d("AddMealDialog", "Wyszukiwanie anulowane")
                     return@launch
