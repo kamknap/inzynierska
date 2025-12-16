@@ -53,7 +53,9 @@ class AddExerciseDialogFragment : SearchDialogFragment<ExerciseDto>() {
 
         val muscleInfo = item.muscleIds
             ?.takeIf { it.isNotEmpty() }
-            ?.joinToString(", ")
+            ?.joinToString(", ") { muscleId ->
+                MuscleTranslator.translate(muscleId)
+            }
 
         val metsInfo = item.mets?.let { "METS: $it" } ?: ""
 
