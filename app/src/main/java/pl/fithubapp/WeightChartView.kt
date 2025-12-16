@@ -14,8 +14,6 @@ import android.text.TextPaint
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 
-
-// TODO wykres crashuje jak nie ma danych na dany tydzien
 class WeightChartView @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
