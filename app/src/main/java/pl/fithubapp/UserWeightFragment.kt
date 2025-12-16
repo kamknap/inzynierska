@@ -294,8 +294,64 @@ class UserWeightFragment : Fragment(R.layout.fragment_user_weight) {
 
                     if (leveledUp) {
                         (activity as? UserMainActivity)?.showLevelUpDialog()
-                    }                } catch (e: Exception) {
+                    }
+                } catch (e: Exception) {
                     Log.e("AddWeight", "Nie udało się dodać punktów: ${e.message}")
+                }
+
+                try {
+                    val userGoals = NetworkModule.api.getCurrentUserGoals()
+                    val activeGoal = userGoals.firstOrNull { it.status == "active" }
+
+                    if (activeGoal != null) {
+                        val targetReached = when (activeGoal.type) {
+                            "lose_weight" -> weight <= activeGoal.targetWeightKg
+                            "gain_weight" -> weight >= activeGoal.targetWeightKg
+                            "maintain" -> false
+                            else -> false
+                        }
+
+                        if (targetReached) {
+                            PointsManager.addPoints(PointsManager.ActionType.GOAL_REACHED)
+
+                            val message = when (activeGoal.type) {
+                                "lose_weight" -> "Gratulacje! Osiągnąłeś wagę docelową ${activeGoal.targetWeightKg} kg! 🎉"
+                                "gain_weight" -> "Gratulacje! Osiągnąłeś wagę docelową ${activeGoal.targetWeightKg} kg! 💪"
+                                else -> "Gratulacje! Cel osiągnięty!"
+                            }
+
+                            PointsManager.onGoalAchieved?.invoke(message, 100)
+
+                            val user = NetworkModule.api.getCurrentUser()
+                            val bmr = user.computed.bmr.toInt()
+                            val activityLevel = user.settings?.activityLevel ?: 3
+                            val activityMultiplier = when(activityLevel) {
+                                1 -> 1.2
+                                2 -> 1.375
+                                3 -> 1.55
+                                4 -> 1.725
+                                5 -> 1.9
+                                else -> 1.55
+                            }
+                            val tdee = (bmr * activityMultiplier).toInt()
+
+                            val updateDto = pl.fithubapp.data.UpdateUserGoalDto(
+                                type = "maintain",
+                                firstWeightKg = weight,
+                                targetWeightKg = weight,
+                                plan = pl.fithubapp.data.GoalPlanData(
+                                    trainingFrequencyPerWeek = activeGoal.plan.trainingFrequencyPerWeek,
+                                    estimatedDurationWeeks = null,
+                                    calorieTarget = tdee
+                                )
+                            )
+
+                            NetworkModule.api.updateUserGoal(activeGoal.id, updateDto)
+                            Log.d("AddWeight", "Cel automatycznie zmieniony na 'utrzymać' z wagą ${weight} kg")
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("AddWeight", "Błąd sprawdzania celu: ${e.message}")
                 }
 
                 Toast.makeText(

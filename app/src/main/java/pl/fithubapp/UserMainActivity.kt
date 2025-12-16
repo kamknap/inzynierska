@@ -73,6 +73,10 @@ class UserMainActivity : AppCompatActivity() {
             showChallengeCompleteDialog(challengeName, badgeName, points)
         }
 
+        PointsManager.onGoalAchieved = { message, points ->
+            showGoalAchievedDialog(message, points)
+        }
+
         // Pobierz ID zalogowanego użytkownika z Firebase
         val currentUserId = AuthManager.currentUserId
         if (currentUserId == null) {
@@ -147,7 +151,6 @@ class UserMainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
         super.onDestroy()
-        // Zamknij wszystkie aktywne dialogi przed zniszczeniem Activity
         activeDialogs.forEach { dialog ->
             if (dialog.isShowing) {
                 dialog.dismiss()
@@ -155,6 +158,7 @@ class UserMainActivity : AppCompatActivity() {
         }
         activeDialogs.clear()
         ChallengeManager.onChallengeCompleted = null
+        PointsManager.onGoalAchieved = null
     }
 
     private fun setupBottomNavigation() {
@@ -290,7 +294,6 @@ class UserMainActivity : AppCompatActivity() {
     }
 
     fun showChallengeCompleteDialog(challengeName: String, badgeName: String, points: Int) {
-        // ZABEZPIECZENIE: Nie pokazuj dialogu, jeśli aktywność umiera
         if (isFinishing || isDestroyed) return
 
         try {
@@ -310,11 +313,9 @@ class UserMainActivity : AppCompatActivity() {
                 .setCancelable(false)
                 .create()
 
-            // Dodaj dialog do listy aktywnych
             activeDialogs.add(dialog)
             
             dialog.setOnDismissListener {
-                // Usuń dialog z listy po zamknięciu
                 activeDialogs.remove(dialog)
             }
 
@@ -327,6 +328,35 @@ class UserMainActivity : AppCompatActivity() {
             dialog.show()
         } catch (e: Exception) {
             Log.e("UserMainActivity", "Błąd wyświetlania dialogu challenge: ${e.message}")
+        }
+    }
+
+    fun showGoalAchievedDialog(message: String, points: Int) {
+        if (isFinishing || isDestroyed) return
+
+        try {
+            val dialogView = LayoutInflater.from(this).inflate(R.layout.goal_achieved_dialog, null)
+
+            val tvMessage = dialogView.findViewById<TextView>(R.id.tvGoalMessage)
+            val tvPoints = dialogView.findViewById<TextView>(R.id.tvGoalPoints)
+            val btnOk = dialogView.findViewById<Button>(R.id.btnOkGoal)
+
+            tvMessage.text = message
+            tvPoints.text = "+$points pkt"
+
+            val dialog = AlertDialog.Builder(this)
+                .setView(dialogView)
+                .setCancelable(false)
+                .create()
+
+            activeDialogs.add(dialog)
+            dialog.setOnDismissListener { activeDialogs.remove(dialog) }
+            dialog.window?.setBackgroundDrawableResource(android.R.color.transparent)
+
+            btnOk.setOnClickListener { dialog.dismiss() }
+            dialog.show()
+        } catch (e: Exception) {
+            Log.e("UserMainActivity", "Błąd wyświetlania dialogu goal: ${e.message}")
         }
     }
 }

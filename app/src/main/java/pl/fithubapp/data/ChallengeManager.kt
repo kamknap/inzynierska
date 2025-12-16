@@ -75,11 +75,8 @@ object ChallengeManager {
     ) {
         PointsManager.addPoints(PointsManager.ActionType.CHALLENGE, customPoints = challengeDto.pointsForComplete)
 
-        // 2. WAŻNE: Pobierz ZAKTUALIZOWANY postęp z API, bo PointsManager właśnie zmienił level i punkty!
         val refreshedProgress = NetworkModule.api.getUserProgress()
 
-        // 3. Teraz operuj na świeżych danych (refreshedProgress zamiast currentProgress)
-        // Znajdź odznakę...
         val allBadges = NetworkModule.api.getAllBadges()
         val relatedBadge = allBadges.find { badge ->
             badge.name.equals(challengeDto.name, ignoreCase = true)
@@ -97,11 +94,10 @@ object ChallengeManager {
             newCompleted.add(challengeDto.id)
         }
 
-        // Zaktualizuj postęp użytkownika
         val finalProgress = currentProgress.copy(
             badges = newBadges,
             completedChallenges = newCompleted,
-            activeChallenges = null, // Usuń aktywne wyzwanie
+            activeChallenges = null,
         )
 
         NetworkModule.api.updateUserProgress(finalProgress)

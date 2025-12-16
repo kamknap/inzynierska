@@ -14,7 +14,9 @@ object PointsManager {
     private const val POINTS_STREAK_LOGIN = 5
     private const val POINTS_CHALLENGE = 50
     private const val POINTS_TRAINING_FULL = 15
+    private const val POINTS_GOAL_REACHED = 100
 
+    var onGoalAchieved: ((String, Int) -> Unit)? = null
 
     enum class ActionType {
         LOGIN,
@@ -23,7 +25,8 @@ object PointsManager {
         WEIGHT,
         CHALLENGE,
         STREAK,
-        TRAINING_FULL
+        TRAINING_FULL,
+        GOAL_REACHED
     }
 
     fun calculateNextLevelPoints(level: Int): Int{
@@ -44,6 +47,7 @@ object PointsManager {
                 ActionType.CHALLENGE -> POINTS_CHALLENGE
                 ActionType.STREAK -> POINTS_STREAK_LOGIN
                 ActionType.TRAINING_FULL -> POINTS_TRAINING_FULL
+                ActionType.GOAL_REACHED -> POINTS_GOAL_REACHED
             }
 
             var newCurrentPoints = currentProgress.currentPoints + pointsToAdd
@@ -103,6 +107,7 @@ object PointsManager {
                 ActionType.CHALLENGE -> POINTS_CHALLENGE
                 ActionType.STREAK -> POINTS_STREAK_LOGIN
                 ActionType.TRAINING_FULL -> POINTS_TRAINING_FULL
+                ActionType.GOAL_REACHED -> POINTS_GOAL_REACHED
             }
 
             var newCurrentPoints = currentProgress.currentPoints - pointsToRemove

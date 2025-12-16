@@ -201,7 +201,7 @@ class EditGoalsDialogFragment : DialogFragment() {
                     title = "Waga docelowa (kg)",
                     currentValue = currentTargetWeight,
                     minValue = 30,
-                    maxValue = currentWeight
+                    maxValue = currentWeight - 1
                 ) { value ->
                     etTargetWeight.setText(value.toString())
                 }
@@ -213,7 +213,7 @@ class EditGoalsDialogFragment : DialogFragment() {
                 showNumberPicker(
                     title = "Waga docelowa (kg)",
                     currentValue = currentTargetWeight,
-                    minValue = currentWeight,
+                    minValue = currentWeight + 1,
                     maxValue = 200
                 ) { value ->
                     etTargetWeight.setText(value.toString())
