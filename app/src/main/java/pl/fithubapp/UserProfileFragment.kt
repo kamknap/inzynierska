@@ -14,6 +14,10 @@ import androidx.lifecycle.lifecycleScope
 import pl.fithubapp.logic.UserCalculator
 import kotlinx.coroutines.launch
 import androidx.core.net.toUri
+import androidx.health.connect.client.HealthConnectClient
+import androidx.health.connect.client.PermissionController
+import androidx.health.connect.client.permission.HealthPermission
+import androidx.health.connect.client.records.StepsRecord
 
 
 class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
@@ -27,7 +31,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private lateinit var tvUserGoal: TextView
     private lateinit var btnEditProfile: Button
     private lateinit var btnEditGoals: Button
-//    private lateinit var btnConnectSmartwatch: Button
+    private lateinit var btnConnectSmartwatch: Button
     private lateinit var btnContactAuthor: Button
     private lateinit var btnLogout: Button
 
@@ -43,11 +47,11 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         tvUserGoal = view.findViewById(R.id.tvUserGoal)
         btnEditProfile = view.findViewById(R.id.btnEditProfile)
         btnEditGoals = view.findViewById(R.id.btnEditGoals)
-//        btnConnectSmartwatch = view.findViewById(R.id.btnConnectSmartwatch)
+        btnConnectSmartwatch = view.findViewById(R.id.btnConnectSmartwatch)
         btnContactAuthor= view.findViewById(R.id.btnContactAuthor)
         btnLogout = view.findViewById(R.id.btnLogout)
 
-        setupButtonListeners(btnEditProfile, btnEditGoals, btnContactAuthor, btnLogout)
+        setupButtonListeners(btnEditProfile, btnEditGoals, btnConnectSmartwatch,btnContactAuthor, btnLogout)
         
         loadDataForUser()
 
@@ -56,7 +60,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private fun setupButtonListeners(
         btnEditProfile: Button,
         btnEditGoals: Button,
-//        btnConnectSmartwatch: Button,
+        btnConnectSmartwatch: Button,
         btnContactAuthor: Button,
         btnLogout: Button
     ) {
@@ -68,9 +72,74 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             showEditGoalsDialog()
         }
 
-//        btnConnectSmartwatch.setOnClickListener {
-//            Toast.makeText(context, " wkrótce ", Toast.LENGTH_SHORT).show()
-//        }
+        val permissions = setOf(HealthPermission.getReadPermission(StepsRecord::class))
+        val requestPermissionContract = PermissionController.createRequestPermissionResultContract()
+        val requestPermissions = registerForActivityResult(requestPermissionContract) { granted ->
+            if (granted.containsAll(permissions)) {
+                Toast.makeText(requireContext(), "Zegarek połączony! Kroki będą synchronizowane codziennie o 20:00", Toast.LENGTH_LONG).show()
+                updateButtonConnectedState(true)
+            } else {
+                Toast.makeText(requireContext(), "Zegarek nie został połączony w Health Connect", Toast.LENGTH_LONG).show()
+                updateButtonConnectedState(false)
+            }
+        }
+
+        btnConnectSmartwatch.setOnClickListener {
+            lifecycleScope.launch {
+                try {
+                    // Sprawdź czy Health Connect jest dostępny
+                    val availabilityStatus = HealthConnectClient.getSdkStatus(requireContext())
+                    
+                    when (availabilityStatus) {
+                        HealthConnectClient.SDK_AVAILABLE -> {
+                            // Sprawdź czy już jest połączony
+                            val healthConnectClient = HealthConnectClient.getOrCreate(requireContext())
+                            val grantedPermissions = healthConnectClient.permissionController.getGrantedPermissions()
+                            
+                            if (grantedPermissions.containsAll(permissions)) {
+                                // Już połączony
+                                Toast.makeText(
+                                    requireContext(),
+                                    "Zegarek jest już połączony! Kroki są synchronizowane codziennie o 20:00",
+                                    Toast.LENGTH_LONG
+                                ).show()
+                            } else {
+                                // Nie połączony
+                                requestPermissions.launch(permissions)
+                            }
+                        }
+                        HealthConnectClient.SDK_UNAVAILABLE -> {
+                            Toast.makeText(
+                                requireContext(),
+                                "Health Connect nie jest dostępny na tym urządzeniu (wymaga Android 14+)",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
+                            Toast.makeText(
+                                requireContext(),
+                                "Zaktualizuj aplikację Health Connect w Google Play Store",
+                                Toast.LENGTH_LONG
+                            ).show()
+                        }
+                        else -> {
+                            Toast.makeText(
+                                requireContext(),
+                                "Nieznany status Health Connect",
+                                Toast.LENGTH_SHORT
+                            ).show()
+                        }
+                    }
+                } catch (e: Exception) {
+                    Log.e("UserProfile", "Błąd sprawdzania Health Connect", e)
+                    Toast.makeText(
+                        requireContext(),
+                        "Błąd: ${e.message}",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                }
+            }
+        }
 
         btnContactAuthor.setOnClickListener {
             val recipient = "knapikkamil2002@gmail.com"
@@ -171,6 +240,52 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     override fun onResume() {
         super.onResume()
         loadDataForUser()
+        checkSmartwatchConnectionStatus()
+    }
+
+    private fun checkSmartwatchConnectionStatus() {
+        lifecycleScope.launch {
+            try {
+                val availabilityStatus = HealthConnectClient.getSdkStatus(requireContext())
+                
+                if (availabilityStatus == HealthConnectClient.SDK_AVAILABLE) {
+                    val healthConnectClient = HealthConnectClient.getOrCreate(requireContext())
+                    val permissions = setOf(HealthPermission.getReadPermission(StepsRecord::class))
+                    val grantedPermissions = healthConnectClient.permissionController.getGrantedPermissions()
+                    
+                    if (grantedPermissions.containsAll(permissions)) {
+                        // Zegarek jest połączony
+                        updateButtonConnectedState(true)
+                    } else {
+                        // Zegarek nie jest połączony
+                        updateButtonConnectedState(false)
+                    }
+                } else {
+                    // Health Connect niedostępny
+                    updateButtonConnectedState(false)
+                }
+            } catch (e: Exception) {
+                Log.e("UserProfile", "Błąd sprawdzania stanu połączenia", e)
+                updateButtonConnectedState(false)
+            }
+        }
+    }
+
+    private fun updateButtonConnectedState(isConnected: Boolean) {
+        if (isConnected) {
+            btnConnectSmartwatch.text = "✓ Zegarek połączony"
+            btnConnectSmartwatch.alpha = 0.6f
+            // Opcjonalnie: zmień kolor tekstu na zielony
+            btnConnectSmartwatch.setTextColor(
+                resources.getColor(android.R.color.holo_green_dark, null)
+            )
+        } else {
+            btnConnectSmartwatch.text = "Podłącz smartwatch"
+            btnConnectSmartwatch.alpha = 1.0f
+            btnConnectSmartwatch.setTextColor(
+                resources.getColor(android.R.color.white, null)
+            )
+        }
     }
 
     fun loadDataForUser(){

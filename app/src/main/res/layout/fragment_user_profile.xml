@@ -250,15 +250,15 @@
                 android:textSize="16sp"
                 style="@style/Widget.Fithub.Button"/>
 
-<!--            <com.google.android.material.button.MaterialButton-->
-<!--                android:id="@+id/btnConnectSmartwatch"-->
-<!--                android:layout_width="match_parent"-->
-<!--                android:layout_height="wrap_content"-->
-<!--                android:layout_marginBottom="@dimen/spacing_medium"-->
-<!--                android:text="Podłącz smartwatch"-->
-<!--                android:textSize="16sp"-->
-<!--                android:backgroundTint="@color/blue_info"-->
-<!--                style="@style/Widget.Fithub.Button"/>-->
+            <com.google.android.material.button.MaterialButton
+                android:id="@+id/btnConnectSmartwatch"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="@dimen/spacing_medium"
+                android:text="Podłącz smartwatch"
+                android:textSize="16sp"
+                android:backgroundTint="@color/blue_info"
+                style="@style/Widget.Fithub.Button"/>
 
             <com.google.android.material.button.MaterialButton
                 android:id="@+id/btnContactAuthor"

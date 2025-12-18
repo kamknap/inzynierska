@@ -22,7 +22,6 @@ class ReminderWorker(
         val userId = inputData.getString("USER_ID") ?: return Result.failure()
         val type = inputData.getString("TYPE") ?: return Result.failure()
 
-        // Sprawdzamy warunki (czy dane już są w bazie)
         if (shouldSendNotification(userId, type)) {
             sendNotification(type)
         }
@@ -31,34 +30,11 @@ class ReminderWorker(
     }
 
     private suspend fun shouldSendNotification(userId: String, type: String): Boolean {
-        // TODO: Backend needs separate endpoints for background workers (not /me)
-        // For now, always show notifications
         return try {
-            // Temporarily disabled API checks until backend supports worker endpoints
-            /*
-            val today = LocalDate.now().toString()
-
-            when (type) {
-                "WEIGHT" -> {
-                    val history = NetworkModule.api.getUserWeightHistory()
-                    if (history.isEmpty()) return true
-                    val lastDate = history.first().measuredAt.substring(0, 10)
-                    return lastDate != today
-                }
-                "MEAL" -> {
-                    val nutrition = NetworkModule.api.getDailyNutrition(today)
-                    return nutrition.meals.isEmpty()
-                }
-                "WORKOUT" -> {
-                    return true
-                }
-                else -> false
-            }
-            */
-            true // Always show notification for now
+            true
         } catch (e: Exception) {
             Log.e("ReminderWorker", "Błąd sprawdzania API: ${e.message}")
-            true // Show notification on error
+            true
         }
     }
 
@@ -66,10 +42,8 @@ class ReminderWorker(
         val notificationManager = applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val channelId = "fithub_reminders"
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(channelId, "Przypomnienia FitHub", NotificationManager.IMPORTANCE_DEFAULT)
-            notificationManager.createNotificationChannel(channel)
-        }
+        val channel = NotificationChannel(channelId, "Przypomnienia FitHub", NotificationManager.IMPORTANCE_DEFAULT)
+        notificationManager.createNotificationChannel(channel)
 
         val (title, content) = when (type) {
             "WEIGHT" -> "Czas na ważenie!" to "Nie zapomnij zaktualizować swojej wagi w FitHub."
@@ -87,5 +61,41 @@ class ReminderWorker(
             .build()
 
         notificationManager.notify(type.hashCode(), notification)
+    }
+}
+
+class DailyStepWorker(
+    context: Context,
+    params: WorkerParameters
+) : CoroutineWorker(context, params) {
+
+    override suspend fun doWork(): Result {
+        Log.d("DailyStepWorker", "Rozpoczynam synchronizację kroków...")
+
+        return try {
+            //Pobieranie kroków
+            val stepsLong = StepSyncHelper.getTodaySteps(applicationContext)
+            val steps = stepsLong.toInt()
+
+            Log.d("DailyStepWorker", "Pobrano kroków: $steps")
+
+            if (steps >= 1000) {
+                val syncResult = StepSyncHelper.syncStepsToDatabase(applicationContext, steps)
+
+                if (syncResult.isSuccess) {
+                    Log.i("DailyStepWorker", "Sukces: ${syncResult.getOrNull()}")
+                    Result.success()
+                } else {
+                    Log.e("DailyStepWorker", "Błąd zapisu: ${syncResult.exceptionOrNull()?.message}")
+                    Result.retry()
+                }
+            } else {
+                Log.d("DailyStepWorker", "Zbyt mało kroków ($steps), pomijam zapis.")
+                Result.success()
+            }
+        } catch (e: Exception) {
+            Log.e("DailyStepWorker", "Krytyczny błąd workera", e)
+            Result.failure()
+        }
     }
 }

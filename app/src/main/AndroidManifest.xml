@@ -9,6 +9,10 @@
         android:required="false"/>
     <uses-permission android:name="android.permission.CAMERA"/>
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+    <queries>
+        <package android:name="com.google.android.apps.healthdata" />
+    </queries>
+    <uses-permission android:name="android.permission.health.READ_STEPS"/>
 
     <application
         android:allowBackup="true"
@@ -21,6 +25,10 @@
         android:usesCleartextTraffic="true"
         android:theme="@style/Theme.Fithub">
 
+        <!-- Health Connect integration -->
+        <meta-data
+            android:name="health_permissions"
+            android:resource="@xml/health_permissions" />
 
         <!-- SplashActivity - Entry Point aplikacji -->
         <activity

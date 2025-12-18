@@ -102,4 +102,10 @@ class UserCalculator {
             }
         }
     }
+
+    fun calculateCaloriesFromSteps(steps: Long, weight: Double): Double {
+        if (steps <= 0L || weight <= 0.0) return 0.0
+        // 0.0005 kcal na krok na kg wagi
+        return steps * 0.0005 * weight
+    }
 }

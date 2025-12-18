@@ -31,22 +31,20 @@ import kotlinx.coroutines.launch
 class UserMainActivity : AppCompatActivity() {
 
     private lateinit var bottomNavigation: BottomNavigationView
-    private var isNavigating = false // Flaga zapobiegająca wielokrotnej nawigacji
-    private var lastNavTime: Long = 0 // Czas ostatniego kliknięcia
-    private val NAV_DEBOUNCE_TIME = 300L // Czas blokady w ms (300ms jest optymalne)
-    private var activeDialogs = mutableListOf<AlertDialog>() // Lista aktywnych dialogów
+    private var isNavigating = false
+    private var lastNavTime: Long = 0
+    private val NAV_DEBOUNCE_TIME = 300L
+    private var activeDialogs = mutableListOf<AlertDialog>()
 
-    // 1. Launcher do zapytania o uprawnienia powiadomień
     private val requestPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestPermission()
     ) { isGranted: Boolean ->
-        // Tutaj można obsłużyć reakcję na decyzję użytkownika, np. logiem
+
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         
-        // Włącz tryb immersive (ukryj przyciski systemowe)
         WindowCompat.setDecorFitsSystemWindows(window, false)
         val windowInsetsController = WindowCompat.getInsetsController(window, window.decorView)
         windowInsetsController.apply {
@@ -58,7 +56,6 @@ class UserMainActivity : AppCompatActivity() {
 
         bottomNavigation = findViewById(R.id.bottom_navigation)
 
-        // 2. Sprawdzenie i prośba o uprawnienia (tylko dla Android 13+)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this,
@@ -77,10 +74,8 @@ class UserMainActivity : AppCompatActivity() {
             showGoalAchievedDialog(message, points)
         }
 
-        // Pobierz ID zalogowanego użytkownika z Firebase
         val currentUserId = AuthManager.currentUserId
         if (currentUserId == null) {
-            // Użytkownik nie jest zalogowany - przekieruj do logowania
             startActivity(Intent(this, SplashActivity::class.java))
             finish()
             return
@@ -88,7 +83,6 @@ class UserMainActivity : AppCompatActivity() {
 
         lifecycleScope.launch {
             try {
-                // Próbuj sprawdzić daily login (może fail dla nowych użytkowników bez UserProgress)
                 try {
                     val result = PointsManager.checkDailyLogin()
                     if(result.isNewLogin){
@@ -109,27 +103,25 @@ class UserMainActivity : AppCompatActivity() {
                         showLevelUpDialog()
                     }
                 } catch (e: Exception) {
-                    // Nowy użytkownik może nie mieć UserProgress - to OK
                     Log.d("UserMainActivity", "Pomijam checkDailyLogin dla nowego użytkownika: ${e.message}")
                 }
 
-                // 3. Konfiguracja powiadomień z zabezpieczeniem przed nullem w bazie
                 val user = NetworkModule.api.getCurrentUser()
 
-                // Używamy bezpiecznego wywołania ?. bo settings może być null
                 val notifSettings = user.settings?.notifications
 
                 ReminderScheduler.scheduleAllReminders(
                     context = this@UserMainActivity,
                     userId = user.id,
-                    // Jeśli ustawienia są null, domyślnie włączamy powiadomienia (true)
                     workoutEnabled = notifSettings?.types?.workoutReminders ?: true,
                     mealEnabled = notifSettings?.types?.mealReminders ?: true,
                     measureEnabled = notifSettings?.types?.measureReminders ?: true
                 )
 
+                ReminderScheduler.scheduleStepSync(this@UserMainActivity, user.id)
+
             } catch (e: Exception) {
-                e.printStackTrace() // Log błędu, żeby aplikacja nie padła przy braku sieci
+                e.printStackTrace()
             }
         }
 
@@ -165,18 +157,14 @@ class UserMainActivity : AppCompatActivity() {
         bottomNavigation.setOnItemSelectedListener { item ->
             val currentTime = System.currentTimeMillis()
 
-            // ZABEZPIECZENIE 1: Sprawdź czas i flagę nawigacji
             if (currentTime - lastNavTime < NAV_DEBOUNCE_TIME || isNavigating) {
                 return@setOnItemSelectedListener false
             }
             
-            lastNavTime = currentTime // Aktualizuj czas
+            lastNavTime = currentTime
 
-            // Pobierz aktualny fragment, aby nie ładować tego samego
             val currentFragment = supportFragmentManager.findFragmentById(R.id.main_container)
 
-            // ZABEZPIECZENIE 2: Nie przeładowuj, jeśli już tam jesteśmy
-            // (To zapobiega miganiu ekranu przy klikaniu w aktywną ikonę)
             val selectedFragment = when (item.itemId) {
                 R.id.nav_diary -> UserDiaryFragment()
                 R.id.nav_training -> UserTrainingFragment()
@@ -187,12 +175,10 @@ class UserMainActivity : AppCompatActivity() {
             }
 
             if (selectedFragment != null) {
-                // Sprawdzamy po klasie, czy to ten sam fragment
                 if (currentFragment != null && currentFragment::class == selectedFragment::class) {
                     return@setOnItemSelectedListener true
                 }
                 
-                // Jeśli przeszliśmy wszystkie testy -> ładujemy
                 loadFragment(selectedFragment)
                 return@setOnItemSelectedListener true
             }
@@ -202,30 +188,27 @@ class UserMainActivity : AppCompatActivity() {
     }
 
     private fun loadFragment(fragment: Fragment) {
-        isNavigating = true // Blokujemy natychmiast
+        isNavigating = true
         
         try {
             supportFragmentManager.commit {
                 setReorderingAllowed(true)
-                // Używamy animacji, żeby ukryć moment ładowania (opcjonalne)
                 setCustomAnimations(
                     android.R.anim.fade_in, 
                     android.R.anim.fade_out
                 )
                 replace(R.id.main_container, fragment)
                 runOnCommit {
-                    isNavigating = false // Odblokowujemy po zakończeniu
+                    isNavigating = false
                 }
             }
         } catch (e: Exception) {
-            // W razie błędu (np. activity destroyed) odblokuj flagę
             isNavigating = false
             e.printStackTrace()
         }
     }
 
     private fun showStreakDialog(days: Int, points: Int){
-        // ZABEZPIECZENIE: Nie pokazuj dialogu, jeśli aktywność umiera
         if (isFinishing || isDestroyed) return
 
         try {
@@ -242,11 +225,9 @@ class UserMainActivity : AppCompatActivity() {
                 .setCancelable(false)
                 .create()
 
-            // Dodaj dialog do listy aktywnych
             activeDialogs.add(dialog)
             
             dialog.setOnDismissListener {
-                // Usuń dialog z listy po zamknięciu
                 activeDialogs.remove(dialog)
             }
 
@@ -262,7 +243,6 @@ class UserMainActivity : AppCompatActivity() {
     }
 
     fun showLevelUpDialog() {
-        // ZABEZPIECZENIE: Nie pokazuj dialogu, jeśli aktywność umiera
         if (isFinishing || isDestroyed) return
 
         try {
@@ -273,11 +253,9 @@ class UserMainActivity : AppCompatActivity() {
                 .setView(dialogView)
                 .create()
 
-            // Dodaj dialog do listy aktywnych
             activeDialogs.add(dialog)
             
             dialog.setOnDismissListener {
-                // Usuń dialog z listy po zamknięciu
                 activeDialogs.remove(dialog)
             }
 
