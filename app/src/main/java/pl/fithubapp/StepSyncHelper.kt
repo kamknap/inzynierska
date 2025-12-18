@@ -48,7 +48,7 @@ object StepSyncHelper {
             val weight = user.profile.weightKg
             
             // Sprawdź czy waga jest poprawna
-            if (weight == null || weight <= 0.0) {
+            if (weight <= 0.0) {
                 Log.w("StepSync", "Brak poprawnej wagi w profilu użytkownika")
                 return@withContext Result.failure(Exception("Brak wagi użytkownika w profilu"))
             }
@@ -56,11 +56,11 @@ object StepSyncHelper {
             val caloriesBurned = UserCalculator().calculateCaloriesFromSteps(steps.toLong(), weight)
 
             val stepsFood = CreateFoodDto(
-                name = "Kroki: ${steps.formatWithSpaces()}",
+                name = "Kroki (${steps.formatWithSpaces()})",
                 brand = "Smartwatch",
                 barcode = null,
                 nutritionPer100g = NutritionData(
-                    calories = -caloriesBurned, // Ujemne kalorie odejmą się w diary
+                    calories = -caloriesBurned,
                     protein = 0.0, fat = 0.0, carbs = 0.0, fiber = 0.0, sugar = 0.0, sodium = 0.0
                 ),
                 category = "Exercise",

@@ -76,7 +76,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         val requestPermissionContract = PermissionController.createRequestPermissionResultContract()
         val requestPermissions = registerForActivityResult(requestPermissionContract) { granted ->
             if (granted.containsAll(permissions)) {
-                Toast.makeText(requireContext(), "Zegarek połączony! Kroki będą synchronizowane codziennie o 20:00", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Zegarek połączony! Kroki synchronizowane o 20:00", Toast.LENGTH_LONG).show()
                 updateButtonConnectedState(true)
             } else {
                 Toast.makeText(requireContext(), "Zegarek nie został połączony w Health Connect", Toast.LENGTH_LONG).show()
@@ -84,6 +84,23 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
             }
         }
 
+        // 🧪 TESTOWANIE: Long press żeby sprawdzić kroki (usuń po testach)
+        btnConnectSmartwatch.setOnLongClickListener {
+            lifecycleScope.launch {
+                try {
+                    val steps = StepSyncHelper.getTodaySteps(requireContext())
+                    android.app.AlertDialog.Builder(requireContext())
+                        .setTitle("🧪 Test kroków")
+                        .setMessage("Kroki w Health Connect: $steps\n\nJeśli 0 - sprawdź czy Samsung Health eksportuje dane do Health Connect")
+                        .setPositiveButton("OK", null)
+                        .show()
+                } catch (e: Exception) {
+                    Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_LONG).show()
+                }
+            }
+            true
+        }
+        
         btnConnectSmartwatch.setOnClickListener {
             lifecycleScope.launch {
                 try {
@@ -100,7 +117,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                                 // Już połączony
                                 Toast.makeText(
                                     requireContext(),
-                                    "Zegarek jest już połączony! Kroki są synchronizowane codziennie o 20:00",
+                                    "Zegarek połączony! Kroki synchronizowane o 20:00",
                                     Toast.LENGTH_LONG
                                 ).show()
                             } else {
@@ -118,7 +135,7 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                         HealthConnectClient.SDK_UNAVAILABLE_PROVIDER_UPDATE_REQUIRED -> {
                             Toast.makeText(
                                 requireContext(),
-                                "Zaktualizuj aplikację Health Connect w Google Play Store",
+                                "Zaktualizuj Health Connect w Google Play Store",
                                 Toast.LENGTH_LONG
                             ).show()
                         }
@@ -274,17 +291,14 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
     private fun updateButtonConnectedState(isConnected: Boolean) {
         if (isConnected) {
             btnConnectSmartwatch.text = "✓ Zegarek połączony"
-            btnConnectSmartwatch.alpha = 0.6f
-            // Opcjonalnie: zmień kolor tekstu na zielony
-            btnConnectSmartwatch.setTextColor(
-                resources.getColor(android.R.color.holo_green_dark, null)
-            )
+            btnConnectSmartwatch.backgroundTintList = resources.getColorStateList(R.color.green_success, null)
+            btnConnectSmartwatch.setTextColor(resources.getColor(R.color.white, null))
+            btnConnectSmartwatch.alpha = 1.0f // Nie przezroczyste, bo zmieniliśmy kolor tła
         } else {
             btnConnectSmartwatch.text = "Podłącz smartwatch"
+            btnConnectSmartwatch.backgroundTintList = resources.getColorStateList(R.color.blue_info, null)
+            btnConnectSmartwatch.setTextColor(resources.getColor(R.color.white, null))
             btnConnectSmartwatch.alpha = 1.0f
-            btnConnectSmartwatch.setTextColor(
-                resources.getColor(android.R.color.white, null)
-            )
         }
     }
 

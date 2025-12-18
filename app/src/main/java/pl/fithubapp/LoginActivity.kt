@@ -108,7 +108,7 @@ class LoginActivity : AppCompatActivity() {
             val result = AuthManager.loginWithEmail(email, password)
             
             result.onSuccess { user ->
-                Toast.makeText(this@LoginActivity, "Witaj ${user.email}!", Toast.LENGTH_SHORT).show()
+//                Toast.makeText(this@LoginActivity, "Witaj ${user.email}!", Toast.LENGTH_SHORT).show()
                 navigateToSplash()
             }.onFailure { exception ->
                 setLoading(false)
