@@ -4,38 +4,21 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import kotlinx.coroutines.tasks.await
 
-/**
- * Singleton do zarządzania Firebase Authentication
- * Zapewnia łatwy dostęp do aktualnie zalogowanego użytkownika i jego UID
- */
 object AuthManager {
     
     private val auth: FirebaseAuth
         get() = FirebaseAuth.getInstance()
 
-    /**
-     * Zwraca aktualnie zalogowanego użytkownika Firebase
-     */
     val currentUser: FirebaseUser?
         get() = auth.currentUser
 
-    /**
-     * Zwraca UID aktualnie zalogowanego użytkownika lub null jeśli niezalogowany
-     */
     val currentUserId: String?
         get() = auth.currentUser?.uid
 
-    /**
-     * Sprawdza czy użytkownik jest zalogowany
-     */
     fun isUserLoggedIn(): Boolean {
         return auth.currentUser != null
     }
 
-    /**
-     * Rejestruje nowego użytkownika z email i hasłem
-     * @return FirebaseUser w przypadku sukcesu, null w przypadku błędu
-     */
     suspend fun registerWithEmail(email: String, password: String): Result<FirebaseUser> {
         return try {
             val result = auth.createUserWithEmailAndPassword(email, password).await()
@@ -47,10 +30,6 @@ object AuthManager {
         }
     }
 
-    /**
-     * Loguje użytkownika z email i hasłem
-     * @return FirebaseUser w przypadku sukcesu, null w przypadku błędu
-     */
     suspend fun loginWithEmail(email: String, password: String): Result<FirebaseUser> {
         return try {
             val result = auth.signInWithEmailAndPassword(email, password).await()
@@ -62,16 +41,10 @@ object AuthManager {
         }
     }
 
-    /**
-     * Wylogowuje aktualnego użytkownika
-     */
     fun logout() {
         auth.signOut()
     }
-
-    /**
-     * Wysyła email resetujący hasło
-     */
+    
     suspend fun sendPasswordResetEmail(email: String): Result<Unit> {
         return try {
             auth.sendPasswordResetEmail(email).await()
