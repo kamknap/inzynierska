@@ -69,7 +69,7 @@ object StepSyncHelper {
 
             val createdFood = NetworkModule.api.createFood(stepsFood)
             val mealDto = MealDto(
-                name = "Aktywność (Kroki)",
+                name = "Trening",
                 foods = listOf(FoodItemDto(foodId = createdFood.id, quantity = 100.0))
             )
 
