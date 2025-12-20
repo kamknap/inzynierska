@@ -18,6 +18,7 @@ import androidx.health.connect.client.HealthConnectClient
 import androidx.health.connect.client.PermissionController
 import androidx.health.connect.client.permission.HealthPermission
 import androidx.health.connect.client.records.StepsRecord
+import androidx.health.connect.client.records.WeightRecord
 
 
 class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
@@ -76,48 +77,28 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
         val requestPermissionContract = PermissionController.createRequestPermissionResultContract()
         val requestPermissions = registerForActivityResult(requestPermissionContract) { granted ->
             if (granted.containsAll(permissions)) {
-                Toast.makeText(requireContext(), "Zegarek połączony! Kroki synchronizowane o 20:00", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Połączono! Dane o krokach i wadze będą synchronizowane automatycznie.", Toast.LENGTH_LONG).show()
                 updateButtonConnectedState(true)
             } else {
-                Toast.makeText(requireContext(), "Zegarek nie został połączony w Health Connect", Toast.LENGTH_LONG).show()
+                Toast.makeText(requireContext(), "Nie przyznano wszystkich uprawnień do synchronizacji danych.", Toast.LENGTH_LONG).show()
                 updateButtonConnectedState(false)
             }
-        }
-
-        // 🧪 TESTOWANIE: Long press żeby sprawdzić kroki (usuń po testach)
-        btnConnectSmartwatch.setOnLongClickListener {
-            lifecycleScope.launch {
-                try {
-                    val steps = StepSyncHelper.getTodaySteps(requireContext())
-                    android.app.AlertDialog.Builder(requireContext())
-                        .setTitle("🧪 Test kroków")
-                        .setMessage("Kroki w Health Connect: $steps\n\nJeśli 0 - sprawdź czy Samsung Health eksportuje dane do Health Connect")
-                        .setPositiveButton("OK", null)
-                        .show()
-                } catch (e: Exception) {
-                    Toast.makeText(requireContext(), "Błąd: ${e.message}", Toast.LENGTH_LONG).show()
-                }
-            }
-            true
         }
         
         btnConnectSmartwatch.setOnClickListener {
             lifecycleScope.launch {
                 try {
-                    // Sprawdź czy Health Connect jest dostępny
                     val availabilityStatus = HealthConnectClient.getSdkStatus(requireContext())
                     
                     when (availabilityStatus) {
                         HealthConnectClient.SDK_AVAILABLE -> {
-                            // Sprawdź czy już jest połączony
                             val healthConnectClient = HealthConnectClient.getOrCreate(requireContext())
                             val grantedPermissions = healthConnectClient.permissionController.getGrantedPermissions()
                             
                             if (grantedPermissions.containsAll(permissions)) {
-                                // Już połączony
                                 Toast.makeText(
                                     requireContext(),
-                                    "Zegarek połączony! Kroki synchronizowane o 20:00",
+                                    "Dane o krokach i wadze synchronizowane są automatycznie.",
                                     Toast.LENGTH_LONG
                                 ).show()
                             } else {
@@ -267,18 +248,16 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
                 
                 if (availabilityStatus == HealthConnectClient.SDK_AVAILABLE) {
                     val healthConnectClient = HealthConnectClient.getOrCreate(requireContext())
-                    val permissions = setOf(HealthPermission.getReadPermission(StepsRecord::class))
+                    val permissions = setOf(HealthPermission.getReadPermission(StepsRecord::class), HealthPermission.getReadPermission(
+                        WeightRecord::class))
                     val grantedPermissions = healthConnectClient.permissionController.getGrantedPermissions()
                     
                     if (grantedPermissions.containsAll(permissions)) {
-                        // Zegarek jest połączony
                         updateButtonConnectedState(true)
                     } else {
-                        // Zegarek nie jest połączony
                         updateButtonConnectedState(false)
                     }
                 } else {
-                    // Health Connect niedostępny
                     updateButtonConnectedState(false)
                 }
             } catch (e: Exception) {
@@ -290,12 +269,12 @@ class UserProfileFragment : Fragment(R.layout.fragment_user_profile) {
 
     private fun updateButtonConnectedState(isConnected: Boolean) {
         if (isConnected) {
-            btnConnectSmartwatch.text = "✓ Zegarek połączony"
+            btnConnectSmartwatch.text = "✓ Health Connect połączony"
             btnConnectSmartwatch.backgroundTintList = resources.getColorStateList(R.color.green_success, null)
             btnConnectSmartwatch.setTextColor(resources.getColor(R.color.white, null))
-            btnConnectSmartwatch.alpha = 1.0f // Nie przezroczyste, bo zmieniliśmy kolor tła
+            btnConnectSmartwatch.alpha = 1.0f
         } else {
-            btnConnectSmartwatch.text = "Podłącz smartwatch"
+            btnConnectSmartwatch.text = "Podłącz Health Connect"
             btnConnectSmartwatch.backgroundTintList = resources.getColorStateList(R.color.blue_info, null)
             btnConnectSmartwatch.setTextColor(resources.getColor(R.color.white, null))
             btnConnectSmartwatch.alpha = 1.0f
