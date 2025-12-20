@@ -3,6 +3,7 @@ package pl.fithubapp.logic
 import pl.fithubapp.data.UserGoalDto
 import java.time.LocalDate
 import kotlin.math.abs
+import kotlin.math.roundToInt
 
 data class GoalProgressResult(
     val label: String,
@@ -107,5 +108,14 @@ class UserCalculator {
         if (steps <= 0L || weight <= 0.0) return 0.0
         // 0.0005 kcal na krok na kg wagi
         return steps * 0.0005 * weight
+    }
+
+    data class MacroTargets(val protein: Int, val fat: Int, val carbs: Int)
+
+    fun calculateMacroTargets(calorieGoal: Double): MacroTargets {
+        val p = (calorieGoal * 0.20 / 4).roundToInt()
+        val f = (calorieGoal * 0.30 / 9).roundToInt()
+        val w = (calorieGoal * 0.50 / 4).roundToInt()
+        return MacroTargets(p, f, w)
     }
 }

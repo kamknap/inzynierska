@@ -29,6 +29,7 @@ import pl.fithubapp.data.MealWithFoodsDto
 import pl.fithubapp.data.PointsManager
 import kotlinx.coroutines.launch
 import pl.fithubapp.data.UpdateFoodQuantityDto
+import pl.fithubapp.logic.UserCalculator
 import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.YearMonth
@@ -701,6 +702,8 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
 
     private fun updateDailyTotals(calorieGoal: Double) {
         if (loadedBreakfast && loadedLunch && loadedDinner && loadedSnacks) {
+            val calculator = UserCalculator()
+            val targets = calculator.calculateMacroTargets(calorieGoal)
             dailyTotalCalories = breakfastCalories + lunchCalories + dinnerCalories + snacksCalories + trainingCalories
             dailyTotalProtein  = breakfastProtein  + lunchProtein  + dinnerProtein  + snacksProtein
             dailyTotalFat      = breakfastFat      + lunchFat      + dinnerFat      + snacksFat
@@ -710,25 +713,34 @@ class UserDiaryFragment : Fragment(R.layout.fragment_user_diary), AddMealDialogF
 
             val builder = SpannableStringBuilder()
 
-            builder.append("${dailyTotalCalories.roundToInt()} / ${calorieGoal.roundToInt()} ")
-            var start = builder.length
-            builder.append("kcal, ")
-            builder.setSpan(ForegroundColorSpan(tertiaryColor), start, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            fun appendMacro(current: Double, target: Int, unit: String, isLast: Boolean = false) {
+                builder.append("${current.roundToInt()}")
 
-            builder.append("${dailyTotalProtein.roundToInt()} ")
-            start = builder.length
-            builder.append("B, ")
-            builder.setSpan(ForegroundColorSpan(tertiaryColor), start, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                val targetPart = "/$target "
+                val startTarget = builder.length
+                builder.append(targetPart)
+                builder.setSpan(
+                    RelativeSizeSpan(0.8f),
+                    startTarget,
+                    builder.length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
 
-            builder.append("${dailyTotalFat.roundToInt()} ")
-            start = builder.length
-            builder.append("T, ")
-            builder.setSpan(ForegroundColorSpan(tertiaryColor), start, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                val unitPart = if (isLast) unit else "$unit, "
+                val startUnit = builder.length
+                builder.append(unitPart)
+                builder.setSpan(
+                    ForegroundColorSpan(tertiaryColor),
+                    startUnit,
+                    builder.length,
+                    Spannable.SPAN_EXCLUSIVE_EXCLUSIVE
+                )
+            }
 
-            builder.append("${dailyTotalCarbs.roundToInt()} ")
-            start = builder.length
-            builder.append("W")
-            builder.setSpan(ForegroundColorSpan(tertiaryColor), start, builder.length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+            appendMacro(dailyTotalCalories, calorieGoal.toInt(), "kcal")
+            appendMacro(dailyTotalProtein, targets.protein, "B")
+            appendMacro(dailyTotalFat, targets.fat, "T")
+            appendMacro(dailyTotalCarbs, targets.carbs, "W", isLast = true)
 
             tvDailyTotal.text = builder
         }
