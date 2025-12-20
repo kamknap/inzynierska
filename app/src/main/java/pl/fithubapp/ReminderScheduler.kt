@@ -65,7 +65,7 @@ object ReminderScheduler {
         )
     }
 
-    fun scheduleStepSync(context: Context, userId: String) {
+    fun scheduleStepSync(context: Context) {
         val now = ZonedDateTime.now()
         var target = now.toLocalDate().atTime(20, 0, 0).atZone(now.zone) // Godzina 20:00
 
@@ -86,6 +86,26 @@ object ReminderScheduler {
         WorkManager.getInstance(context).enqueueUniquePeriodicWork(
             "daily_step_sync",
             ExistingPeriodicWorkPolicy.KEEP, // na REPLACE do testów
+            workRequest
+        )
+    }
+
+    fun scheduleWeightSync(context: Context) {
+        val workRequest = PeriodicWorkRequest.Builder(
+            DailyWeightWorker::class.java,
+            12, TimeUnit.HOURS
+        )
+            .setConstraints(
+                Constraints.Builder()
+                    .setRequiredNetworkType(NetworkType.CONNECTED)
+                    .build()
+            )
+            .addTag("DAILY_WEIGHT_SYNC")
+            .build()
+
+        WorkManager.getInstance(context).enqueueUniquePeriodicWork(
+            "daily_weight_sync",
+            ExistingPeriodicWorkPolicy.REPLACE,
             workRequest
         )
     }

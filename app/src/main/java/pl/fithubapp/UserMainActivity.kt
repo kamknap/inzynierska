@@ -118,7 +118,9 @@ class UserMainActivity : AppCompatActivity() {
                     measureEnabled = notifSettings?.types?.measureReminders ?: true
                 )
 
-                ReminderScheduler.scheduleStepSync(this@UserMainActivity, user.id)
+                ReminderScheduler.scheduleStepSync(this@UserMainActivity)
+                ReminderScheduler.scheduleWeightSync(this@UserMainActivity)
+
 
             } catch (e: Exception) {
                 e.printStackTrace()

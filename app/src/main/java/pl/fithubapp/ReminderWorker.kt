@@ -99,3 +99,36 @@ class DailyStepWorker(
         }
     }
 }
+
+class DailyWeightWorker(
+    context: Context,
+    params: WorkerParameters
+) : CoroutineWorker(context, params) {
+
+    override suspend fun doWork(): Result {
+        Log.d("DailyWeightWorker", "Rozpoczynam sprawdzanie wagi w Health Connect...")
+
+        return try {
+            //Pobieranie wagi
+            val latestWeight = WeightSyncHelper.getLatestWeight(applicationContext)
+
+            if (latestWeight != null) {
+                val syncResult = WeightSyncHelper.syncWeightToDatabase(applicationContext, latestWeight)
+
+                if (syncResult.isSuccess) {
+                    Log.i("DailyWeightWorker", "Sukces: ${syncResult.getOrNull()}")
+                    Result.success()
+                } else {
+                    Log.e("DailyWeightWorker", "Błąd synchronizacji: ${syncResult.exceptionOrNull()?.message}")
+                    Result.retry()
+                }
+            } else {
+                Log.d("DailyWeightWorker", "Brak pomiarów wagi w Health Connect z ostatnich 30 dni.")
+                Result.success()
+            }
+        } catch (e: Exception) {
+            Log.e("DailyWeightWorker", "Krytyczny błąd workera wagi", e)
+            Result.failure()
+        }
+    }
+}
