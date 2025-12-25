@@ -1,30 +1,35 @@
-```mermaid
 flowchart LR
-  subgraph D[Urządzenie mobilne (Android)]
-    A[Aplikacja mobilna]
-    HC[Health Connect (Android)]
-    A <-->|API lokalne| HC
-  end
+    %% Definicja systemów zewnętrznych
+    F[Firebase Auth]
+    OFF[OpenFoodFacts API]
+    YT[YouTube]
 
-  subgraph C[Chmura (Azure / VM / App Service)]
-    S[REST API (Node.js + Express)\nDocker]
-  end
+    %% Urządzenie mobilne
+    subgraph D [Urządzenie mobilne Android]
+        direction TB
+        A[Aplikacja mobilna]
+        HC[Health Connect]
+        A <-->|API lokalne| HC
+    end
 
-  subgraph M[Chmura (MongoDB Atlas)]
-    DB[(MongoDB)]
-  end
+    %% Backend
+    subgraph C [Chmura Azure / Docker]
+        S[REST API Node.js + Express]
+    end
 
-  F[Firebase Authentication]
-  OFF[OpenFoodFacts API]
-  YT[YouTube]
+    %% Baza danych
+    subgraph M [Klaster MongoDB Atlas]
+        DB[(Baza Danych)]
+    end
 
-  A <-->|HTTPS + JSON (REST)| S
-  S -->|Mongoose / TLS| DB
+    %% Połączenia główne
+    A <-->|HTTPS / JSON| S
+    S <-->|Mongoose / TLS| DB
 
-  A -->|logowanie / token| F
-  S -->|weryfikacja tokenu| F
-
-  S -->|pobierz dane produktu| OFF
-
-  A -->|odtwarzanie wideo| YT
-```
+    %% Integracje z Aplikacji (zgodnie z Twoim opisem)
+    A -.->|1. Logowanie| F
+    A -.->|2. Token w nagłówku| S
+    S -.->|3. Weryfikacja tokenu| F
+    
+    A -->|Pobierz dane produktu| OFF
+    A -->|Odtwarzanie wideo| YT
